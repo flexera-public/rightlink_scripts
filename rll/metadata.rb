@@ -13,7 +13,7 @@ recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
 
 attribute   "HOSTNAME",
   :display_name => "Hostname for this server",
-  :description => "The sever's hostname is set to the longest valid prefix or suffix of " +
+  :description => "The server's hostname is set to the longest valid prefix or suffix of " +
 	"this variable. E.g. 'my.example.com V2', 'NEW my.example.com', and " +
 	"'database.io my.example.com' all set the hostname to 'my.example.com'. " +
 	"Set to an empty string to avoid any change to the hostname.",
@@ -35,6 +35,14 @@ attribute   "RS_INSTANCE_UUID",
   :type => "string",
   :default => "env:RS_INSTANCE_UUID",
   :recipes => ["rll::collectd"]
+
+attribute   "RLBIN",
+  :display_name => "RightLink executable pathname",
+  :description => "Location of the RighLink 10 executable file, typically /usr/local/bin/rightlinklite",
+  :required => "optional",
+  :type => "string",
+  :default => "/usr/local/bin/rightlinklite",
+  :recipes => ["rll::upgrade"]
 
 attribute   "VAR",
   :display_name => "random variable to print",
