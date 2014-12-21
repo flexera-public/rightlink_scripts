@@ -2,6 +2,13 @@ RightLink Scripts
 =================
 
 RightScripts for RightScale's RightLink10 (aka RightLinkLite) agent.
+
+This repository conatins the collection of RightScrits used in ServerTemplates that go with
+the new RightLink10 agent. The scripts for the base ServerTemplate are in the rll subdirectory.
+
+How it Works
+------------
+
 This repository masquerades to RightScale as a Chef Cookbook repository but everything here
 really are RightScripts, i.e. shell scripts that are executed by the RightScale agent.
 
@@ -19,3 +26,7 @@ In terms of naming, in order to associate a file with a recipe name RightLink se
 first file that matches `recipename.*` and that is executable, thus you are free to add `.sh`,
 `.rb`, or `.ps1` extensions. (However, ensure your editor doesn't save backup files by adding
 a `~` or `.bak` at the end of filenames.)
+
+License
+-------
+See [![MIT License](http://img.shields.io/:license-mit-blue.svg)](LICENSE)

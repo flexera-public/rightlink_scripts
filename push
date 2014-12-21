@@ -4,7 +4,6 @@
 # In order to make the APi call, the environment variable KEy must be set to the
 # user's RightScale API key, see the "API credentials" tab of the User Settings
 # page of the RightScale dashboard
-RS_ACCT=60073 # sorry for the hack...
 
 if [[ -z "$RS_KEY" ]]; then
   echo "Please set RS_KEY to your RightScale API key from the dashboard's Settings>API credentials"
@@ -69,12 +68,6 @@ else
   echo "Using RS_REPO_ID=${RS_REPO_ID}"
 fi
 
-if [[ ! -e .pushrc ]]; then
-  echo "RS_SERVER=${RS_SERVER}"    >.pushrc
-  echo "RS_REPO_ID=${RS_REPO_ID}" >>.pushrc
-  echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc
-fi
-
 echo -n "Asking for a repo refetch ... "
 json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
   "https://${RS_SERVER}/api/repositories/${RS_REPO_ID}/refetch?auto_import=true"`
@@ -107,6 +100,28 @@ t0=`date '+%s'`
 #for a in ${auditees[@]}; do
 #  echo $a
 #done
+
+if [[ -z "${RS_ACCT}" ]]; then
+  echo -n "Determining RS account number ... "
+  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+    "https://${RS_SERVER}/api/permissions"`
+  re='/api/accounts/([0-9]*)'
+  if [[ "$json" =~ $re ]]; then
+    RS_ACCT="${BASH_REMATCH[1]}"
+    echo "${RS_ACCT}"
+  else
+    echo "ERROR"
+    echo "Please set RS_ACCT"
+    exit 1
+  fi
+fi
+
+if [[ ! -e .pushrc ]]; then
+  echo "RS_SERVER=${RS_SERVER}"        >.pushrc
+  echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc
+  echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc
+  echo "RS_ACCT=${RS_ACCT}"           >>.pushrc
+fi
 
 echo -n "Looking for audit entry ..."
 while true; do
