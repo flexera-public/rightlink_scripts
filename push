@@ -1,0 +1,57 @@
+#! /bin/bash -e
+# This script pushes this repository to the upstream git repo (e.g. github) and
+# makes an API call to RightScale to referch and import the updated repo.
+# In order to make the APi call, the environment variable KEy must be set to the
+# user's RightScale API key, see the "API credentials" tab of the User Settings
+# page of the RightScale dashboard
+
+if [[ -z "$RS_KEY" ]]; then
+  echo "Please set RS_KEY to your RightScale API key from the dashboard's Settings>API credentials"
+  exit 1
+fi
+
+if ! curl --version >/dev/null; then
+  echo "ERROR: cannot find curl: it is required for this script, sorry"
+  exit 1
+fi
+
+git push
+
+if [[ -e .pushrc ]]; then
+  . .pushrc
+fi
+
+export RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
+echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
+json=`curl -sL -gG --retry=3 -H X-API-Version:1.5 \
+  "/api/oauth2?grant_type=refresh_token&refresh_token=${RS_KEY}"`
+echo $json
+re='"access_token": *"([^"]*)"'
+if [[ "$json" =~ $re ]]; then
+  echo "successful"
+  access_token="${BASH_REMATCH[1]}"
+else
+  echo "failed:"
+  echo $json
+  exit 1
+fi
+
+exit 0
+
+if [[ -z "$RS_REPO_ID" ]]; then
+  # gotta figure out what the RightScale repo ID is for this baby
+  json=`curl -sL -gG --retry=3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+    "https://${RS_SERVER}/api/repositories?filter[]=name==${RS_REPO_NAME}"`
+  re='\{"rel":"self","href":"(/api/clouds/[0-9]*)"}(.*)'
+  cloud_hrefs=()
+  while [[ "$json" =~ $re ]]; do
+    cloud_hrefs=("${cloud_hrefs[@]}" "${BASH_REMATCH[1]}")
+    json="${BASH_REMATCH[2]}" # this is the rest of the json to find the next cloud in
+  done
+  if (("${#cloud_hrefs[@]}" == 0)); then
+    echo "ERROR: no cloud of type $cloud_type found in account" >&2
+    exit 1
+  fi
+  echo "Found ${#cloud_hrefs[@]} clouds"
+fi
+
