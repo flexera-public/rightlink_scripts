@@ -69,8 +69,8 @@ elif [[ `cat /etc/redhat-release` =~ ^Red\ Hat.*\ ([0-9])\. ]]; then
     time yum -y --security update-minimal
     ;;
   7) 
-    if ! yum list installed epel-release-7-2.noarch; then
-      rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
+    if ! yum list installed epel-release-7-5.noarch; then
+      rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
     fi
     cat > /etc/yum.repos.d/RightScale-Software.repo <<EOF
 [rightscale]
