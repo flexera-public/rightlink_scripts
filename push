@@ -1,9 +1,14 @@
 #! /bin/bash
 # This script pushes this repository to the upstream git repo (e.g. github) and
-# makes an API call to RightScale to referch and import the updated repo.
-# In order to make the APi call, the environment variable KEy must be set to the
-# user's RightScale API key, see the "API credentials" tab of the User Settings
-# page of the RightScale dashboard
+# makes an API call to RightScale to refetch and import the updated repo.
+# In order to make the API call, the environment variable KEY must be set to
+# your RightScale API key, see the "API credentials" tab of the User Settings
+# page of the RightScale dashboard.
+# As the RightScale refetch is happening, the script will print progress in the form
+# of the audit entry summary line and when the refetch completes, it will print the audit
+# entry detail (which corresponds to the "Last fetch output" shown for the repo in the dash).
+# This script is still highly experimental and ill supported by the RightScale API, if you
+# like it please vote for it :-)!
 
 if [[ -z "$RS_KEY" ]]; then
   echo "Please set RS_KEY to your RightScale API key from the dashboard's Settings>API credentials"
