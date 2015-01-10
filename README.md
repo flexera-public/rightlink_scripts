@@ -1,9 +1,10 @@
 RightLink Scripts
 =================
 
-RightScripts for RightScale's RightLink10 (aka RightLinkLite) agent.
+RightScripts for RightScale's RightLink10 (aka RightLinkLite) agent used in the
+Base ServerTemplate and beyond.
 
-This repository conatins the collection of RightScrits used in ServerTemplates that go with
+This repository contains the collection of RightScrits used in ServerTemplates that go with
 the new RightLink10 agent. The scripts for the base ServerTemplate are in the rll subdirectory.
 
 How it Works
