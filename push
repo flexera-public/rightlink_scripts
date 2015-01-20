@@ -1,7 +1,7 @@
 #! /bin/bash
 # This script pushes this repository to the upstream git repo (e.g. github) and
 # makes an API call to RightScale to refetch and import the updated repo.
-# In order to make the API call, the environment variable KEY must be set to
+# In order to make the API call, the environment variable RS_KEY must be set to
 # your RightScale API key, see the "API credentials" tab of the User Settings
 # page of the RightScale dashboard.
 # As the RightScale refetch is happening, the script will print progress in the form
@@ -23,11 +23,18 @@ fi
 sha=`git rev-parse HEAD`
 echo "Latest commit: ${sha}"
 
+branch_name=$(git symbolic-ref -q HEAD)
+branch_name=${branch_name##refs/heads/}
+branch_name=${branch_name:-HEAD}
+echo "Current branch: ${branch_name}"
+sleep 2
+
 git push || exit 1
 
-if [[ -e .pushrc ]]; then
-  . .pushrc
-fi
+# this can be fragile...
+#if [[ -e .pushrc.${branch_name} ]]; then
+#  . .pushrc.${branch_name}
+#fi
 
 RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
 echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
@@ -43,11 +50,10 @@ else
   exit 1
 fi
 
-RS_REPO_NAME=${RS_REPO_NAME:-`basename $PWD`}
+RS_REPO_NAME=${RS_REPO_NAME:-`basename $PWD`_${branch_name}}
 
 if [[ -z "$RS_REPO_ID" ]]; then
   # gotta figure out what the RightScale repo ID is for this baby
-  RS_REPO_NAME=${RS_REPO_NAME:-`basename $PWD`}
   echo -n "Finding repositories called '${RS_REPO_NAME}' ... "
   json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/api/repositories?filter[]=name==${RS_REPO_NAME}"`
@@ -60,8 +66,23 @@ if [[ -z "$RS_REPO_ID" ]]; then
   if (("${#repo_ids[@]}" == 0)); then
     echo "ERROR"
     echo "No repo called '${RS_REPO_NAME}' found in the account,"
-    echo "please set RS_REPO_NAME to the correct name, or set  RS_REPO_ID to the repo ID"
-    exit 1
+    origin=`git config remote.origin.url | sed -e 's;git@github.com:;https://github.com/;'`
+    echo "Using git origin ${origin}"
+    echo -n "Creating repository ... "
+    json=`curl -isL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+      -X POST "https://${RS_SERVER}/api/repositories" \
+      --data-urlencode "repository[auto_import]=true" \
+      --data-urlencode "repository[name]=${RS_REPO_NAME}" \
+      --data-urlencode "repository[source]=${origin}" \
+      --data-urlencode "repository[source_type]=git"`
+    re="Location: /api/repositories/([0-9]*)"
+    if [[ "$json" =~ $re ]]; then
+      repo_ids=(${BASH_REMATCH[1]})
+    else
+      echo "Ooops: $json"
+      exit 1
+    fi
+    echo "/api/repositories/${repo_ids}"
   elif (("${#repo_ids[@]}" > 1)); then
     echo "ERROR"
     echo "Found ${#repo_ids[@]} repos, please set RS_REPO_ID to the repo ID"
@@ -121,12 +142,10 @@ if [[ -z "${RS_ACCT}" ]]; then
   fi
 fi
 
-if [[ ! -e .pushrc ]]; then
-  echo "RS_SERVER=${RS_SERVER}"        >.pushrc
-  echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc
-  echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc
-  echo "RS_ACCT=${RS_ACCT}"           >>.pushrc
-fi
+echo "RS_SERVER=${RS_SERVER}"        >.pushrc.${branch_name}
+echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc.${branch_name}
+echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc.${branch_name}
+echo "RS_ACCT=${RS_ACCT}"           >>.pushrc.${branch_name}
 
 echo -n "Looking for audit entry ..."
 while true; do
@@ -135,20 +154,22 @@ while true; do
     "https://${RS_SERVER}/acct/${RS_ACCT}/audit_entries.json" \
     --data-urlencode "filter_sort_listing=true" \
     --data-urlencode "order_by=Timestamp DESC" \
-    --data-urlencode "filter_type=Subject" \
-    --data-urlencode "filter_value=${RS_REPO_NAME}" \
+    --data-urlencode "auditee_type=CookbookRepo" \
+    --data-urlencode "auditee_id=${RS_REPO_ID}" \
     --data-urlencode "selected_time_period=14d" \
     --data-urlencode "items_per_page=10"`
   #echo $html
-  re="auditee_id=${RS_REPO_ID}[^']*audit_entries/([0-9]*)[^0-9>]*>(queued|[0-9][0-9]*%)"
+  #re="auditee_id=${RS_REPO_ID}[^']*audit_entries/([0-9]*)[^0-9>]*>(queued|[0-9][0-9]*%)"
+  re="auditee_id=${RS_REPO_ID}[^']*audit_entries/([0-9]*)[^0-9>]"
   if [[ "$html" =~ $re ]]; then
     audit_id="${BASH_REMATCH[1]}"
     echo " audit_entry_id=${audit_id}"
     break
   else
     echo -n '.'
-echo "=============================="
-echo $html | egrep "'[^']*'"
+    echo "== OOPS == Can't find audit entry, retrying in a few seconds... =="
+    #echo $html | egrep "'[^']*'"
+    #set -x
     sleep 5
   fi
 done
@@ -163,7 +184,8 @@ while true; do
     summary="${BASH_REMATCH[1]}"
     t1=$(( `date '+%s'` - $t0 ))
     echo "${t1}s Summary: ${summary}"
-    if [[ "$summary" =~ completed: ]]; then break; fi
+    re="(completed|failed):"
+    if [[ "$summary" =~ $re ]]; then break; fi
   else
     echo "Can't locate summary in response :-("
   fi
