@@ -62,6 +62,9 @@ else
   exit 1
 fi
 
+#echo "curl -sL -gG --retry 3 -H X-API-Version:1.5 -H 'Authorization: Bearer $access_token'" \
+#	"https://${RS_SERVER}/api/"
+
 # ===== Find Cookbook Repository
 
 RS_REPO_NAME=${RS_REPO_NAME:-`basename $PWD`_${branch_name}}
@@ -86,10 +89,11 @@ if [[ -z "$RS_REPO_ID" ]]; then
     echo "Found ${#repo_ids[@]} repos, please set RS_REPO_ID to the repo ID"
     exit 1
   fi
-  RS_REPO_ID=${repo_ids[0]}
-  echo "/api/repositories/${RS_REPO_ID}"
+  repo_href="/api/repositories/${repo_ids[0]}"
+  echo $repo_href
 else
   echo "Using RS_REPO_ID=${RS_REPO_ID}"
+  repo_href="/api/repositories/${RS_REPO_ID}"
 fi
 
 # ===== Find Server Template
@@ -120,6 +124,7 @@ if [[ -z "$RS_BASE_ST_ID" ]]; then
   echo "$st_href"
 else
   echo "Using RS_BASE_ST_ID=${RS_BASE_ST_ID}"
+  st_href="/api/server_templates/${RS_BASE_ST_ID}"
 fi
 
 if [[ -n "$clone" ]]; then
@@ -139,9 +144,73 @@ if [[ -n "$clone" ]]; then
   fi
 fi
 
-echo -n "Iterating through cookbook attachments to switch to ..."
+if [[ -z "${RS_ACCT}" ]]; then
+  echo -n "Determining RS account number ... "
+  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+    "https://${RS_SERVER}/api/permissions"`
+  re='/api/accounts/([0-9]*)'
+  if [[ "$json" =~ $re ]]; then
+    RS_ACCT="${BASH_REMATCH[1]}"
+    echo "${RS_ACCT}"
+  else
+    echo "ERROR"
+    echo "Please set RS_ACCT"
+    exit 1
+  fi
+fi
 
 
+echo "Finding repositories used by the ServerTemplate ... "
+n=0
+json=`curl -sL -g --retry 3 -X POST -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+  "https://${RS_SERVER}${st_href}/resolve"`
+re='"(/api/repositories/[0-9]*)"(.*)'
+while [[ $json =~ $re ]]; do
+  href="${BASH_REMATCH[1]}"
+  json="${BASH_REMATCH[2]}"
+  # get info about the repo
+  json2=`curl -sL -g --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+    "https://${RS_SERVER}${href}"`
+  # name
+  name=
+  re2='"name" *: *"([^"]*)"'
+  [[ $json2 =~ $re2 ]] && name="${BASH_REMATCH[1]}"
+  # source
+  source="unknown?"
+  re2='"source" *: *"([^"]*)"'
+  [[ $json2 =~ $re2 ]] && source="${BASH_REMATCH[1]}"
+  # print info
+  if [[ -n "$name" && -n "$source" ]]; then
+    echo "  Found $name from $source"
+  else
+    echo "  Found $href"
+  fi
+  ((n++))
+done
+if (( n == 0 )); then
+  echo "No repository attached? Please add recipes from your repo manually at"
+  echo "https://${RS_SERVER}/acct/${RS_ACCT}/server_templates/`basename $st_href`#scripts"
+  exit 1
+elif (( n > 1 )); then
+  echo "Cannot handle STs with multiple repositories, please specify the -r flag"
+  exit 1
+fi
 
+echo -n "Replacing repository ... "
+resp=`curl -sL -gi --retry 3 -X POST -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+  "https://${RS_SERVER}${st_href}/swap_repository" \
+  --data-urlencode "source_repository_href=$href" \
+  --data-urlencode "target_repository_href=$repo_href"`
+if [[ "$?" -ne 0 || ! "$resp" =~ 200\ OK ]]; then
+  echo "ERROR: Failed to swap repositories"
+  echo "Exit code: $?"
+  echo "Response: '$resp'"
+  exit 1
+fi
+echo "done"
 
+echo ""
+echo "Your server template is now ready to launch, see"
+echo "https://${RS_SERVER}/acct/${RS_ACCT}/server_templates/`basename $st_href`"
 
+  

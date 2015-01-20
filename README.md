@@ -37,17 +37,27 @@ In order to modify a script in this repo the recommended first steps are:
 - Make a change, `git commit` the change,
 - Set the RS_KEY environment variable to your OAuth key for your account (found in the RS dashboard
   on the `settings>API credentials` page
-- Use `./push` to push to github and RightScale, this creates a repository in your RightScale
+- Use `./rs_push` to push to github and RightScale, this creates a repository in your RightScale
   account named `rightlink_scripts_<your_branch_name>` and makes RS fetch from github. Note:
   choose your branch name judiciously!
 - Ensure you have imported the official _RL10.0.X Linux Base_ ServerTemplate to your
   account (for the right _X_)
-- *WARNING: make_st doesn't work yet*)
-- Run `./make_st -base 'RL10.0.X Linux Base' -clone` to clone the official base ServerTemplate
+- Run `./rs_make_st -base 'RL10.0.X Linux Base' -clone` to clone the official base ServerTemplate
   your branch name will be appended to the name of the cloned ST) and have it changed to use
   your repository
 - In the RightScale dashboard, find your ST, create a server from it, and launch it, it now
   uses your modified scripts
+
+When to use...
+- `rs_push`: use instead of git push whenever you want the changes to be pushed to RightScale
+  so a launching or running server can fetch the updated scripts and run them
+- `rs_make_st`: use whenever you push a new branch of a repo and you thus need a ServerTemplate
+  that uses the scripts in the new branch, once you've created the ST and you make updates to
+  your branch you can use just `rs_push`, you don't need a fresh ST each time
+- `rs_make_st -c`: the -c option clones the ServerTemplate, you need this option when you cannot
+  modify the HEAD revision of the ST (e.g. you imported the ST), or when you do not want to
+  change the HEAD revision. Without the `-c` option the command will repoint the HEAD revision
+  to your new repo.
 
 For a faster edit&test cycle, you can further clone the git repo onto your server and edit & test
 locally on the server as follows:
@@ -55,18 +65,20 @@ locally on the server as follows:
 - Tell RL10 where to find your cookbook(s), specifically, you need to point RL10 to the directory
   that has your cookbooks as subdirectories. Assuming you cloned the rightlink_scripts repo
   into `/home/rightscale/rightlink_scripts` this would be as follows:
-  (_warning, these instructions are incomplete_)
+  (_warning, these instructions are untested_)
 ```
 . /var/run/rll-secret
-curl -X POST http://localhost:$RS_RLL_PORT/rll/.....
+curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
+     --data-urlencode path=/home/rightscale/rightlink_scripts
 ```
   This now means that RL10 expects to find an operational script called `rll::init` in the
   dashboard at `/home/rightscale/rightlink_scripts/rll/init.*`
 - Test your scripts by running them from the dashboard or command line using
 ```
-curl ...
+curl -X POST -g http://localhost:$RS_RLL_PORT/api/instances/123 \
+     --data-urlencode "recipe_name=rll::my_script"
 ```
-- When done, you can `git commit` your changes and push them using the `./push` script, which
+- When done, you can `git commit` your changes and push them using the `./rs_push` script, which
   will ensure that the RS platform refetches the respository.
 - Note that if you need to clone multiple repos onto your server you cannot tell RL10 to search
   more than one repo for scripts. A work-around is to create a separate directory for RLL that
