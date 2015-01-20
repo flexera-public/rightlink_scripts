@@ -32,18 +32,20 @@ Developer Info
 --------------
 
 In order to modify a script in this repo the recommended first steps are:
-- Fork the repo on github
-- Clone the fork to your laptop
+- Fork the repo on github and clone the fork to your laptop
 - Create a branch (or use master, your choice)
-- Make a change, git commit the change,
+- Make a change, `git commit` the change,
 - Set the RS_KEY environment variable to your OAuth key for your account (found in the RS dashboard
   on the `settings>API credentials` page
-- Use `./push` to push to github and RightScale, this creates a repository in RS named
-  `rightlink_scripts_<your_branch_name>` and makes RS fetch from github
+- Use `./push` to push to github and RightScale, this creates a repository in your RightScale
+  account named `rightlink_scripts_<your_branch_name>` and makes RS fetch from github. Note:
+  choose your branch name judiciously!
 - Ensure you have imported the official _RL10.0.X Linux Base_ ServerTemplate to your
   account (for the right _X_)
+- *WARNING: make_st doesn't work yet*)
 - Run `./make_st -base 'RL10.0.X Linux Base' -clone` to clone the official base ServerTemplate
-  and have it changed to use your repository
+  your branch name will be appended to the name of the cloned ST) and have it changed to use
+  your repository
 - In the RightScale dashboard, find your ST, create a server from it, and launch it, it now
   uses your modified scripts
 
@@ -60,7 +62,7 @@ curl -X POST http://localhost:$RS_RLL_PORT/rll/.....
 ```
   This now means that RL10 expects to find an operational script called `rll::init` in the
   dashboard at `/home/rightscale/rightlink_scripts/rll/init.*`
-- Test your scripts by running them fro mthe dashboard or command line using
+- Test your scripts by running them from the dashboard or command line using
 ```
 curl ...
 ```
