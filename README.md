@@ -28,6 +28,12 @@ first file that matches `recipename.*` and that is executable, thus you are free
 `.rb`, or `.ps1` extensions. (However, ensure your editor doesn't save backup files by adding
 a `~` or `.bak` at the end of filenames.)
 
+Note that there are no "attachments" like for "regular" RightScripts, however, the entire
+cookbook directory with any subdirectories is downloaded to the instance, so you can easily have
+an "attachments" subdir with stuff in it, up to the size limit of a cookbook. Your scripts will
+be executed with their working directory set to the cookbook dir, e.g., a reference to
+something like "./templates/daemon.conf" is entirely reasonable.
+
 Developer Info
 --------------
 
@@ -75,8 +81,7 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
   dashboard at `/home/rightscale/rightlink_scripts/rll/init.*`
 - Test your scripts by running them from the dashboard or command line using
 ```
-curl -X POST -g http://localhost:$RS_RLL_PORT/api/instances/123 \
-     --data-urlencode "recipe_name=rll::my_script"
+./rs_run rll::my_script
 ```
 - When done, you can `git commit` your changes and push them using the `./rs_push` script, which
   will ensure that the RS platform refetches the respository.

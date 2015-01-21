@@ -27,7 +27,26 @@ branch_name=$(git symbolic-ref -q HEAD)
 branch_name=${branch_name##refs/heads/}
 branch_name=${branch_name:-HEAD}
 echo "Current branch: ${branch_name}"
-sleep 2
+
+echo "Determining 'Chef' version number for this branch ... "
+re='^([0-9][0-9]*\.[0-9][0-9]*\.)[a-z]*([0-9][0-9]*)'
+if [[ "${branch_name}" =~ $re ]]; then
+  vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+  echo "using release numbering: $vers"
+else
+  vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
+  echo "using dev numbering: $vers"
+  ok=1
+  for m in `echo */metadata.rb`; do
+    vv=`egrep '^version' $m`
+    re="^version *\"${vers}\""
+    if [[ ! "$vv" =~ $re ]]; then
+      echo "  Mismatch: ${m} has ${vv}"
+      ok=
+    fi
+  done
+  [[ -z "$ok" ]] && exit 1
+fi
 
 git push || exit 1
 
