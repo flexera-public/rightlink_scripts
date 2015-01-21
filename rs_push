@@ -50,9 +50,12 @@ for m in `echo */metadata.rb`; do
 done
 
 if [[ -z "$ok" ]]; then
+  echo ""
   echo "Please run this command to fix the version numbering ... "
   echo sed -i -e "'"'/^version/s/"[0-9.]*"/"'${vers}'"/'"'" */metadata.rb
-  echo "Then commit the changes: git commit -a -m 'Fix chef version numbers'"
+  echo "Then commit the changes:"
+  echo "git commit -a -m 'Fix chef version numbers'"
+  echo "And re-run $0"
   exit 1
 fi
 
@@ -77,6 +80,24 @@ else
   exit 1
 fi
 
+#echo -n "curl -isL -gG --retry 3 -H X-API-Version:1.5 -H 'Authorization: Bearer $access_token' "
+#echo -X POST "https://${RS_SERVER}/api/repositories"
+
+if [[ -z "${RS_ACCT}" ]]; then
+  echo -n "Determining RS account number ... "
+  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+    "https://${RS_SERVER}/api/permissions"`
+  re='/api/accounts/([0-9]*)'
+  if [[ "$json" =~ $re ]]; then
+    RS_ACCT="${BASH_REMATCH[1]}"
+    echo "${RS_ACCT}"
+  else
+    echo "ERROR"
+    echo "Please set RS_ACCT"
+    exit 1
+  fi
+fi
+
 RS_REPO_NAME=${RS_REPO_NAME:-`basename $PWD`_${branch_name}}
 
 if [[ -z "$RS_REPO_ID" ]]; then
@@ -84,12 +105,14 @@ if [[ -z "$RS_REPO_ID" ]]; then
   echo -n "Finding repositories called '${RS_REPO_NAME}' ... "
   json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/api/repositories?filter[]=name==${RS_REPO_NAME}"`
+  json_save="$json"
   re='"id":"([0-9][0-9]*)"(.*)'
   repo_ids=()
   while [[ "$json" =~ $re ]]; do
     repo_ids=("${repo_ids[@]}" "${BASH_REMATCH[1]}")
     json="${BASH_REMATCH[2]}" # this is the rest of the json to find the next repo_id
   done
+  re2='"commit_reference":"([^"]*)"'
   if (("${#repo_ids[@]}" == 0)); then
     echo "ERROR"
     echo "No repo called '${RS_REPO_NAME}' found in the account,"
@@ -101,6 +124,7 @@ if [[ -z "$RS_REPO_ID" ]]; then
       --data-urlencode "repository[auto_import]=true" \
       --data-urlencode "repository[name]=${RS_REPO_NAME}" \
       --data-urlencode "repository[source]=${origin}" \
+      --data-urlencode "repository[commit_reference]=${branch_name}" \
       --data-urlencode "repository[source_type]=git"`
     re="Location: /api/repositories/([0-9]*)"
     if [[ "$json" =~ $re ]]; then
@@ -113,6 +137,11 @@ if [[ -z "$RS_REPO_ID" ]]; then
   elif (("${#repo_ids[@]}" > 1)); then
     echo "ERROR"
     echo "Found ${#repo_ids[@]} repos, please set RS_REPO_ID to the repo ID"
+    exit 1
+  elif [[ ! "$json_save" =~ $re2 || "${BASH_REMATCH[1]}" != "${branch_name}" ]]; then
+    echo "ERROR"
+    echo "Found repo ${repo_ids[@]} but branch is '${BASH_REMATCH[1]}' not '${branch_name}'"
+    echo "Fix at https://${RS_SERVER}/acct/$RS_ACCT/design#/repositories/${repo_ids[@]}/info"
     exit 1
   fi
   RS_REPO_ID=${repo_ids[0]}
@@ -153,21 +182,6 @@ t0=`date '+%s'`
 #for a in ${auditees[@]}; do
 #  echo $a
 #done
-
-if [[ -z "${RS_ACCT}" ]]; then
-  echo -n "Determining RS account number ... "
-  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-    "https://${RS_SERVER}/api/permissions"`
-  re='/api/accounts/([0-9]*)'
-  if [[ "$json" =~ $re ]]; then
-    RS_ACCT="${BASH_REMATCH[1]}"
-    echo "${RS_ACCT}"
-  else
-    echo "ERROR"
-    echo "Please set RS_ACCT"
-    exit 1
-  fi
-fi
 
 echo "RS_SERVER=${RS_SERVER}"        >.pushrc.${branch_name}
 echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc.${branch_name}
