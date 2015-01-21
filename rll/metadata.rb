@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "Thorsten von Eicken"
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 (RLL) to initialize basic functionality"
-version     "0.2015.0"
+version     "10.0.1"
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rll::init", "Initializes repositories and minor RLL-related things"

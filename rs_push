@@ -28,7 +28,7 @@ branch_name=${branch_name##refs/heads/}
 branch_name=${branch_name:-HEAD}
 echo "Current branch: ${branch_name}"
 
-echo "Determining 'Chef' version number for this branch ... "
+echo -n "Determining 'Chef' version number for this branch ... "
 re='^([0-9][0-9]*\.[0-9][0-9]*\.)[a-z]*([0-9][0-9]*)'
 if [[ "${branch_name}" =~ $re ]]; then
   vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
@@ -36,16 +36,24 @@ if [[ "${branch_name}" =~ $re ]]; then
 else
   vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
   echo "using dev numbering: $vers"
-  ok=1
-  for m in `echo */metadata.rb`; do
-    vv=`egrep '^version' $m`
-    re="^version *\"${vers}\""
-    if [[ ! "$vv" =~ $re ]]; then
-      echo "  Mismatch: ${m} has ${vv}"
-      ok=
-    fi
-  done
-  [[ -z "$ok" ]] && exit 1
+fi
+
+echo "Checking 'Chef' version numbers ..."
+ok=1
+for m in `echo */metadata.rb`; do
+  vv=`egrep '^version' $m`
+  re="^version *\"${vers}\""
+  if [[ ! "$vv" =~ $re ]]; then
+    echo "  Mismatch: ${m} has ${vv}"
+    ok=
+  fi
+done
+
+if [[ -z "$ok" ]]; then
+  echo "Please run this command to fix the version numbering ... "
+  echo sed -i -e "'"'/^version/s/"[0-9.]*"/"'${vers}'"/'"'" */metadata.rb
+  echo "Then commit the changes: git commit -a -m 'Fix chef version numbers'"
+  exit 1
 fi
 
 git push || exit 1
