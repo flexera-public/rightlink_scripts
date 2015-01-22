@@ -219,7 +219,7 @@ echo "Retrieving audit entry ... "
 while true; do
   html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
     -H "Authorization: Bearer $access_token" \
-    "https://${RS_SERVER}/acct/60073/audit_entries/$audit_id"`
+    "https://${RS_SERVER}/acct/${RS_ACCT}/audit_entries/$audit_id"`
   re='Summary</label><div>([^<]*)<'
   if [[ "$html" =~ $re ]]; then
     summary="${BASH_REMATCH[1]}"

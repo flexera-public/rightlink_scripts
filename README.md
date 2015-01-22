@@ -48,7 +48,7 @@ In order to modify a script in this repo the recommended first steps are:
   choose your branch name judiciously!
 - Ensure you have imported the official _RL10.0.X Linux Base_ ServerTemplate to your
   account (for the right _X_)
-- Run `./rs_make_st -base 'RL10.0.X Linux Base' -clone` to clone the official base ServerTemplate
+- Run `./rs_make_st -s 'RL10.0.X Linux Base' -c` to clone the official base ServerTemplate
   your branch name will be appended to the name of the cloned ST) and have it changed to use
   your repository
 - In the RightScale dashboard, find your ST, create a server from it, and launch it, it now
