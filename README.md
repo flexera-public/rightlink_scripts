@@ -64,6 +64,10 @@ When to use...
   modify the HEAD revision of the ST (e.g. you imported the ST), or when you do not want to
   change the HEAD revision. Without the `-c` option the command will repoint the HEAD revision
   to your new repo.
+- `rs_make_st -r`: the -r option clones all the MCIs in order to change their tags to download
+  a different version of RLL. For example, if the MCIs of your ST point to RL10.0.rc0 and you
+  want to try RL10.0.4 you can use `-r 10.0.4`. It will not change MCIs that already use
+  the new version, so it's a "safe" option.
 
 For a faster edit&test cycle, you can further clone the git repo onto your server and edit & test
 locally on the server as follows:
