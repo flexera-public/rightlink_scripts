@@ -88,7 +88,7 @@ EOF
 #
 # AWS-Linux
 #
-elif [[ `cat /etc/system-release` =~ ^Amazon\ Linux.*\ ([0-9])\. ]]; then
+elif [[ `cat /etc/system-release` =~ ^Amazon\ Linux.*\ ([0-9]+)\. ]]; then
   ver=${BASH_REMATCH[1]}
   case $ver in
   2014)
