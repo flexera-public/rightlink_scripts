@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -ex
 # This script pushes this repository to the upstream git repo (e.g. github) and
 # makes an API call to RightScale to refetch and import the updated repo.
 # In order to make the API call, the environment variable RS_KEY must be set to
@@ -29,7 +29,7 @@ branch_name=${branch_name:-HEAD}
 echo "Current branch: ${branch_name}"
 sleep 2
 
-git push || exit 1
+git push origin OPS-169_rightscripts_into_github_test || exit 1
 
 # this can be fragile...
 #if [[ -e .pushrc.${branch_name} ]]; then
@@ -178,7 +178,8 @@ echo "Retrieving audit entry ... "
 while true; do
   html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
     -H "Authorization: Bearer $access_token" \
-    "https://${RS_SERVER}/acct/60073/audit_entries/$audit_id"`
+#    "https://${RS_SERVER}/acct/60073/audit_entries/$audit_id"`
+    "https://${RS_SERVER}/acct/9202/audit_entries/$audit_id"`
   re='Summary</label><div>([^<]*)<'
   if [[ "$html" =~ $re ]]; then
     summary="${BASH_REMATCH[1]}"
