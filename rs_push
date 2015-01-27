@@ -1,4 +1,4 @@
-#! /bin/bash 
+#! /bin/bash -ex
 # This script pushes this repository to the upstream git repo (e.g. github) and
 # makes an API call to RightScale to refetch and import the updated repo.
 # In order to make the API call, the environment variable RS_KEY must be set to
