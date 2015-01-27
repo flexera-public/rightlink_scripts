@@ -1,4 +1,4 @@
-#! /bin/bash -ex
+#! /bin/bash 
 # This script pushes this repository to the upstream git repo (e.g. github) and
 # makes an API call to RightScale to refetch and import the updated repo.
 # In order to make the API call, the environment variable RS_KEY must be set to
@@ -178,10 +178,10 @@ echo "Retrieving audit entry ... "
 while true; do
   html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
     -H "Authorization: Bearer $access_token" \
-#    "https://${RS_SERVER}/acct/60073/audit_entries/$audit_id"`
-    "https://${RS_SERVER}/acct/9202/audit_entries/$audit_id"`
+    "https://${RS_SERVER}/acct/${RS_ACCT}/audit_entries/$audit_id"`
   re='Summary</label><div>([^<]*)<'
   if [[ "$html" =~ $re ]]; then
+echo "DINS"
     summary="${BASH_REMATCH[1]}"
     t1=$(( `date '+%s'` - $t0 ))
     echo "${t1}s Summary: ${summary}"
