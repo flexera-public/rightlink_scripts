@@ -59,7 +59,7 @@ if [[ -z "$ok" ]]; then
   exit 1
 fi
 
-git push || exit 1
+git push origin ${branch_name} || exit 1
 
 # this can be fragile...
 #if [[ -e .pushrc.${branch_name} ]]; then
@@ -228,7 +228,7 @@ while true; do
     re="(completed|failed):"
     if [[ "$summary" =~ $re ]]; then break; fi
   else
-    echo "Can't locate summary in response :-("
+    echo "Can't locate summary in response, retrying..."
   fi
   sleep 5
 done
@@ -247,6 +247,8 @@ if [[ "$html" =~ $re ]]; then
       echo "Scraped revision is    ${rev}"
       echo "Perhaps RS ignored the refetch request because a refetch"
       echo "was already running (but on an older commit)?"
+      echo "Please re-run rs_push and if that doesn't help, manually check that your"
+      echo "repo config in RightScale has the correct Tag/Branch set."
     fi
   fi
 else
