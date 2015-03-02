@@ -7,7 +7,7 @@
 # -x will immediatly exit out of script at point of error
 set -x
 
-rlbin='/usr/local/bin/rightlinklite'
+rl_bin=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
 prefix_url='https://rightlinklite.rightscale.com/rll'
 
 # Determine current version of rightlink
@@ -20,7 +20,7 @@ if [ -z $info ]; then
 fi
 
 # Fetch information about what we should become. The "upgrades" file is obtained
-# using the name of the current version.  The file consists of lines formated as
+# using the name of the current version.  The file consists of lines formatted as
 # "current_version: upgradeable_new_version"
 # If the "upgrades" file does not exist, no upgrade is done.
 match=`curl -sS --retry 3 $prefix_url/${current_version}/upgrades | egrep "^${current_version}:" || true`
@@ -51,16 +51,19 @@ curl -sS --retry 3 -o rll.tgz $prefix_url/$desired/rightlinklite.tgz
 tar zxf rll.tgz || (cat rll.tgz; exit 1)
 
 # Check downloaded version
-mv rll/rightlinklite ${rlbin}-new
+mv rll/rightlinklite ${rl_bin}-new
 echo "checking new version"
-new=`${rlbin}-new -version`
+new=`${rl_bin}-new -version`
 if [[ "$new" =~ $desired ]]; then
   echo "new version looks right: $new"
   echo "restarting RightLink to pick up new version"
-  res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rlbin}-new"`
+  res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
   if [[ $res =~ successful ]]; then
-    mv ${rlbin} ${rlbin}-old
-    cp ${rlbin}-new ${rlbin}
+    # Delete the old version if it exists from the last upgrade.
+    rm -fr ${rl_bin}-old
+    # Keep the old version in case of issues, ie we need to manually revert back.
+    mv ${rl_bin} ${rl_bin}-old
+    cp ${rl_bin}-new ${rl_bin}
     echo DONE
   else
     echo "Error: $res"
