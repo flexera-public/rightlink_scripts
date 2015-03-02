@@ -14,7 +14,7 @@ if [[ "$DISABLE_AUTO_UPGRADE" == 'true' ]]; then
     rm -f ${cron_file}
     echo "Automatic upgrade disabled"
   else
-    echo "Automatic upgrade never enabled - no actions done"
+    echo "Automatic upgrade never enabled - no action done"
   fi
 else
   # If cron file already exists, will recreate it with new random times.
@@ -33,7 +33,7 @@ else
   echo "${cron_minute} ${cron_hour} * * * root ${upgrade_command}" > ${cron_file}
 
   # Set perms regardless of umask since the file could be overwritten with existing perms.
-  chmod 0600 /etc/cron.d/${cron_file}
+  chmod 0600 ${cron_file}
 
   echo 'Automatic upgrade enabled.'
 fi

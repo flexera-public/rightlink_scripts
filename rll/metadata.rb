@@ -10,6 +10,7 @@ recipe      "rll::collectd", "Installs and configures collectd for RightScale mo
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rll::test-script", "Test operational script, doesn't do anything useful"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
+recipe      "rll::automate_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 
 attribute   "HOSTNAME",
   :display_name => "Hostname for this server",
@@ -58,3 +59,9 @@ attribute   "CRED",
   :default => "cred:AWS_ACCESS_KEY_ID",
   :recipes => ["rll::test-script"]
 
+attribute   "DISABLE_AUTO_UPGRADE",
+  :display_name => "Disables auto upgrade if previously enabled",
+  :required => "optional",
+  :type => "string",
+  :default => "false",
+  :recipes => ["rll::automate_upgrade"]
