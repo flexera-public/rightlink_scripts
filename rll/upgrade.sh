@@ -4,8 +4,9 @@
 # file. If they differ, will update to latest version.  Note that latest version can be an older version
 # if a downgrade is best.
 
-# -x will immediatly exit out of script at point of error
-set -x
+# -e will immediatly exit out of script at point of error
+# -x print each command to stdout before exxecuting it
+set -ex
 
 rl_bin=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
 prefix_url='https://rightlinklite.rightscale.com/rll'
