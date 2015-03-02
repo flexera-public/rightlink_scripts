@@ -1,25 +1,35 @@
-#! /bin/bash -e
-prefix=https://rightlinklite.rightscale.com/rll
-re="RLL ([^ ]*) "
-$RLBIN -version
-if [[ `$RLBIN -version` =~ $re ]]; then
-  current=${BASH_REMATCH[1]}
-else
+#!/bin/bash
+
+# Will compare current version of rightlink 'running' with latest version provided from 'upgrades'
+# file. If they differ, will update to latest version.  Note that latest version can be an older version
+# if a downgrade is best.
+
+# -x will immediatly exit out of script at point of error
+set -x
+
+rlbin='/usr/local/bin/rightlinklite'
+prefix_url='https://rightlinklite.rightscale.com/rll'
+
+# Determine current version of rightlink
+source /var/run/rll-secret
+current_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
+
+if [ -z $info ]; then
   echo "Can't determine current version of RLL"
-  $RLBIN -version
   exit 1
 fi
 
-# Fetch information about what we should become, the "upgrade" file consists
-# of lines with "current_version:new_version"
-match=`curl -sS --retry 3 $prefix/self_upgrade2/upgrades | egrep "^${current}:" || true`
-re="^${current}: *([^ ]*)"
+# Fetch information about what we should become. The "upgrades" file is obtained
+# using the name of the current version.  The file consists of lines formated as
+# "current_version: upgradeable_new_version"
+# If the "upgrades" file does not exist, no upgrade is done.
+match=`curl -sS --retry 3 $prefix_url/${current_version}/upgrades | egrep "^${current_version}:" || true`
+re="^${current_version}: *([^ ]*)"
 if [[ "$match" =~ $re ]]; then
   desired=${BASH_REMATCH[1]}
 else
   echo "Cannot determine latest version from upgrade file"
-  echo "Tried to match /^${current}:/ in $prefix/self_upgrade2/upgrades"
-  # we let the script succeed here
+  echo "Tried to match /^${current}:/ in $prefix_url/${current}/upgrades"
   exit 0
 fi
 
@@ -33,25 +43,24 @@ echo "  from current=$current"
 echo "  to   desired=$desired"
  
 echo "downloading RLL version '$desired'"
-# code duplicated from rightlink.boot.sh
+
+# Download new version
 cd /tmp
 rm -rf rll rll.tgz
-curl -sS --retry 3 -o rll.tgz $prefix/$desired/rightlinklite.tgz
+curl -sS --retry 3 -o rll.tgz $prefix_url/$desired/rightlinklite.tgz
 tar zxf rll.tgz || (cat rll.tgz; exit 1)
-# code duplicated from rightlink.install.sh
-mv rll/rightlinklite $RLBIN-new
 
+# Check downloaded version
+mv rll/rightlinklite ${rlbin}-new
 echo "checking new version"
-new=`$RLBIN-new -version`
+new=`${rlbin}-new -version`
 if [[ "$new" =~ $desired ]]; then
   echo "new version looks right: $new"
-  echo "restarting RLL to pick up new version"
-  source /var/run/rll-secret
-  res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET \
-    "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=$RLBIN-new"`
+  echo "restarting RightLink to pick up new version"
+  res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rlbin}-new"`
   if [[ $res =~ successful ]]; then
-    mv $RLBIN $RLBIN-old
-    cp $RLBIN-new $RLBIN
+    mv ${rlbin} ${rlbin}-old
+    cp ${rlbin}-new ${rlbin}
     echo DONE
   else
     echo "Error: $res"
@@ -60,5 +69,15 @@ if [[ "$new" =~ $desired ]]; then
 else
   echo "OOPS, new version doesn't look right:"
   echo $new
+  exit 1
+fi
+
+# Check version in production by connecting to local proxy
+new_via_proxy=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
+if [[ "$new_via_proxy" =~ $desired ]]; then
+  echo "new version in production"
+else
+  echo "OOPS, new version doesn't look right:"
+  echo $new_via_proxy
   exit 1
 fi
