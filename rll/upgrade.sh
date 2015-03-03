@@ -17,7 +17,7 @@ prefix_url='https://rightlinklite.rightscale.com/rll'
 # Determine current version of rightlink
 current_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
 
-if [ -z $info ]; then
+if [ -z $current_version]; then
   echo "Can't determine current version of RLL"
   exit 1
 fi

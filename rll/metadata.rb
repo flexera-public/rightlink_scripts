@@ -37,14 +37,6 @@ attribute   "RS_INSTANCE_UUID",
   :default => "env:RS_INSTANCE_UUID",
   :recipes => ["rll::collectd"]
 
-attribute   "RLBIN",
-  :display_name => "RightLink executable pathname",
-  :description => "Location of the RighLink 10 executable file, typically /usr/local/bin/rightlinklite",
-  :required => "optional",
-  :type => "string",
-  :default => "/usr/local/bin/rightlinklite",
-  :recipes => ["rll::upgrade"]
-
 attribute   "VAR",
   :display_name => "random variable to print",
   :required => "recommended",
