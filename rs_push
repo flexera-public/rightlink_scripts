@@ -10,6 +10,7 @@
 # This script is still highly experimental and ill supported by the RightScale API, if you
 # like it please vote for it :-)!
 
+# This key will determine which account to update.
 if [[ -z "$RS_KEY" ]]; then
   echo "Please set RS_KEY to your RightScale API key from the dashboard's Settings>API credentials"
   exit 1
@@ -28,43 +29,7 @@ branch_name=${branch_name##refs/heads/}
 branch_name=${branch_name:-HEAD}
 echo "Current branch: ${branch_name}"
 
-echo -n "Determining 'Chef' version number for this branch ... "
-re='^([0-9][0-9]*\.[0-9][0-9]*\.)[a-z]*([0-9][0-9]*)'
-if [[ "${branch_name}" =~ $re ]]; then
-  vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
-  echo "using release numbering: $vers"
-else
-  vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
-  echo "using dev numbering: $vers"
-fi
-
-echo "Checking 'Chef' version numbers ..."
-ok=1
-for m in `echo */metadata.rb`; do
-  vv=`egrep '^version' $m`
-  re="^version *\"${vers}\""
-  if [[ ! "$vv" =~ $re ]]; then
-    echo "  Mismatch: ${m} has ${vv}"
-    ok=
-  fi
-done
-
-if [[ -z "$ok" ]]; then
-  echo ""
-  echo "Please run this command to fix the version numbering ... "
-  echo sed -i -e "'"'/^version/s/"[0-9.]*"/"'${vers}'"/'"'" */metadata.rb
-  echo "Then commit the changes:"
-  echo "git commit -a -m 'Fix chef version numbers'"
-  echo "And re-run $0"
-  exit 1
-fi
-
 git push || exit 1
-
-# this can be fragile...
-#if [[ -e .pushrc.${branch_name} ]]; then
-#  . .pushrc.${branch_name}
-#fi
 
 RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
 echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
@@ -79,9 +44,6 @@ else
   echo $json
   exit 1
 fi
-
-#echo -n "curl -isL -gG --retry 3 -H X-API-Version:1.5 -H 'Authorization: Bearer $access_token' "
-#echo -X POST "https://${RS_SERVER}/api/repositories"
 
 if [[ -z "${RS_ACCT}" ]]; then
   echo -n "Determining RS account number ... "
@@ -162,31 +124,10 @@ else
 fi
 t0=`date '+%s'`
 
-# RightAPI 1.5 doesn't support audit entries on repositories: Gaaaaaah!
-#start_date=`date '+%Y/%m/%d %H:%M:%S %z' -d '-5 min'`  # yup, that works...!
-#end_date=`date '+%Y/%m/%d %H:%M:%S %z'`
-#json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-#  "https://${RS_SERVER}/api/audit_entries" \
-#  --data-urlencode "limit=100" \
-#  --data-urlencode "start_date=$start_date" \
-#  --data-urlencode "end_date=$end_date"`
-## @!#$% the following doesn't work:
-##  --data-urlencode "filter[]=auditee_href==/api/repositories/${RS_REPO_ID}" \
-#echo $json
-#re='"auditee","href":"([^"]*)"(.*)'
-#auditees=()
-#while [[ "$json" =~ $re ]]; do
-#  auditees=("${auditees[@]}" "${BASH_REMATCH[1]}")
-#  json="${BASH_REMATCH[2]}" # this is the rest of the json to find the next auditee
-#done
-#for a in ${auditees[@]}; do
-#  echo $a
-#done
-
-echo "RS_SERVER=${RS_SERVER}"        >.pushrc.${branch_name}
-echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc.${branch_name}
-echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc.${branch_name}
-echo "RS_ACCT=${RS_ACCT}"           >>.pushrc.${branch_name}
+# echo "RS_SERVER=${RS_SERVER}"        >.pushrc.${branch_name}
+# echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc.${branch_name}
+# echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc.${branch_name}
+# echo "RS_ACCT=${RS_ACCT}"           >>.pushrc.${branch_name}
 
 echo -n "Looking for audit entry ..."
 while true; do
@@ -214,7 +155,7 @@ while true; do
     sleep 5
   fi
 done
-  
+
 echo "Retrieving audit entry ... "
 while true; do
   html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
