@@ -8,11 +8,13 @@
 # -x print each command to stdout before exxecuting it
 set -ex
 
+source /var/run/rll-secret
+
+# Detemine bin_path
 rl_bin=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
 prefix_url='https://rightlinklite.rightscale.com/rll'
 
 # Determine current version of rightlink
-source /var/run/rll-secret
 current_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
 
 if [ -z $info ]; then
