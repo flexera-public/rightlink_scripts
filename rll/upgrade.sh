@@ -56,7 +56,7 @@ tar zxf rll.tgz || (cat rll.tgz; exit 1)
 # Check downloaded version
 mv rll/rightlinklite ${rl_bin}-new
 echo "checking new version"
-new=`${rl_bin}-new -version`
+new=`${rl_bin}-new -version | awk '{print $2}'`
 if [[ $new == $desired ]]; then
   echo "new version looks right: $new"
   echo "restarting RightLink to pick up new version"
