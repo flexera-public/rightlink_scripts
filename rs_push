@@ -31,7 +31,7 @@ echo "Current branch: ${branch_name}"
 
 git push || exit 1
 
-RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
+RS_SERVER=${RS_SERVER:-us-4.rightscale.com}
 echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
 json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 \
   "https://${RS_SERVER}/api/oauth2?grant_type=refresh_token&refresh_token=${RS_KEY}"`
@@ -92,7 +92,8 @@ if [[ -z "$RS_REPO_ID" ]]; then
     if [[ "$json" =~ $re ]]; then
       repo_ids=(${BASH_REMATCH[1]})
     else
-      echo "Ooops: $json"
+      echo "Issue finding location of repository"
+      echo "$json"
       exit 1
     fi
     echo "/api/repositories/${repo_ids}"
@@ -149,7 +150,7 @@ while true; do
     break
   else
     echo -n '.'
-    echo "== OOPS == Can't find audit entry, retrying in a few seconds... =="
+    echo "Unable to find audit entry, retrying in a few seconds... =="
     #echo $html | egrep "'[^']*'"
     #set -x
     sleep 5
@@ -183,7 +184,7 @@ if [[ "$html" =~ $re ]]; then
   if [[ "${detail}" =~ $re ]]; then
     rev="${BASH_REMATCH[1]}"
     if [[ "$rev" != "$sha" ]]; then
-      echo "********** OOPS, the SHAs don't match:"
+      echo "Alert: the SHAs don't match:"
       echo "Latest local commit is ${sha}"
       echo "Scraped revision is    ${rev}"
       echo "Perhaps RS ignored the refetch request because a refetch"
@@ -191,8 +192,30 @@ if [[ "$html" =~ $re ]]; then
     fi
   fi
 else
-  echo "===== DETAIL (sorry, raw html) ====="
+  echo "===== DETAIL (raw html) ====="
   echo $html
 fi
 t1=$(( `date '+%s'` - $t0 ))
 echo "===== TOOK ${t1} seconds ====="
+
+# Push code to RightScripts
+# The key is set to the RightScript name to update and the value is set to the recipe name to copy.
+declare -A rightscript_name
+rightscript_name["RightLink_10_Upgrade"]="upgrade.sh"
+rightscript_name["RightLink_10_Automate_Upgrade"]="automate_upgrade.sh"
+
+for script_name in "${!rightscript_name[@]}"
+do
+  json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+    "https://${RS_SERVER}/api/right_scripts?filter[]=name==${script_name}"`
+  re='"rel":"source","href":"(/api/right_scripts/[0-9]+/source)"'
+
+  if  [[ "$json" =~ $re ]]; then
+    right_script_href="${BASH_REMATCH[1]}"
+    echo "Updating RightScript ${script_name}"
+    put_json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+      -X PUT "https://${RS_SERVER}${right_script_href}" --upload-file "./rll/${rightscript_name[$script_name]}"`
+  else
+    echo "unable to find rightscript to update...skipping"
+  fi
+done
