@@ -21,9 +21,9 @@ upgrade_rightlink() {
     # Keep the old version in case of issues, ie we need to manually revert back.
     mv ${rl_bin} ${rl_bin}-old
     cp ${rl_bin}-new ${rl_bin}
-    logger --tag rightlink "rightlink updated"
+    logger -t rightlink "rightlink updated"
   else
-    logger --tag rightlink "Error: ${res}"
+    logger -t rightlink "Error: ${res}"
     exit 1
   fi
   # Check updated version in production by connecting to local proxy
@@ -33,15 +33,15 @@ upgrade_rightlink() {
     source ${RLL_SECRET}
     new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
     if [[ $new_installed_version == $desired ]]; then
-      logger --tag rightlink "New version in production - $new_installed_version"
+      logger -t rightlink "New version in production - $new_installed_version"
       break
     else
-      logger --tag rightlink "Waiting for new version to become active."
+      logger -t rightlink "Waiting for new version to become active."
       sleep 2
     fi
   done
   if [[ $new_installed_version != $desired ]]; then
-    logger --tag rightlink "New version does not appear to be desired version: $new_installed_version"
+    logger -t rightlink "New version does not appear to be desired version: $new_installed_version"
     exit 1
   fi
 
@@ -55,7 +55,7 @@ upgrade_rightlink() {
       --data-urlencode "audit_entry[detail]=RightLink updated to '${new_installed_version}'" \
       --data-urlencode 'audit_entry[summary]=RightLink updated'
   else
-    logger --tag rightlink "unable to obtain instance href for audit entries"
+    logger -t rightlink "unable to obtain instance href for audit entries"
   fi
   exit 0
 }
@@ -69,7 +69,7 @@ prefix_url='https://rightlinklite.rightscale.com/rll'
 # Determine current version of rightlink
 current_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
 
-if [ -z $current_version]; then
+if [ -z $current_version ]; then
   echo "Can't determine current version of RLL"
   exit 1
 fi
