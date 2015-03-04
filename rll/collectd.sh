@@ -250,7 +250,13 @@ configure_collectd_plugin df \
   'IgnoreSelected true'
 configure_collectd_plugin disk
 configure_collectd_plugin memory
-configure_collectd_plugin swap
+
+if [[ $(swapon -s | wc -l) -gt 1 ]];then
+  configure_collectd_plugin swap
+else
+  echo "swapfile not setup, skipping collectd swap plugin"
+fi
+
 configure_collectd_plugin load
 configure_collectd_plugin processes
 configure_collectd_plugin users
