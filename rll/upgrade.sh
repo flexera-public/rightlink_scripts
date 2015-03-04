@@ -5,8 +5,7 @@
 # if a downgrade is best.
 
 # -e will immediatly exit out of script at point of error
-# -x print each command to stdout before exxecuting it
-set -ex
+set -e
 
 RLL_SECRET=/var/run/rll-secret
 
@@ -19,9 +18,9 @@ upgrade_rightlink() {
     # Keep the old version in case of issues, ie we need to manually revert back.
     mv ${rl_bin} ${rl_bin}-old
     cp ${rl_bin}-new ${rl_bin}
-    echo DONE
+    logger --tag rightlink "rightlink updated"
   else
-    echo "Error: $res"
+    logger --tag rightlink "Error: ${res}"
     exit 1
   fi
   # Check updated version in production by connecting to local proxy
@@ -31,17 +30,18 @@ upgrade_rightlink() {
     source ${RLL_SECRET}
     new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
     if [[ $new_installed_version == $desired ]]; then
-      echo "New version in production - $new_installed_version"
+      logger --tag rightlink "New version in production - $new_installed_version"
       break
     else
-      echo "Waiting for new version to become active."
+      logger --tag rightlink "Waiting for new version to become active."
       sleep 2
     fi
   done
   if [[ $new_installed_version != $desired ]]; then
-    echo "New version does not appear to be desired version: $new_installed_version"
+    logger --tag rightlink "New version does not appear to be desired version: $new_installed_version"
     exit 1
   fi
+
   # Report to audit entry that RightLink ugpraded.
   instance_json=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/api/sessions/instance"`
   re='\{"rel":"self","href":"(/api/clouds/[0-9]+/instances/[0-9a-zA-Z]*)"\}'
@@ -52,12 +52,12 @@ upgrade_rightlink() {
       --data-urlencode "audit_entry[detail]=RightLink updated to ${new_installed_version}" \
       --data-urlencode 'audit_entry[summary]=RightLink Updated'
   else
-    echo "unable to obtain instance href for audit entries"
+    logger --tag rightlink "unable to obtain instance href for audit entries"
   fi
   exit
 }
 
-source /var/run/rll-secret
+source ${RLL_SECRET}
 
 # Detemine bin_path
 rl_bin=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
