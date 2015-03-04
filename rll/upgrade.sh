@@ -32,20 +32,20 @@ if [[ "$match" =~ $re ]]; then
   desired=${BASH_REMATCH[1]}
 else
   echo "Cannot determine latest version from upgrade file"
-  echo "Tried to match /^${current}:/ in $prefix_url/${current}/upgrades"
+  echo "Tried to match /^${current_version}:/ in $prefix_url/${current_version}/upgrades"
   exit 0
 fi
 
-if [[ "$desired" == "$current" ]]; then
-  echo "RLL is up-to-date (current=$current)"
+if [[ $desired == $current ]]; then
+  echo "RightLink already up-to-date (current=$current)"
   exit 0
 fi
 
-echo "RLL needs an upgrade(/downgrade):"
+echo "RightLink needs update:"
 echo "  from current=$current"
 echo "  to   desired=$desired"
  
-echo "downloading RLL version '$desired'"
+echo "downloading RightLink version '$desired'"
 
 # Download new version
 cd /tmp
@@ -57,7 +57,7 @@ tar zxf rll.tgz || (cat rll.tgz; exit 1)
 mv rll/rightlinklite ${rl_bin}-new
 echo "checking new version"
 new=`${rl_bin}-new -version`
-if [[ "$new" =~ $desired ]]; then
+if [[ $new == $desired ]]; then
   echo "new version looks right: $new"
   echo "restarting RightLink to pick up new version"
   res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
@@ -73,17 +73,24 @@ if [[ "$new" =~ $desired ]]; then
     exit 1
   fi
 else
-  echo "OOPS, new version doesn't look right:"
-  echo $new
+  echo "Updated version does not appear to be desired version: ${new}"
   exit 1
 fi
 
 # Check version in production by connecting to local proxy
-new_via_proxy=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
-if [[ "$new_via_proxy" =~ $desired ]]; then
-  echo "new version in production"
-else
-  echo "OOPS, new version doesn't look right:"
-  echo $new_via_proxy
+# The update takes a few seconds so retries are done.
+for retry_counter in {1..5};
+do
+  new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
+  if [[ $new_via_proxy == $desired ]]; then
+    echo "New version in production - $new_installed_version"
+    break
+  else
+    echo "Waiting for new version to become active."
+    sleep 2
+  fi
+done
+if [[ $new_installed_version != $desired ]]; then
+  echo "New version does not appear to be desired version: $new_installed_version"
   exit 1
 fi
