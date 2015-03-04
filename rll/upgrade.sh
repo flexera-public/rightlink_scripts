@@ -10,6 +10,9 @@ set -e
 RLL_SECRET=/var/run/rll-secret
 
 upgrade_rightlink() {
+
+  # Use logger here instead of echo since stdout from this is not sent to audit entries.
+
   source ${RLL_SECRET}
   res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
   if [[ $res =~ successful ]]; then
@@ -49,12 +52,12 @@ upgrade_rightlink() {
     instance_href="${BASH_REMATCH[1]}"
     curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/api/audit_entries" \
       --data-urlencode "audit_entry[auditee_href]=${instance_href}" \
-      --data-urlencode "audit_entry[detail]=RightLink updated to ${new_installed_version}" \
-      --data-urlencode 'audit_entry[summary]=RightLink Updated'
+      --data-urlencode "audit_entry[detail]=RightLink updated to '${new_installed_version}'" \
+      --data-urlencode 'audit_entry[summary]=RightLink updated'
   else
     logger --tag rightlink "unable to obtain instance href for audit entries"
   fi
-  exit
+  exit 0
 }
 
 source ${RLL_SECRET}
