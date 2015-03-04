@@ -8,6 +8,55 @@
 # -x print each command to stdout before exxecuting it
 set -ex
 
+RLL_SECRET=/var/run/rll-secret
+
+upgrade_rightlink() {
+  source ${RLL_SECRET}
+  res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
+  if [[ $res =~ successful ]]; then
+    # Delete the old version if it exists from the last upgrade.
+    rm -fr ${rl_bin}-old
+    # Keep the old version in case of issues, ie we need to manually revert back.
+    mv ${rl_bin} ${rl_bin}-old
+    cp ${rl_bin}-new ${rl_bin}
+    echo DONE
+  else
+    echo "Error: $res"
+    exit 1
+  fi
+  # Check updated version in production by connecting to local proxy
+  # The update takes a few seconds so retries are done.
+  for retry_counter in {1..5};
+  do
+    source ${RLL_SECRET}
+    new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
+    if [[ $new_installed_version == $desired ]]; then
+      echo "New version in production - $new_installed_version"
+      break
+    else
+      echo "Waiting for new version to become active."
+      sleep 2
+    fi
+  done
+  if [[ $new_installed_version != $desired ]]; then
+    echo "New version does not appear to be desired version: $new_installed_version"
+    exit 1
+  fi
+  # Report to audit entry that RightLink ugpraded.
+  instance_json=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/api/sessions/instance"`
+  re='\{"rel":"self","href":"(/api/clouds/[0-9]+/instances/[0-9a-zA-Z]*)"\}'
+  if [[ $instance_json =~ $re ]]; then
+    instance_href="${BASH_REMATCH[1]}"
+    curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/api/audit_entries" \
+      --data-urlencode "audit_entry[auditee_href]=${instance_href}" \
+      --data-urlencode "audit_entry[detail]=RightLink updated to ${new_installed_version}" \
+      --data-urlencode 'audit_entry[summary]=RightLink Updated'
+  else
+    echo "unable to obtain instance href for audit entries"
+  fi
+  exit
+}
+
 source /var/run/rll-secret
 
 # Detemine bin_path
@@ -44,7 +93,7 @@ fi
 echo "RightLink needs update:"
 echo "  from current=$current_version"
 echo "  to   desired=$desired"
- 
+
 echo "downloading RightLink version '$desired'"
 
 # Download new version
@@ -60,38 +109,8 @@ new=`${rl_bin}-new -version | awk '{print $2}'`
 if [[ $new == $desired ]]; then
   echo "new version looks right: $new"
   echo "restarting RightLink to pick up new version"
-  res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
-  if [[ $res =~ successful ]]; then
-    # Delete the old version if it exists from the last upgrade.
-    rm -fr ${rl_bin}-old
-    # Keep the old version in case of issues, ie we need to manually revert back.
-    mv ${rl_bin} ${rl_bin}-old
-    cp ${rl_bin}-new ${rl_bin}
-    echo DONE
-  else
-    echo "Error: $res"
-    exit 1
-  fi
+  upgrade_rightlink &
 else
   echo "Updated version does not appear to be desired version: ${new}"
-  exit 1
-fi
-
-# Check version in production by connecting to local proxy
-# The update takes a few seconds so retries are done.
-for retry_counter in {1..5};
-do
-  source /var/run/rll-secret
-  new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
-  if [[ $new_via_proxy == $desired ]]; then
-    echo "New version in production - $new_installed_version"
-    break
-  else
-    echo "Waiting for new version to become active."
-    sleep 2
-  fi
-done
-if [[ $new_installed_version != $desired ]]; then
-  echo "New version does not appear to be desired version: $new_installed_version"
   exit 1
 fi
