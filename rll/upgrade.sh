@@ -36,13 +36,13 @@ else
   exit 0
 fi
 
-if [[ $desired == $current ]]; then
-  echo "RightLink already up-to-date (current=$current)"
+if [[ $desired == $current_version ]]; then
+  echo "RightLink already up-to-date (current=$current_version)"
   exit 0
 fi
 
 echo "RightLink needs update:"
-echo "  from current=$current"
+echo "  from current=$current_version"
 echo "  to   desired=$desired"
  
 echo "downloading RightLink version '$desired'"
@@ -81,7 +81,8 @@ fi
 # The update takes a few seconds so retries are done.
 for retry_counter in {1..5};
 do
-  new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
+  source /var/run/rll-secret
+  new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
   if [[ $new_via_proxy == $desired ]]; then
     echo "New version in production - $new_installed_version"
     break
