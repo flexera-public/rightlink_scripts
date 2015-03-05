@@ -112,6 +112,8 @@ new=`${rl_bin}-new -version | awk '{print $2}'`
 if [[ $new == $desired ]]; then
   echo "new version looks right: $new"
   echo "restarting RightLink to pick up new version"
+  # Fork a new task since this main process is started
+  # by RightLink and we are restarting it.
   upgrade_rightlink &
 else
   echo "Updated version does not appear to be desired version: ${new}"
