@@ -54,8 +54,8 @@ if [ ! $use_current_metadata ]; then
 
   re='^([0-9][0-9]*\.[0-9][0-9]*\.)[a-z]*([0-9][0-9]*)'
   if [[ "${branch_name}" =~ $re ]]; then
-    # Branch match name example: 10.1.rc3
-    # Version name from example: 10.1.3
+    # Branch match name examples: 10.1.rc3, 10.10.2
+    # Version name from examples: 10.1.3, 10.10.2
     vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
     echo "using release numbering: $vers"
   else
