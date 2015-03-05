@@ -10,6 +10,25 @@
 # This script is still highly experimental and ill supported by the RightScale API, if you
 # like it please vote for it :-)!
 
+# Obtain command line options
+while getopts ":mr" opt; do
+  case $opt in
+    m)
+      # Use Chef version number already set in metadata.rb.
+      use_current_metadata=true
+      ;;
+    r)
+      # Also create write scripts
+      create_rightscripts="true"
+      ;;
+    \?)
+      echo "invalid option -$OPTARG"
+      exit 1
+      ;;
+  esac
+done
+
+
 # This key will determine which account to update.
 if [[ -z "$RS_KEY" ]]; then
   echo "Please set RS_KEY to your RightScale API key from the dashboard's Settings>API credentials"
@@ -17,21 +36,59 @@ if [[ -z "$RS_KEY" ]]; then
 fi
 
 if ! curl --version >/dev/null; then
-  echo "ERROR: cannot find curl: it is required for this script, sorry"
+  echo "ERROR: cannot find curl: it is required for this script"
   exit 1
 fi
 
 sha=`git rev-parse HEAD`
 echo "Latest commit: ${sha}"
 
-branch_name=$(git symbolic-ref -q HEAD)
-branch_name=${branch_name##refs/heads/}
-branch_name=${branch_name:-HEAD}
+branch_name=$(git rev-parse --abbrev-ref HEAD)
 echo "Current branch: ${branch_name}"
 
-git push || exit 1
+if [ ! $use_current_metadata ]; then
+  echo -n "Determining 'Chef' version number based on branch name..."
+
+  re='^([0-9][0-9]*\.[0-9][0-9]*\.)[a-z]*([0-9][0-9]*)'
+  if [[ "${branch_name}" =~ $re ]]; then
+    # Branch match name example: 10.1.rc3
+    # Version name from example: 10.1.3
+    vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+    echo "using release numbering: $vers"
+  else
+    # Version name example: 0.2015.3015617425
+    vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
+    echo "using dev numbering: $vers"
+  fi
+
+  echo "Checking 'Chef' version numbers..."
+  for metadata in */metadata.rb; do
+    current_version=`grep '^version' $metadata | awk '{print $2}' | tr -d \'\"`
+    if [[ $current_version != $version_template ]]; then
+      echo "  Mismatch: ${metadata} has ${current_version}"
+      mismatch_found=true
+    fi
+  done
+
+  if [ $mismatch_found ]; then
+    echo ""
+    echo "Please run this command to fix the version numbering ... "
+    echo ""
+    echo "  sed -i -e \"/^version/s/[\\'\\\"][0-9.]*[\\'\\\"]/'${vers}'/\" */metadata.rb"
+    echo ""
+    echo "Then commit and push the changes:"
+    echo ""
+    echo "  git commit -a -m 'Fix chef version numbers'"
+    echo "  git push"
+    echo ""
+    echo "And re-run $0"
+    exit 1
+  fi
+fi
+
 
 RS_SERVER=${RS_SERVER:-us-4.rightscale.com}
+
 echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
 json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 \
   "https://${RS_SERVER}/api/oauth2?grant_type=refresh_token&refresh_token=${RS_KEY}"`
@@ -40,8 +97,9 @@ if [[ "$json" =~ $re ]]; then
   echo "successful"
   access_token="${BASH_REMATCH[1]}"
 else
-  echo "failed:"
-  echo $json
+  echo "failed: ${json}"
+  echo "Please verify our RS_KEY is valid for ${RS_SERVER}."
+  echo "IF not, please set RS_SERVER."
   exit 1
 fi
 
@@ -125,11 +183,6 @@ else
 fi
 t0=`date '+%s'`
 
-# echo "RS_SERVER=${RS_SERVER}"        >.pushrc.${branch_name}
-# echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc.${branch_name}
-# echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc.${branch_name}
-# echo "RS_ACCT=${RS_ACCT}"           >>.pushrc.${branch_name}
-
 echo -n "Looking for audit entry ..."
 while true; do
   html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
@@ -198,24 +251,27 @@ fi
 t1=$(( `date '+%s'` - $t0 ))
 echo "===== TOOK ${t1} seconds ====="
 
-# Push code to RightScripts
-# The key is set to the RightScript name to update and the value is set to the recipe name to copy.
-declare -A rightscript_name
-rightscript_name["RightLink_10_Upgrade"]="upgrade.sh"
-rightscript_name["RightLink_10_Automate_Upgrade"]="automate_upgrade.sh"
+if [ $create_rightscripts ]; then
+  # Push code to RightScripts
+  # The key is set to the RightScript name to update and the value is set to the recipe name to copy.
+  # Currently API1.5 does not allow 'creation' of new RightScripts, so make sure RightScript is already created.
+  declare -A rightscript_name
+  rightscript_name["RightLink_10_Upgrade"]="upgrade.sh"
+  rightscript_name["RightLink_10_Automate_Upgrade"]="automate_upgrade.sh"
 
-for script_name in "${!rightscript_name[@]}"
-do
-  json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-    "https://${RS_SERVER}/api/right_scripts?filter[]=name==${script_name}"`
-  re='"rel":"source","href":"(/api/right_scripts/[0-9]+/source)"'
+  for script_name in "${!rightscript_name[@]}"
+  do
+    json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+      "https://${RS_SERVER}/api/right_scripts?filter[]=name==${script_name}"`
+    match_template='"rel":"source","href":"(/api/right_scripts/[0-9]+/source)"'
 
-  if  [[ "$json" =~ $re ]]; then
-    right_script_href="${BASH_REMATCH[1]}"
-    echo "Updating RightScript ${script_name}"
-    put_json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-      -X PUT "https://${RS_SERVER}${right_script_href}" --upload-file "./rll/${rightscript_name[$script_name]}"`
-  else
-    echo "unable to find rightscript to update...skipping"
-  fi
-done
+    if  [[ "$json" =~ $match_template ]]; then
+      right_script_href="${BASH_REMATCH[1]}"
+      echo "Updating RightScript ${script_name}"
+      put_json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+        -X PUT "https://${RS_SERVER}${right_script_href}" --upload-file "./rll/${rightscript_name[$script_name]}"`
+    else
+      echo "unable to find rightscript to update...skipping"
+    fi
+  done
+fi
