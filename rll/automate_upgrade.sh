@@ -34,10 +34,10 @@ EOF
   chmod 0700 ${exec_file}
 
   # Random hour 0-23
-  cron_hour=$[ $RANDOM % 24 ]
+  cron_hour=$(( $RANDOM % 24 ))
 
   # Random minute 0-59
-  cron_minute=$[ $RANDOM % 60 ]
+  cron_minute=$(( $RANDOM % 60 ))
 
   umask 077
 
