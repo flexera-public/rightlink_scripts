@@ -11,20 +11,23 @@
 # like it please vote for it :-)!
 
 # Obtain command line options
-while getopts ":mr" opt; do
+
+while getopts ":mrh" opt; do
   case $opt in
-    m)
-      # Use Chef version number already set in metadata.rb.
-      use_current_metadata=true
-      ;;
-    r)
-      # Also create write scripts
-      create_rightscripts="true"
-      ;;
-    \?)
-      echo "invalid option -$OPTARG"
-      exit 1
-      ;;
+    # Use Chef version number already set in metadata.rb.
+    m) use_current_metadata=true;;
+    # Also create write scripts
+    r) create_rightscripts="true";;
+    # help
+    h) echo ""
+       echo "Usage: "
+       echo "  -m Use current metadata"
+       echo "  -r Include updating RightScripts"
+       echo ""
+       exit 2
+       ;;
+    # Invalid option
+    \?) echo "invalid option -$OPTARG"; exit 1;;
   esac
 done
 
