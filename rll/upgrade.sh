@@ -74,7 +74,7 @@ rl_bin=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_S
 prefix_url='https://rightlinklite.rightscale.com/rll'
 
 # Determine current version of rightlink
-current_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --glogoff \
+current_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
   "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
 
 if [ -z $current_version ]; then
