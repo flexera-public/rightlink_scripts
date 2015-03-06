@@ -30,6 +30,7 @@ source /var/run/rll-secret
 curl --silent --show-error --get --globoff --fail --request POST --header X-RLL-Secret:$RS_RLL_SECRET \
   http://127.0.0.1:$RS_RLL_PORT/rll/run/recipe --data-urlencode 'recipe=rll::upgrade'
 EOF
+
   chown root:root ${exec_file}
   chmod 0700 ${exec_file}
 
