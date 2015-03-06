@@ -30,13 +30,14 @@ upgrade_rightlink() {
   fi
   # Check updated version in production by connecting to local proxy
   # The update takes a few seconds so retries are done.
-  for retry_counter in {1..5};
-  do
+  for retry_counter in {1..5}; do
+    # The auth information is updated on an upgrade.  Continue to source the
+    # auth file to grab the updated auth info once RightLink has restarted.
     source ${RLL_SECRET}
     new_installed_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
       "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
     if [[ $new_installed_version == $desired ]]; then
-      logger -t rightlink "New version in production - $new_installed_version"
+      logger -t rightlink "New version active - $new_installed_version"
       break
     else
       logger -t rightlink "Waiting for new version to become active."
@@ -96,7 +97,7 @@ else
 fi
 
 if [[ $desired == $current_version ]]; then
-  echo "RightLink already up-to-date (current=$current_version)"
+  echo "RightLink is already up-to-date (current=$current_version)"
   exit 0
 fi
 
