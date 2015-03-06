@@ -86,8 +86,8 @@ fi
 # using the name of the current version.  The file consists of lines formatted as
 # "current_version: upgradeable_new_version"
 # If the "upgrades" file does not exist, no upgrade is done.
-match=`curl --silent --show-error --retry 3 ${prefix_url}/${current_version}/upgrades | egrep "^${current_version}:" || true`
-re="^${current_version}: *([^ ]*)"
+re="^\s*${current_version}\s*:\s*(\S+)\s*$"
+match=`curl --silent --show-error --retry 3 ${prefix_url}/${current_version}/upgrades | egrep ${re} || true`
 if [[ "$match" =~ $re ]]; then
   desired=${BASH_REMATCH[1]}
 else
