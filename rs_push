@@ -93,7 +93,7 @@ fi
 RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
 
 echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
-json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 \
+json=`curl --silent --location --globoff --get --retry 3 --request POST --header X-API-Version:1.5 \
   "https://${RS_SERVER}/api/oauth2?grant_type=refresh_token&refresh_token=${RS_KEY}"`
 re='"access_token": *"([^"]*)"'
 if [[ "$json" =~ $re ]]; then
@@ -101,14 +101,16 @@ if [[ "$json" =~ $re ]]; then
   access_token="${BASH_REMATCH[1]}"
 else
   echo "failed: ${json}"
-  echo "Please verify our RS_KEY is valid for ${RS_SERVER}."
-  echo "IF not, please set RS_SERVER."
+  echo "Please verify that your RS_KEY is valid for ${RS_SERVER}."
+  echo "If not, please set RS_SERVER."
   exit 1
 fi
 
 if [[ -z "${RS_ACCT}" ]]; then
   echo -n "Determining RS account number ... "
-  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+  json=`curl --silent --location --globoff --get --retry 3 \
+    --header X-API-Version:1.5 \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/api/permissions"`
   re='/api/accounts/([0-9]*)'
   if [[ "$json" =~ $re ]]; then
@@ -126,7 +128,9 @@ RS_REPO_NAME=${RS_REPO_NAME:-`basename $PWD`_${branch_name}}
 if [[ -z "$RS_REPO_ID" ]]; then
   # gotta figure out what the RightScale repo ID is for this baby
   echo -n "Finding repositories called '${RS_REPO_NAME}' ... "
-  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+  json=`curl --silent --location --globoff --get --retry 3 \
+    --header X-API-Version:1.5 \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/api/repositories?filter[]=name==${RS_REPO_NAME}"`
   json_save="$json"
   re='"id":"([0-9][0-9]*)"(.*)'
@@ -142,8 +146,10 @@ if [[ -z "$RS_REPO_ID" ]]; then
     origin=`git config remote.origin.url | sed -e 's;git@github.com:;https://github.com/;'`
     echo "Using git origin ${origin}"
     echo -n "Creating repository ... "
-    json=`curl -isL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-      -X POST "https://${RS_SERVER}/api/repositories" \
+    json=`curl --include --silent --location --globoff --get --retry 3 \
+      --header X-API-Version:1.5 \
+      --header "Authorization: Bearer $access_token" \
+      --request POST "https://${RS_SERVER}/api/repositories" \
       --data-urlencode "repository[auto_import]=true" \
       --data-urlencode "repository[name]=${RS_REPO_NAME}" \
       --data-urlencode "repository[source]=${origin}" \
@@ -175,7 +181,9 @@ else
 fi
 
 echo -n "Asking for a repo refetch ... "
-json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+json=`curl --silent --location --globoff --get --retry 3 --request POST \
+  --header X-API-Version:1.5 \
+  --header "Authorization: Bearer $access_token" \
   "https://${RS_SERVER}/api/repositories/${RS_REPO_ID}/refetch?auto_import=true"`
 if [[ -n "$json" ]]; then
   echo "ERROR"
@@ -188,8 +196,8 @@ t0=`date '+%s'`
 
 echo -n "Looking for audit entry ..."
 while true; do
-  html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
-    -H "Authorization: Bearer $access_token" \
+  html=`curl --silent --location --globoff --get --retry 3 --header X-Requested-With:XMLHttpRequest \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/acct/${RS_ACCT}/audit_entries.json" \
     --data-urlencode "filter_sort_listing=true" \
     --data-urlencode "order_by=Timestamp DESC" \
@@ -215,8 +223,8 @@ done
 
 echo "Retrieving audit entry ... "
 while true; do
-  html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
-    -H "Authorization: Bearer $access_token" \
+  html=`curl --silent --location --globoff --get --retry 3 --header X-Requested-With:XMLHttpRequest \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/acct/${RS_ACCT}/audit_entries/$audit_id"`
   re='Summary</label><div>([^<]*)<'
   if [[ "$html" =~ $re ]]; then
@@ -262,17 +270,21 @@ if [ $create_rightscripts ]; then
   rightscript_name["RightLink_10_Upgrade"]="upgrade.sh"
   rightscript_name["RightLink_10_Automate_Upgrade"]="automate_upgrade.sh"
 
-  for script_name in "${!rightscript_name[@]}"
-  do
-    json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+  for script_name in "${!rightscript_name[@]}"; do
+    json=`curl --silent --location --globoff --retry 3 \
+      --header X-API-Version:1.5 \
+      --header "Authorization: Bearer $access_token" \
       "https://${RS_SERVER}/api/right_scripts?filter[]=name==${script_name}"`
     match_template='"rel":"source","href":"(/api/right_scripts/[0-9]+/source)"'
 
     if  [[ "$json" =~ $match_template ]]; then
       right_script_href="${BASH_REMATCH[1]}"
       echo "Updating RightScript ${script_name}"
-      put_json=`curl --silent --location --globoff --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-        -X PUT "https://${RS_SERVER}${right_script_href}" --upload-file "./rll/${rightscript_name[$script_name]}"`
+      put_json=`curl --silent --location --globoff --retry 3 \
+        --header X-API-Version:1.5 \
+        --header "Authorization: Bearer $access_token" \
+        --request PUT "https://${RS_SERVER}${right_script_href}" \
+        --upload-file "./rll/${rightscript_name[$script_name]}"`
     else
       echo "unable to find rightscript to update...skipping"
     fi
