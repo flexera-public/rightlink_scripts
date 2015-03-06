@@ -11,10 +11,12 @@ RLL_SECRET=/var/run/rll-secret
 
 upgrade_rightlink() {
 
-  # Use logger here instead of echo since stdout from this is not sent to audit entries.
+  # Use 'logger' here instead of 'echo' since stdout from this is not sent to
+  # audit entries as RightLink is down for a short time during the upgrade process.
 
   source ${RLL_SECRET}
-  res=`curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
+  res=`curl --silent --show-error --request POST --header X-RLL-Secret:$RS_RLL_SECRET \
+    "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
   if [[ $res =~ successful ]]; then
     # Delete the old version if it exists from the last upgrade.
     rm -fr ${rl_bin}-old
@@ -31,7 +33,8 @@ upgrade_rightlink() {
   for retry_counter in {1..5};
   do
     source ${RLL_SECRET}
-    new_installed_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
+    new_installed_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
+      "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
     if [[ $new_installed_version == $desired ]]; then
       logger -t rightlink "New version in production - $new_installed_version"
       break
@@ -46,11 +49,13 @@ upgrade_rightlink() {
   fi
 
   # Report to audit entry that RightLink ugpraded.
-  instance_json=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/api/sessions/instance"`
+  instance_json=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
+    "http://127.0.0.1:$RS_RLL_PORT/api/sessions/instance"`
   re='\{"rel":"self","href":"(/api/clouds/[0-9]+/instances/[0-9a-zA-Z]*)"\}'
   if [[ $instance_json =~ $re ]]; then
     instance_href="${BASH_REMATCH[1]}"
-    curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/api/audit_entries" \
+    curl --silent --show-error --request POST --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
+      "http://127.0.0.1:$RS_RLL_PORT/api/audit_entries" \
       --data-urlencode "audit_entry[auditee_href]=${instance_href}" \
       --data-urlencode "audit_entry[detail]=RightLink updated to '${new_installed_version}'" \
       --data-urlencode 'audit_entry[summary]=RightLink updated'
@@ -63,11 +68,13 @@ upgrade_rightlink() {
 source ${RLL_SECRET}
 
 # Detemine bin_path
-rl_bin=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
+rl_bin=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
+  "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
 prefix_url='https://rightlinklite.rightscale.com/rll'
 
 # Determine current version of rightlink
-current_version=`curl -sS -X GET -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
+current_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --glogoff \
+  "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
 
 if [ -z $current_version ]; then
   echo "Can't determine current version of RLL"
@@ -78,7 +85,7 @@ fi
 # using the name of the current version.  The file consists of lines formatted as
 # "current_version: upgradeable_new_version"
 # If the "upgrades" file does not exist, no upgrade is done.
-match=`curl -sS --retry 3 $prefix_url/${current_version}/upgrades | egrep "^${current_version}:" || true`
+match=`curl --silent --show-error --retry 3 ${prefix_url}/${current_version}/upgrades | egrep "^${current_version}:" || true`
 re="^${current_version}: *([^ ]*)"
 if [[ "$match" =~ $re ]]; then
   desired=${BASH_REMATCH[1]}
@@ -102,7 +109,7 @@ echo "downloading RightLink version '$desired'"
 # Download new version
 cd /tmp
 rm -rf rll rll.tgz
-curl -sS --retry 3 -o rll.tgz $prefix_url/$desired/rightlinklite.tgz
+curl --silent --show-error --retry 3 --output rll.tgz $prefix_url/$desired/rightlinklite.tgz
 tar zxf rll.tgz || (cat rll.tgz; exit 1)
 
 # Check downloaded version
