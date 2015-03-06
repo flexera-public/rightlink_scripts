@@ -90,7 +90,7 @@ if [ ! $use_current_metadata ]; then
 fi
 
 
-RS_SERVER=${RS_SERVER:-us-4.rightscale.com}
+RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
 
 echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
 json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 \
