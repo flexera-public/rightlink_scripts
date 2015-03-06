@@ -10,7 +10,7 @@ recipe      "rll::collectd", "Installs and configures collectd for RightScale mo
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rll::test-script", "Test operational script, doesn't do anything useful"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
-recipe      "rll::automate_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
+recipe      "rll::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 
 attribute   "HOSTNAME",
   :display_name => "Hostname for this server",
@@ -56,4 +56,4 @@ attribute   "DISABLE_AUTO_UPGRADE",
   :required => "optional",
   :type => "string",
   :default => "false",
-  :recipes => ["rll::automate_upgrade"]
+  :recipes => ["rll::setup_automatic_upgrade"]
