@@ -10,82 +10,107 @@
 # This script is still highly experimental and ill supported by the RightScale API, if you
 # like it please vote for it :-)!
 
+# Obtain command line options
+
+while getopts ":mrh" opt; do
+  case $opt in
+    # Use Chef version number already set in metadata.rb.
+    m) use_current_metadata=true;;
+    # Also create write scripts
+    r) create_rightscripts="true";;
+    # help
+    h) echo ""
+       echo "Usage: "
+       echo "  -m Use current metadata"
+       echo "  -r Include updating RightScripts"
+       echo ""
+       exit 2
+       ;;
+    # Invalid option
+    \?) echo "invalid option -$OPTARG"; exit 1;;
+  esac
+done
+
+
+# This key will determine which account to update.
 if [[ -z "$RS_KEY" ]]; then
   echo "Please set RS_KEY to your RightScale API key from the dashboard's Settings>API credentials"
   exit 1
 fi
 
 if ! curl --version >/dev/null; then
-  echo "ERROR: cannot find curl: it is required for this script, sorry"
+  echo "ERROR: cannot find curl: it is required for this script"
   exit 1
 fi
 
 sha=`git rev-parse HEAD`
 echo "Latest commit: ${sha}"
 
-branch_name=$(git symbolic-ref -q HEAD)
-branch_name=${branch_name##refs/heads/}
-branch_name=${branch_name:-HEAD}
+branch_name=$(git rev-parse --abbrev-ref HEAD)
 echo "Current branch: ${branch_name}"
 
-echo -n "Determining 'Chef' version number for this branch ... "
-re='^([0-9][0-9]*\.[0-9][0-9]*\.)[a-z]*([0-9][0-9]*)'
-if [[ "${branch_name}" =~ $re ]]; then
-  vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
-  echo "using release numbering: $vers"
-else
-  vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
-  echo "using dev numbering: $vers"
-fi
+if [ ! $use_current_metadata ]; then
+  echo -n "Determining 'Chef' version number based on branch name..."
 
-echo "Checking 'Chef' version numbers ..."
-ok=1
-for m in `echo */metadata.rb`; do
-  vv=`egrep '^version' $m`
-  re="^version *\"${vers}\""
-  if [[ ! "$vv" =~ $re ]]; then
-    echo "  Mismatch: ${m} has ${vv}"
-    ok=
+  re='^([0-9][0-9]*\.[0-9][0-9]*\.)[a-z]*([0-9][0-9]*)'
+  if [[ "${branch_name}" =~ $re ]]; then
+    # Branch match name examples: 10.1.rc3, 10.10.2
+    # Version name from examples: 10.1.3, 10.10.2
+    vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+    echo "using release numbering: $vers"
+  else
+    # Version name example: 0.2015.3015617425
+    vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
+    echo "using dev numbering: $vers"
   fi
-done
 
-if [[ -z "$ok" ]]; then
-  echo ""
-  echo "Please run this command to fix the version numbering ... "
-  echo sed -i -e "'"'/^version/s/"[0-9.]*"/"'${vers}'"/'"'" */metadata.rb
-  echo "Then commit the changes:"
-  echo "git commit -a -m 'Fix chef version numbers'"
-  echo "And re-run $0"
-  exit 1
+  echo "Checking 'Chef' version numbers..."
+  for metadata in */metadata.rb; do
+    current_version=`grep '^version' $metadata | awk '{print $2}' | tr -d \'\"`
+    if [[ $current_version != $version_template ]]; then
+      echo "  Mismatch: ${metadata} has ${current_version}"
+      mismatch_found=true
+    fi
+  done
+
+  if [ $mismatch_found ]; then
+    echo ""
+    echo "Please run this command to fix the version numbering ... "
+    echo ""
+    echo "  sed -i -e \"/^version/s/[\\'\\\"][0-9.]*[\\'\\\"]/'${vers}'/\" */metadata.rb"
+    echo ""
+    echo "Then commit and push the changes:"
+    echo ""
+    echo "  git commit -a -m 'Fix chef version numbers'"
+    echo "  git push"
+    echo ""
+    echo "And re-run $0"
+    exit 1
+  fi
 fi
 
-git push || exit 1
-
-# this can be fragile...
-#if [[ -e .pushrc.${branch_name} ]]; then
-#  . .pushrc.${branch_name}
-#fi
 
 RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
+
 echo -n "Authenticating with RightScale at ${RS_SERVER} ... "
-json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 \
+json=`curl --silent --location --globoff --get --retry 3 --request POST --header X-API-Version:1.5 \
   "https://${RS_SERVER}/api/oauth2?grant_type=refresh_token&refresh_token=${RS_KEY}"`
 re='"access_token": *"([^"]*)"'
 if [[ "$json" =~ $re ]]; then
   echo "successful"
   access_token="${BASH_REMATCH[1]}"
 else
-  echo "failed:"
-  echo $json
+  echo "failed: ${json}"
+  echo "Please verify that your RS_KEY is valid for ${RS_SERVER}."
+  echo "If not, please set RS_SERVER."
   exit 1
 fi
 
-#echo -n "curl -isL -gG --retry 3 -H X-API-Version:1.5 -H 'Authorization: Bearer $access_token' "
-#echo -X POST "https://${RS_SERVER}/api/repositories"
-
 if [[ -z "${RS_ACCT}" ]]; then
   echo -n "Determining RS account number ... "
-  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+  json=`curl --silent --location --globoff --get --retry 3 \
+    --header X-API-Version:1.5 \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/api/permissions"`
   re='/api/accounts/([0-9]*)'
   if [[ "$json" =~ $re ]]; then
@@ -103,7 +128,9 @@ RS_REPO_NAME=${RS_REPO_NAME:-`basename $PWD`_${branch_name}}
 if [[ -z "$RS_REPO_ID" ]]; then
   # gotta figure out what the RightScale repo ID is for this baby
   echo -n "Finding repositories called '${RS_REPO_NAME}' ... "
-  json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+  json=`curl --silent --location --globoff --get --retry 3 \
+    --header X-API-Version:1.5 \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/api/repositories?filter[]=name==${RS_REPO_NAME}"`
   json_save="$json"
   re='"id":"([0-9][0-9]*)"(.*)'
@@ -119,8 +146,10 @@ if [[ -z "$RS_REPO_ID" ]]; then
     origin=`git config remote.origin.url | sed -e 's;git@github.com:;https://github.com/;'`
     echo "Using git origin ${origin}"
     echo -n "Creating repository ... "
-    json=`curl -isL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-      -X POST "https://${RS_SERVER}/api/repositories" \
+    json=`curl --include --silent --location --globoff --get --retry 3 \
+      --header X-API-Version:1.5 \
+      --header "Authorization: Bearer $access_token" \
+      --request POST "https://${RS_SERVER}/api/repositories" \
       --data-urlencode "repository[auto_import]=true" \
       --data-urlencode "repository[name]=${RS_REPO_NAME}" \
       --data-urlencode "repository[source]=${origin}" \
@@ -130,7 +159,8 @@ if [[ -z "$RS_REPO_ID" ]]; then
     if [[ "$json" =~ $re ]]; then
       repo_ids=(${BASH_REMATCH[1]})
     else
-      echo "Ooops: $json"
+      echo "Issue finding location of repository"
+      echo "$json"
       exit 1
     fi
     echo "/api/repositories/${repo_ids}"
@@ -151,7 +181,9 @@ else
 fi
 
 echo -n "Asking for a repo refetch ... "
-json=`curl -sL -gG --retry 3 -X POST -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
+json=`curl --silent --location --globoff --get --retry 3 --request POST \
+  --header X-API-Version:1.5 \
+  --header "Authorization: Bearer $access_token" \
   "https://${RS_SERVER}/api/repositories/${RS_REPO_ID}/refetch?auto_import=true"`
 if [[ -n "$json" ]]; then
   echo "ERROR"
@@ -162,36 +194,10 @@ else
 fi
 t0=`date '+%s'`
 
-# RightAPI 1.5 doesn't support audit entries on repositories: Gaaaaaah!
-#start_date=`date '+%Y/%m/%d %H:%M:%S %z' -d '-5 min'`  # yup, that works...!
-#end_date=`date '+%Y/%m/%d %H:%M:%S %z'`
-#json=`curl -sL -gG --retry 3 -H X-API-Version:1.5 -H "Authorization: Bearer $access_token" \
-#  "https://${RS_SERVER}/api/audit_entries" \
-#  --data-urlencode "limit=100" \
-#  --data-urlencode "start_date=$start_date" \
-#  --data-urlencode "end_date=$end_date"`
-## @!#$% the following doesn't work:
-##  --data-urlencode "filter[]=auditee_href==/api/repositories/${RS_REPO_ID}" \
-#echo $json
-#re='"auditee","href":"([^"]*)"(.*)'
-#auditees=()
-#while [[ "$json" =~ $re ]]; do
-#  auditees=("${auditees[@]}" "${BASH_REMATCH[1]}")
-#  json="${BASH_REMATCH[2]}" # this is the rest of the json to find the next auditee
-#done
-#for a in ${auditees[@]}; do
-#  echo $a
-#done
-
-echo "RS_SERVER=${RS_SERVER}"        >.pushrc.${branch_name}
-echo "RS_REPO_ID=${RS_REPO_ID}"     >>.pushrc.${branch_name}
-echo "RS_REPO_NAME=${RS_REPO_NAME}" >>.pushrc.${branch_name}
-echo "RS_ACCT=${RS_ACCT}"           >>.pushrc.${branch_name}
-
 echo -n "Looking for audit entry ..."
 while true; do
-  html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
-    -H "Authorization: Bearer $access_token" \
+  html=`curl --silent --location --globoff --get --retry 3 --header X-Requested-With:XMLHttpRequest \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/acct/${RS_ACCT}/audit_entries.json" \
     --data-urlencode "filter_sort_listing=true" \
     --data-urlencode "order_by=Timestamp DESC" \
@@ -208,17 +214,17 @@ while true; do
     break
   else
     echo -n '.'
-    echo "== OOPS == Can't find audit entry, retrying in a few seconds... =="
+    echo "Unable to find audit entry, retrying in a few seconds... =="
     #echo $html | egrep "'[^']*'"
     #set -x
     sleep 5
   fi
 done
-  
+
 echo "Retrieving audit entry ... "
 while true; do
-  html=`curl -sL -gG --retry 3 -H X-Requested-With:XMLHttpRequest \
-    -H "Authorization: Bearer $access_token" \
+  html=`curl --silent --location --globoff --get --retry 3 --header X-Requested-With:XMLHttpRequest \
+    --header "Authorization: Bearer $access_token" \
     "https://${RS_SERVER}/acct/${RS_ACCT}/audit_entries/$audit_id"`
   re='Summary</label><div>([^<]*)<'
   if [[ "$html" =~ $re ]]; then
@@ -242,7 +248,7 @@ if [[ "$html" =~ $re ]]; then
   if [[ "${detail}" =~ $re ]]; then
     rev="${BASH_REMATCH[1]}"
     if [[ "$rev" != "$sha" ]]; then
-      echo "********** OOPS, the SHAs don't match:"
+      echo "Alert: the SHAs don't match:"
       echo "Latest local commit is ${sha}"
       echo "Scraped revision is    ${rev}"
       echo "Perhaps RS ignored the refetch request because a refetch"
@@ -250,8 +256,37 @@ if [[ "$html" =~ $re ]]; then
     fi
   fi
 else
-  echo "===== DETAIL (sorry, raw html) ====="
+  echo "===== DETAIL (raw html) ====="
   echo $html
 fi
 t1=$(( `date '+%s'` - $t0 ))
 echo "===== TOOK ${t1} seconds ====="
+
+if [ $create_rightscripts ]; then
+  # Push code to RightScripts
+  # The key is set to the RightScript name to update and the value is set to the recipe name to copy.
+  # Currently API1.5 does not allow 'creation' of new RightScripts, so make sure RightScript is already created.
+  declare -A rightscript_name
+  rightscript_name["RightLink_10_Upgrade"]="upgrade.sh"
+  rightscript_name["RightLink_10_Automate_Upgrade"]="automate_upgrade.sh"
+
+  for script_name in "${!rightscript_name[@]}"; do
+    json=`curl --silent --location --globoff --retry 3 \
+      --header X-API-Version:1.5 \
+      --header "Authorization: Bearer $access_token" \
+      "https://${RS_SERVER}/api/right_scripts?filter[]=name==${script_name}"`
+    match_template='"rel":"source","href":"(/api/right_scripts/[0-9]+/source)"'
+
+    if  [[ "$json" =~ $match_template ]]; then
+      right_script_href="${BASH_REMATCH[1]}"
+      echo "Updating RightScript ${script_name}"
+      put_json=`curl --silent --location --globoff --retry 3 \
+        --header X-API-Version:1.5 \
+        --header "Authorization: Bearer $access_token" \
+        --request PUT "https://${RS_SERVER}${right_script_href}" \
+        --upload-file "./rll/${rightscript_name[$script_name]}"`
+    else
+      echo "unable to find rightscript to update...skipping"
+    fi
+  done
+fi

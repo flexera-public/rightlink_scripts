@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "Thorsten von Eicken"
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 (RLL) to initialize basic functionality"
-version     "10.0.1"
+version     "10.0.2"
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rll::init", "Initializes repositories and minor RLL-related things"
@@ -10,6 +10,7 @@ recipe      "rll::collectd", "Installs and configures collectd for RightScale mo
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rll::test-script", "Test operational script, doesn't do anything useful"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
+recipe      "rll::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 
 attribute   "HOSTNAME",
   :display_name => "Hostname for this server",
@@ -36,14 +37,6 @@ attribute   "RS_INSTANCE_UUID",
   :default => "env:RS_INSTANCE_UUID",
   :recipes => ["rll::collectd"]
 
-attribute   "RLBIN",
-  :display_name => "RightLink executable pathname",
-  :description => "Location of the RighLink 10 executable file, typically /usr/local/bin/rightlinklite",
-  :required => "optional",
-  :type => "string",
-  :default => "/usr/local/bin/rightlinklite",
-  :recipes => ["rll::upgrade"]
-
 attribute   "VAR",
   :display_name => "random variable to print",
   :required => "recommended",
@@ -58,3 +51,9 @@ attribute   "CRED",
   :default => "cred:AWS_ACCESS_KEY_ID",
   :recipes => ["rll::test-script"]
 
+attribute   "DISABLE_AUTO_UPGRADE",
+  :display_name => "Disables auto upgrade if previously enabled",
+  :required => "optional",
+  :type => "string",
+  :default => "false",
+  :recipes => ["rll::setup_automatic_upgrade"]
