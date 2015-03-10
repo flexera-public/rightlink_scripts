@@ -9,7 +9,6 @@ recipe      "rll::setup_software_repo", "Initializes repositories"
 recipe      "rll::setup_hostname", "Changes the hostname of the server"
 recipe      "rll::collectd", "Installs and configures collectd for RightScale monitoring"
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
-recipe      "rll::test-script", "Test operational script, doesn't do anything useful"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
 recipe      "rll::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 
@@ -37,20 +36,6 @@ attribute   "RS_INSTANCE_UUID",
   :type => "string",
   :default => "env:RS_INSTANCE_UUID",
   :recipes => ["rll::collectd"]
-
-attribute   "VAR",
-  :display_name => "random variable to print",
-  :required => "recommended",
-  :type => "string",
-  :default => "test value",
-  :recipes => ["rll::test-script"]
-
-attribute   "CRED",
-  :display_name => "some credential",
-  :required => "recommended",
-  :type => "string",
-  :default => "cred:AWS_ACCESS_KEY_ID",
-  :recipes => ["rll::test-script"]
 
 attribute   "DISABLE_AUTO_UPGRADE",
   :display_name => "Disables auto upgrade if previously enabled",
