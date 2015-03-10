@@ -1,12 +1,15 @@
-#! /bin/bash -ex
+#!/bin/bash
+
+# Add RightScale software repository, primarily used for installing monitoring (collectd).
+
 set -ex
 
 #
 # Ubuntu / Debian
 #
 if [ -d /etc/apt ]; then
-  # Add RightScale software, primarily for monitoring (collectd). We build packages for ubuntu, but not debian.
-  # Packages are often compatible though, see this handy table of equivalence, pulled off askubuntu:
+  # We build packages for ubuntu, but not debian. Packages are often compatible though,
+  # see this handy table of equivalence, pulled off askubuntu:
   # 14.04 - 14.10        jessie
   # 11.10 - 13.10        wheezy
   # 10.04 - 11.04        squeeze
@@ -107,24 +110,4 @@ EOF
     ;;
   esac
 
-fi
-
-if [ ! -z "$HOSTNAME" ]; then
-  prefix=
-  suffix=
-  re='[-A-Za-z0-9][-A-Za-z0-9.]*[-A-Za-z0-9]$'
-  if [[ "$HOSTNAME" =~ $re ]]; then
-    suffix=${BASH_REMATCH[1]}
-  fi
-  re='^[-A-Za-z0-9][-A-Za-z0-9.]*[-A-Za-z0-9]'
-  if [[ "$HOSTNAME" =~ $re ]]; then
-    prefix=${BASH_REMATCH[1]}
-  fi
-  if (( ${#prefix} >= ${#suffix} && ${#prefix} > 1 )); then
-    echo "Setting hostname to \$HOSTNAME prefix '$prefix'"
-    hostname "$prefix"
-  elif (( ${#suffix} > 1 )); then
-    echo "Setting hostname to \$HOSTNAME suffix '$suffix'"
-    hostname "$suffix"
-  fi
 fi
