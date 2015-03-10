@@ -1,5 +1,5 @@
 name        "rll"
-maintainer  "Thorsten von Eicken"
+maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 (RLL) to initialize basic functionality"
 version     "10.0.2"
