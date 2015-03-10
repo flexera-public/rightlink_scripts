@@ -7,18 +7,18 @@
 
 set -ex
 
-if [ -n "$SERVER_HOSTNAME" ]; then
+if [[ -n "$SERVER_HOSTNAME" ]]; then
   prefix=
   suffix=
 
-  re='^([-A-Za-z0-9_][-A-Za-z0-9_.]*[-A-Za-z0-9_])'
+  re='^[-A-Za-z0-9_][-A-Za-z0-9_.]*[-A-Za-z0-9_]'
   if [[ "$SERVER_HOSTNAME" =~ $re ]]; then
-    prefix=${BASH_REMATCH[1]}
+    prefix=${BASH_REMATCH[0]}
     echo "prefix set to ${prefix}"
   fi
-  re='([-A-Za-z0-9_][-A-Za-z0-9._]*[-A-Za-z0-9_])$'
+  re='[-A-Za-z0-9_][-A-Za-z0-9._]*[-A-Za-z0-9_]$'
   if [[ "$SERVER_HOSTNAME" =~ $re ]]; then
-    suffix=${BASH_REMATCH[1]}
+    suffix=${BASH_REMATCH[0]}
     echo "suffix set to ${suffix}"
   fi
 
