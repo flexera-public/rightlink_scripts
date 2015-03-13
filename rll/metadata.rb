@@ -37,9 +37,9 @@ attribute   "RS_INSTANCE_UUID",
   :default => "env:RS_INSTANCE_UUID",
   :recipes => ["rll::collectd"]
 
-attribute   "DISABLE_AUTO_UPGRADE",
-  :display_name => "Disables auto upgrade if previously enabled",
+attribute   "ENABLE_AUTO_UPGRADE",
+  :display_name => "Enables auto upgrade",
   :required => "optional",
   :type => "string",
-  :default => "false",
+  :default => "true",
   :recipes => ["rll::setup_automatic_upgrade"]

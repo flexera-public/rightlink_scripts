@@ -8,8 +8,8 @@ set -e
 cron_file='/etc/cron.d/rightlink_upgrade'
 exec_file='/usr/local/bin/rightlink_check_upgrade'
 
-# Grab toggle option to disable
-if [[ "$DISABLE_AUTO_UPGRADE" == 'true' ]]; then
+# Grab toggle option to enable
+if [[ "$ENABLE_AUTO_UPGRADE" == 'false' ]]; then
   if [ -e ${cron_file} ]; then
     rm -f ${cron_file}
     echo "Automatic upgrade disabled"
