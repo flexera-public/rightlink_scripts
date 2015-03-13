@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 # Will compare current version of rightlink 'running' with latest version provided from 'upgrades'
 # file. If they differ, will update to latest version.  Note that latest version can be an older version

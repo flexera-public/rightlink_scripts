@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 # The server's hostname is set to the longest valid prefix or suffix of
 # this SERVER_HOSTNAME variable eg 'my.example.com V2', 'NEW my.example.com', and
