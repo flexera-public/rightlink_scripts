@@ -37,9 +37,10 @@ attribute   "RS_INSTANCE_UUID",
   :default => "env:RS_INSTANCE_UUID",
   :recipes => ["rll::collectd"]
 
-attribute   "DISABLE_AUTO_UPGRADE",
-  :display_name => "Disables auto upgrade if previously enabled",
+attribute   "ENABLE_AUTO_UPGRADE",
+  :display_name => "Enables auto upgrade of RightLink10",
   :required => "optional",
   :type => "string",
-  :default => "false",
+  :default => "true",
+  :choice => ["true", "false"],
   :recipes => ["rll::setup_automatic_upgrade"]

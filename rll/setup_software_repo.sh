@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 # Add RightScale software repository, primarily used for installing monitoring (collectd).
 

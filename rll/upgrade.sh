@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 # Will compare current version of rightlink 'running' with latest version provided from 'upgrades'
 # file. If they differ, will update to latest version.  Note that latest version can be an older version
@@ -82,17 +82,16 @@ if [ -z $current_version ]; then
   exit 1
 fi
 
-# Fetch information about what we should become. The "upgrades" file is obtained
-# using the name of the current version.  The file consists of lines formatted as
-# "current_version: upgradeable_new_version"
-# If the "upgrades" file does not exist, no upgrade is done.
+# Fetch information about what we should become. The "upgrades" file consists of lines formatted
+# as "current_version:upgradeable_new_version". If the "upgrades" file does not exist,
+# or if the current version is not in the file, no upgrade is done.
 re="^\s*${current_version}\s*:\s*(\S+)\s*$"
-match=`curl --silent --show-error --retry 3 ${prefix_url}/${current_version}/upgrades | egrep ${re} || true`
+match=`curl --silent --show-error --retry 3 ${prefix_url}/upgrades | egrep ${re} || true`
 if [[ "$match" =~ $re ]]; then
   desired=${BASH_REMATCH[1]}
 else
   echo "Cannot determine latest version from upgrade file"
-  echo "Tried to match /^${current_version}:/ in $prefix_url/${current_version}/upgrades"
+  echo "Tried to match /^${current_version}:/ in ${prefix_url}/upgrades"
   exit 0
 fi
 
