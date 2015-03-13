@@ -38,7 +38,7 @@ attribute   "RS_INSTANCE_UUID",
   :recipes => ["rll::collectd"]
 
 attribute   "ENABLE_AUTO_UPGRADE",
-  :display_name => "Enables auto upgrade",
+  :display_name => "Enables auto upgrade of RightLink10",
   :required => "optional",
   :type => "string",
   :default => "true",
