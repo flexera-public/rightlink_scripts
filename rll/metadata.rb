@@ -42,4 +42,5 @@ attribute   "ENABLE_AUTO_UPGRADE",
   :required => "optional",
   :type => "string",
   :default => "true",
+  :choice => ["true", "false"],
   :recipes => ["rll::setup_automatic_upgrade"]
