@@ -277,6 +277,6 @@ fi
 
 # Add the RightScale monitoring active tag
 #rs_tag --add 'rs_monitoring:state=active'
-source /var/run/rightlink-secret
+source /var/run/rightlink/secret
 curl -sS -X POST -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/api/tags/multi_add?resource_hrefs[]=$RS_SELF_HREF&tags[]=rs_monitoring:state=active" &&\
   logger -s -t RightScale "Setting monitoring active tag"

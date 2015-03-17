@@ -7,7 +7,7 @@
 # -e will immediatly exit out of script at point of error
 set -e
 
-RLL_SECRET=/var/run/rightlink-secret
+RLL_SECRET=/var/run/rightlink/secret
 
 upgrade_rightlink() {
 
