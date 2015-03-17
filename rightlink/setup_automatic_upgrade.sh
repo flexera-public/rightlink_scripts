@@ -5,7 +5,7 @@
 # -e will immediatly exit out of script at point of error
 set -e
 
-cron_file='/etc/cron.d/rightlink_upgrade'
+cron_file='/etc/cron.d/rightlink-upgrade'
 exec_file='/usr/local/bin/rightlink_check_upgrade'
 
 # Grab toggle option to enable

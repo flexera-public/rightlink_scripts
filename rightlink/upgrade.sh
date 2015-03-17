@@ -108,12 +108,12 @@ echo "downloading RightLink version '$desired'"
 
 # Download new version
 cd /tmp
-rm -rf rll rll.tgz
-curl --silent --show-error --retry 3 --output rll.tgz $prefix_url/$desired/rightlinklite.tgz
-tar zxf rll.tgz || (cat rll.tgz; exit 1)
+rm -rf rightlink rightlink.tgz
+curl --silent --show-error --retry 3 --output rightlink.tgz $prefix_url/$desired/rightlinklite.tgz
+tar zxf rightlink.tgz || (cat rightlink.tgz; exit 1)
 
 # Check downloaded version
-mv rll/rightlinklite ${rl_bin}-new
+mv rightlink/rightlink ${rl_bin}-new
 echo "checking new version"
 new=`${rl_bin}-new -version | awk '{print $2}'`
 if [[ $new == $desired ]]; then
