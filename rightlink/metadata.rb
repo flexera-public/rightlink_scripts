@@ -44,3 +44,10 @@ attribute   "ENABLE_AUTO_UPGRADE",
   :default => "true",
   :choice => ["true", "false"],
   :recipes => ["rightlink::setup_automatic_upgrade"]
+
+attribute   "UPGRADES_FILE_LOCATION",
+  :display_name => "External location of 'upgrades' file",
+  :required => "optional",
+  :type => "string",
+  :default => "https://rightlinklite.rightscale.com/rll/upgrades",
+  :recipes => ["rightlink::upgrade"]

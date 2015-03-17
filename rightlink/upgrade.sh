@@ -8,6 +8,7 @@
 set -e
 
 RLL_SECRET=/var/run/rightlink/secret
+UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlinklite.rightscale.com/rll/upgrades"}
 
 upgrade_rightlink() {
 
@@ -86,12 +87,12 @@ fi
 # as "current_version:upgradeable_new_version". If the "upgrades" file does not exist,
 # or if the current version is not in the file, no upgrade is done.
 re="^\s*${current_version}\s*:\s*(\S+)\s*$"
-match=`curl --silent --show-error --retry 3 ${prefix_url}/upgrades | egrep ${re} || true`
+match=`curl --silent --show-error --retry 3 ${UPGRADES_FILE_LOCATION} | egrep ${re} || true`
 if [[ "$match" =~ $re ]]; then
   desired=${BASH_REMATCH[1]}
 else
   echo "Cannot determine latest version from upgrade file"
-  echo "Tried to match /^${current_version}:/ in ${prefix_url}/upgrades"
+  echo "Tried to match /^${current_version}:/ in ${UPGRADES_FILE_LOCATION}"
   exit 0
 fi
 
