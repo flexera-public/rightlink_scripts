@@ -5,7 +5,7 @@ RightScripts for RightScale's RightLink10 (aka RightLinkLite) agent used in the
 Base ServerTemplate and beyond.
 
 This repository contains the collection of RightScrits used in ServerTemplates that go with
-the new RightLink10 agent. The scripts for the base ServerTemplate are in the rll subdirectory.
+the new RightLink10 agent. The scripts for the base ServerTemplate are in the `rightlink` subdirectory.
 
 How it Works
 ------------
@@ -46,7 +46,7 @@ In order to modify a script in this repo the recommended first steps are:
 - Use `./rs_push` to push to github and RightScale, this creates a repository in your RightScale
   account named `rightlink_scripts_<your_branch_name>` and makes RS fetch from github. Note:
   choose your branch name judiciously!
-- Ensure you have imported the official _RL10.0.X Linux Base_ ServerTemplate to your
+- Ensure you have imported the official _RightLink 10.0.X Linux Base_ ServerTemplate to your
   account (for the right _X_)
 - Run `./rs_make_st -s 'RL10.0.X Linux Base' -c` to clone the official base ServerTemplate
   your branch name will be appended to the name of the cloned ST) and have it changed to use
@@ -65,7 +65,7 @@ When to use...
   change the HEAD revision. Without the `-c` option the command will repoint the HEAD revision
   to your new repo.
 - `rs_make_st -r`: the -r option clones all the MCIs in order to change their tags to download
-  a different version of RLL. For example, if the MCIs of your ST point to RL10.0.rc0 and you
+  a different version of RightLink. For example, if the MCIs of your ST point to RL10.0.rc0 and you
   want to try RL10.0.4 you can use `-r 10.0.4`. It will not change MCIs that already use
   the new version, so it's a "safe" option.
 
@@ -77,12 +77,12 @@ locally on the server as follows:
   into `/home/rightscale/rightlink_scripts` this would be as follows:
   (_warning, these instructions are untested_)
 ```
-. /var/run/rll-secret
+. /var/run/rightlink/secret
 curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
      --data-urlencode path=/home/rightscale/rightlink_scripts
 ```
-  This now means that RL10 expects to find an operational script called `rll::init` in the
-  dashboard at `/home/rightscale/rightlink_scripts/rll/init.*`
+  This now means that RL10 expects to find an operational script called `rll::my_script` in the
+  dashboard at `/home/rightscale/rightlink_scripts/rightlink_scripts/my_script.*`
 - Test your scripts by running them from the dashboard or command line using
 ```
 ./rs_run rll::my_script
@@ -90,7 +90,7 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
 - When done, you can `git commit` your changes and push them using the `./rs_push` script, which
   will ensure that the RS platform refetches the respository.
 - Note that if you need to clone multiple repos onto your server you cannot tell RL10 to search
-  more than one repo for scripts. A work-around is to create a separate directory for RLL that
+  more than one repo for scripts. A work-around is to create a separate directory for RL10 that
   contains symlinks to all the cookbook directories you want RL10 to search.
 - To troubleshoot the process use the RightLink log audit entry on your server, RL10 logs
   the steps to download cookbooks and then search for the appropriate scripts.
