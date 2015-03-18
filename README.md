@@ -77,7 +77,7 @@ locally on the server as follows:
   into `/home/rightscale/rightlink_scripts` this would be as follows:
   (_warning, these instructions are untested_)
 ```
-. /var/run/rightlink-secret
+. /var/run/rightlink/secret
 curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
      --data-urlencode path=/home/rightscale/rightlink_scripts
 ```
