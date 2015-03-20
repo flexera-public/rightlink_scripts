@@ -8,7 +8,7 @@
 set -e
 
 RLL_SECRET=/var/run/rightlink/secret
-UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rll/upgrades"}
+UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rightlink/upgrades"}
 
 upgrade_rightlink() {
 
