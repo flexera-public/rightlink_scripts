@@ -56,12 +56,12 @@ if [ ! $use_current_metadata ]; then
   if [[ "${branch_name}" =~ $re ]]; then
     # Branch match name examples: 10.1.rc3, 10.10.2
     # Version name from examples: 10.1.3, 10.10.2
-    vers="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
-    echo "using release numbering: $vers"
+    version_template="${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+    echo "using release numbering: $version_template"
   else
     # Version name example: 0.2015.3015617425
     vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
-    echo "using dev numbering: $vers"
+    echo "using dev numbering: $version_template"
   fi
 
   echo "Checking 'Chef' version numbers..."
