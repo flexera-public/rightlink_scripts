@@ -1,11 +1,11 @@
 RightLink Scripts
 =================
 
-RightScripts for RightScale's RightLink10 (aka RightLinkLite) agent used in the
-Base ServerTemplate and beyond.
+RightScripts for RightScale's RightLink10 agent used in the Base ServerTemplate and beyond.
 
-This repository contains the collection of RightScrits used in ServerTemplates that go with
-the new RightLink10 agent. The scripts for the base ServerTemplate are in the `rightlink` subdirectory.
+This repository contains the collection of RightScripts used in ServerTemplates that go with
+the new RightLink10 agent. The scripts for the base Linux ServerTemplate are in the
+`rll` subdirectory.
 
 How it Works
 ------------
@@ -19,9 +19,9 @@ ruby scripts (or powershell in the case of Windows) and a Chef metadata.rb file 
 the scripts as well as the inputs of each on (or attributes in Chef terminology).
 
 Within the RightScale dashboard these scripts can be composed just like Chef recipes and they
-will be executed by RightLink 10 (aka RightLinkLite) just like RightScripts. The inputs are
-passed via environment variables, therefore their names should be kept flat and, by convention,
-in all caps. The input values must be simple strings.
+will be executed by RightLink 10 just like RightScripts. The inputs are passed via environment
+variables, therefore their names should be kept flat and, by convention, in all caps. The
+input values must be simple strings.
 
 In terms of naming, in order to associate a file with a recipe name RightLink searches for the
 first file that matches `recipename.*` and that is executable, thus you are free to add `.sh`,
@@ -82,7 +82,7 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
      --data-urlencode path=/home/rightscale/rightlink_scripts
 ```
   This now means that RL10 expects to find an operational script called `rll::my_script` in the
-  dashboard at `/home/rightscale/rightlink_scripts/rightlink_scripts/my_script.*`
+  dashboard at `/home/rightscale/rightlink_scripts/my_script.*`
 - Test your scripts by running them from the dashboard or command line using
 ```
 ./rs_run rll::my_script
