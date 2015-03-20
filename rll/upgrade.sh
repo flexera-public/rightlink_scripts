@@ -8,7 +8,7 @@
 set -e
 
 RLL_SECRET=/var/run/rightlink/secret
-UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlinklite.rightscale.com/rll/upgrades"}
+UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rll/upgrades"}
 
 upgrade_rightlink() {
 
@@ -72,7 +72,7 @@ source ${RLL_SECRET}
 # Detemine bin_path
 rl_bin=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
   "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
-prefix_url='https://rightlinklite.rightscale.com/rll'
+prefix_url='https://rightlink.rightscale.com/rll'
 
 # Determine current version of rightlink
 current_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
