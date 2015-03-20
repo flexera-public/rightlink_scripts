@@ -1,16 +1,16 @@
-name        "rightlink"
+name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
-description "Base scripts for RightLink10 (RLL) to initialize basic functionality"
+description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
 version     "10.0.3"
 
-recipe      "rightlink::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
-recipe      "rightlink::setup_software_repo", "Initializes repositories"
-recipe      "rightlink::setup_hostname", "Changes the hostname of the server"
-recipe      "rightlink::collectd", "Installs and configures collectd for RightScale monitoring"
-recipe      "rightlink::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
-recipe      "rightlink::shutdown-reason", "Print out the reason for shutdown"
-recipe      "rightlink::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
+recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
+recipe      "rll::setup_software_repo", "Initializes repositories"
+recipe      "rll::setup_hostname", "Changes the hostname of the server"
+recipe      "rll::collectd", "Installs and configures collectd for RightScale monitoring"
+recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
+recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
+recipe      "rll::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 
 attribute   "SERVER_HOSTNAME",
   :display_name => "Hostname for this server",
@@ -21,21 +21,21 @@ attribute   "SERVER_HOSTNAME",
   :required => "optional",
   :type => "string",
   :default => "env:RS_SERVER_NAME",
-  :recipes => ["rightlink::setup_hostname"]
+  :recipes => ["rll::setup_hostname"]
 
 attribute   "COLLECTD_SERVER",
   :display_name => "RightScale monitoring server to send data to",
   :required => "optional",
   :type => "string",
   :default => "env:RS_SKETCHY",
-  :recipes => ["rightlink::collectd"]
+  :recipes => ["rll::collectd"]
 
 attribute   "RS_INSTANCE_UUID",
   :display_name => "RightScale monitoring ID for this server",
   :required => "optional",
   :type => "string",
   :default => "env:RS_INSTANCE_UUID",
-  :recipes => ["rightlink::collectd"]
+  :recipes => ["rll::collectd"]
 
 attribute   "ENABLE_AUTO_UPGRADE",
   :display_name => "Enables auto upgrade of RightLink10",
@@ -43,11 +43,11 @@ attribute   "ENABLE_AUTO_UPGRADE",
   :type => "string",
   :default => "true",
   :choice => ["true", "false"],
-  :recipes => ["rightlink::setup_automatic_upgrade"]
+  :recipes => ["rll::setup_automatic_upgrade"]
 
 attribute   "UPGRADES_FILE_LOCATION",
   :display_name => "External location of 'upgrades' file",
   :required => "optional",
   :type => "string",
   :default => "https://rightlinklite.rightscale.com/rll/upgrades",
-  :recipes => ["rightlink::upgrade"]
+  :recipes => ["rll::upgrade"]
