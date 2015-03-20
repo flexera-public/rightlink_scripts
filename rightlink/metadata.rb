@@ -49,5 +49,5 @@ attribute   "UPGRADES_FILE_LOCATION",
   :display_name => "External location of 'upgrades' file",
   :required => "optional",
   :type => "string",
-  :default => "https://rightlinklite.rightscale.com/rll/upgrades",
+  :default => "https://rightlink.rightscale.com/rll/upgrades",
   :recipes => ["rll::upgrade"]
