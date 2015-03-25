@@ -10,7 +10,8 @@ recipe      "rll::setup_hostname", "Changes the hostname of the server"
 recipe      "rll::collectd", "Installs and configures collectd for RightScale monitoring"
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
-recipe      "rll::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
+recipe      "rll::setup_automatic_upgrade", "Periodically runs rll::upgrade. This requires " +
+            "having rll::upgrade as an Operational Script."
 
 attribute   "SERVER_HOSTNAME",
   :display_name => "Hostname for this server",
