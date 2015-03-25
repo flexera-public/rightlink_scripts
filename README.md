@@ -97,7 +97,8 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
 
 RightScale Release Process
 --------------------------
-The release steps for the Linux Base ServerTemplate at RightScale is as follows:
+The release steps for the Linux Base ServerTemplate at RightScale are as follows:
+
 1. Check out the rightlink_scripts repo
 1. Create release branch: `git checkout -b 10.0.rc2` (use appropriate branch name)
 1. Test-push: `./rs_push`, it will ask you to run a sed script to fix the Chef metadata.rb,
