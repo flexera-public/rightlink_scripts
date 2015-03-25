@@ -89,6 +89,7 @@ if [ ! $use_current_metadata ]; then
   fi
 fi
 
+git push origin ${branch_name} || exit 1
 
 RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
 
