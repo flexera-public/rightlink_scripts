@@ -89,6 +89,7 @@ if [ ! $use_current_metadata ]; then
   fi
 fi
 
+echo "git push origin ${branch_name}"
 git push origin ${branch_name} || exit 1
 
 RS_SERVER=${RS_SERVER:-us-3.rightscale.com}
@@ -208,7 +209,7 @@ while true; do
     --data-urlencode "items_per_page=10"`
   #echo $html
   #re="auditee_id=${RS_REPO_ID}[^']*audit_entries/([0-9]*)[^0-9>]*>(queued|[0-9][0-9]*%)"
-  re="auditee_id=${RS_REPO_ID}[^']*audit_entries/([0-9]*)[^0-9>]"
+  re="auditee_id=${RS_REPO_ID}[^?]*audit_entries/([0-9]*)[^0-9>]"
   if [[ "$html" =~ $re ]]; then
     audit_id="${BASH_REMATCH[1]}"
     echo " audit_entry_id=${audit_id}"
@@ -254,6 +255,7 @@ if [[ "$html" =~ $re ]]; then
       echo "Scraped revision is    ${rev}"
       echo "Perhaps RS ignored the refetch request because a refetch"
       echo "was already running (but on an older commit)?"
+      echo "Please retry and if the failure persists, check the scraped revision in the dashboard."
     fi
   fi
 else
