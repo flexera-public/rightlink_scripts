@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     "10.0.3"
+version     '10.0.4'
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rll::setup_software_repo", "Initializes repositories"
@@ -11,6 +11,7 @@ recipe      "rll::collectd", "Installs and configures collectd for RightScale mo
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
 recipe      "rll::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
+recipe      "rll::test-script", "Test operational script, used by righlinklite/tester"
 
 attribute   "SERVER_HOSTNAME",
   :display_name => "Hostname for this server",
@@ -51,3 +52,17 @@ attribute   "UPGRADES_FILE_LOCATION",
   :type => "string",
   :default => "https://rightlink.rightscale.com/rightlink/upgrades",
   :recipes => ["rll::upgrade"]
+
+attribute   "TEST_VAR",
+  :display_name => "test variable to print for regression tests",
+  :required => "recommended",
+  :type => "string",
+  :default => "test value",
+  :recipes => ["rll::test-script"]
+
+attribute   "TEST_CRED",
+  :display_name => "test credential to print for regression tests",
+  :required => "recommended",
+  :type => "string",
+  :default => "cred:AWS_ACCESS_KEY_ID",
+  :recipes => ["rll::test-script"]

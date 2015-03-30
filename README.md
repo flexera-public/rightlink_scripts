@@ -95,6 +95,22 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
 - To troubleshoot the process use the RightLink log audit entry on your server, RL10 logs
   the steps to download cookbooks and then search for the appropriate scripts.
 
+RightScale Release Process
+--------------------------
+The release steps for the Linux Base ServerTemplate at RightScale are as follows:
+
+1. Check out the rightlink_scripts repo
+1. Create release branch: `git checkout -b 10.0.rc2` (use appropriate branch name)
+1. Test-push: `./rs_push`, it will ask you to run a sed script to fix the Chef metadata.rb,
+   run it
+1. Re-run `./rs_push` to push the release branch to github and fetch it into RS
+1. Update the ServerTemplate with a new revision for the new version:
+   `./rs_make_st -s "RL10.0.rc1 Linux Base" -r 10.0.rc2`
+1. Check the images of the head revision of the ST, they should all have the name of the new version.
+1. Rename the ST and edit the description to fix the value of the tag to the new branch
+1. Test the ST (in the RLL tester, may have to adjust test.yml)
+1. Manually commit and publish ST
+
 License
 -------
 See [![MIT License](http://img.shields.io/:license-mit-blue.svg)](LICENSE)
