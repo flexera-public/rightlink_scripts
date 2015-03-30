@@ -60,7 +60,7 @@ if [ ! $use_current_metadata ]; then
     echo "using release numbering: $version_template"
   else
     # Version name example: 0.2015.3015617425
-    version_template=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
+    vers=0.`date +%Y`.`echo "${branch_name}" | cksum | cut -d " " -f 1`
     echo "using dev numbering: $version_template"
   fi
 
