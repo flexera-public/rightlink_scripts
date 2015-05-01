@@ -1,5 +1,5 @@
 #! /bin/bash -e
-#
+
 # ---
 # RightScript Name: BASE collectd
 # Description: Install and setup collectd and basic set of plugins.
@@ -14,7 +14,7 @@
 #   COLLECTD_SERVER:
 #     Input Type: single
 #     Category: RightScale
-#     Default: env:RS_SKETCHY
+#     Default: env:RS_TSS
 #     Description: The FQDN or IP address of the remote collectd server.
 #     Required: true
 #     Advanced: true
@@ -96,6 +96,11 @@ declare -a mktemp_files
 trap 'sudo rm --force "${mktemp_files[@]}"' EXIT
 
 # Initialize variables
+if [[ "$COLLECTD_SERVER" =~ tss ]]; then
+  tss="true"
+else
+  tss=""
+fi
 collectd_base_dir=/var/lib/collectd
 collectd_types_db=/usr/share/collectd/types.db
 collectd_interval=10
@@ -123,12 +128,22 @@ collectd_thresholds_conf="$collectd_conf_dir/thresholds.conf"
 
 # Install platform specific collectd packages
 if [[ -d /etc/apt ]]; then
+  export DEBIAN_FRONTEND=noninteractive
   # Install from RightScale repo, which is expected to be configured...
-  sudo apt-get install -y curl collectd-core=4\*
+  if [[ -n "$tss" ]]; then
+    sudo apt-get update >/dev/null
+    sudo apt-get install -y curl collectd
+  else
+    apt-get install -y curl collectd-core=4\*
+  fi
 elif [[ -d /etc/yum.repos.d ]]; then
   # keep these lines separate, yum doesn't fail for missing packages when grouped together
-  sudo yum install -y "collectd-4*"
   sudo yum install -y curl
+  if [[ -n "$tss" ]]; then
+    sudo yum install -y collectd
+  else 
+    sudo yum install -y "collectd-4*"
+  fi
 fi
 
 sudo mkdir --mode=0755 --parents $collectd_conf_plugins_dir $collectd_base_dir $collectd_plugin_dir
@@ -147,7 +162,7 @@ sudo dd of="$collectd_conf_tmp" <<EOF
 # enabling any more plugins.
 
 Hostname "$RS_INSTANCE_UUID"
-FQDNLookup true
+FQDNLookup false
 BaseDir "$collectd_base_dir"
 PluginDir "$collectd_plugin_dir"
 TypesDB "$collectd_types_db"
@@ -259,11 +274,23 @@ else
   echo "swapfile not setup, skipping collectd swap plugin"
 fi
 
+source /var/run/rightlink/secret
+if [[ -n "$tss" ]]; then
+  curl -sS -X PUT -H X-RLL-Secret:$RS_RLL_SECRET -g "http://127.0.0.1:$RS_RLL_PORT/rll/tss/hostname?hostname=$COLLECTD_SERVER"
+  configure_collectd_plugin write_http \
+    "<URL \"http://127.0.0.1:$RS_RLL_PORT/rll/tss/collectdv5\">" \
+    '  BufferSize 16384' \
+    '</URL>'
+else 
+  configure_collectd_plugin network \
+    "Server \"$COLLECTD_SERVER\" \"$collectd_server_port\""
+fi
+
+
 configure_collectd_plugin load
 configure_collectd_plugin processes
 configure_collectd_plugin users
-configure_collectd_plugin network \
-  "Server \"$COLLECTD_SERVER\" \"$collectd_server_port\""
+
 
 # Make sure the collectd service is enabled
 if [[ -d /etc/yum.repos.d ]]; then
@@ -278,5 +305,12 @@ elif [[ $collectd_service_notify -eq 1 ]]; then
 fi
 
 # Add the RightScale monitoring active tag
-/usr/local/bin/rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_monitoring:state=active &&\
+
+
+if [[ -n "$tss" ]]; then
+  auth_tag=rs_monitoring:state=auth
+else
+  auth_tag=rs_monitoring:state=active
+fi
+/usr/local/bin/rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=$auth_tag&&\
   logger -s -t RightScale "Setting monitoring active tag"
