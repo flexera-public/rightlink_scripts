@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     '10.0.4'
+version     '0.2015.1522191232'
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rll::setup_software_repo", "Initializes repositories"
