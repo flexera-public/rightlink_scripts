@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.1.0
+--------
+- Modified wait-for-eip.sh to reflect variable name changes
+
 10.0.rc4
 --------
 - Fixing of rs_push script to find the right audit entry again (html parsing breakage)
