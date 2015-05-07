@@ -1,6 +1,6 @@
 #! /bin/bash -x
 
-. /var/lib/rightscale-identity
+source /var/lib/rightscale-identity
 if [[ -z "$expected_public_ip" ]]; then
   echo "No public IP address to wait for"
   exit 0
@@ -21,7 +21,7 @@ bad_ip=true
 t0=`date +%s`
 while [[ "$bad_ip" == true && $((`date +%s` - $t0 < 300)) ]]; do
   bad_ip=false
-  for t in ${targets[@]}; do
+  for t in "${targets[@]}"; do
     x=`curl --max-time 1 -S -s http://$t/ip/mine`
     if [[ "$x" =~ ^[.0-9]*$ && ! "$x" =~ ^127\. && "$x" != "$expected_public_ip" ]]; then
       echo "$t responded with $x which is not the $expected_public_ip we expect"
@@ -29,7 +29,7 @@ while [[ "$bad_ip" == true && $((`date +%s` - $t0 < 300)) ]]; do
       sleep 5
     else
       echo "$t responded with $x"
-    fi    
+    fi
   done
 done
 echo "No incorrect public IP address detected after $(((`date +%s` - $t0))) seconds"
