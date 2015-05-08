@@ -7,7 +7,6 @@
 # -e will immediatly exit out of script at point of error
 set -e
 
-RLL_SECRET=/var/run/rightlink/secret
 UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rightlink/upgrades"}
 
 upgrade_rightlink() {
@@ -15,15 +14,13 @@ upgrade_rightlink() {
   # Use 'logger' here instead of 'echo' since stdout from this is not sent to
   # audit entries as RightLink is down for a short time during the upgrade process.
 
-  source ${RLL_SECRET}
-  res=`curl --silent --show-error --request POST --header X-RLL-Secret:$RS_RLL_SECRET \
-    "http://127.0.0.1:$RS_RLL_PORT/rll/upgrade?exec=${rl_bin}-new"`
-  if [[ $res =~ successful ]]; then
+  res=$(rsc rl10 upgrade /rll/upgrade exec=${rl_bin}-new 2>/dev/null)
+  if [[ "$res" =~ successful ]]; then
     # Delete the old version if it exists from the last upgrade.
-    rm -fr ${rl_bin}-old
+    sudo rm -rf ${rl_bin}-old
     # Keep the old version in case of issues, ie we need to manually revert back.
-    mv ${rl_bin} ${rl_bin}-old
-    cp ${rl_bin}-new ${rl_bin}
+    sudo mv ${rl_bin} ${rl_bin}-old
+    sudo cp ${rl_bin}-new ${rl_bin}
     logger -t rightlink "rightlink updated"
   else
     logger -t rightlink "Error: ${res}"
@@ -34,52 +31,47 @@ upgrade_rightlink() {
   for retry_counter in {1..5}; do
     # The auth information is updated on an upgrade.  Continue to source the
     # auth file to grab the updated auth info once RightLink has restarted.
-    source ${RLL_SECRET}
-    new_installed_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
-      "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version" || true`
-    if [[ $new_installed_version == $desired ]]; then
-      logger -t rightlink "New version active - $new_installed_version"
+    new_installed_version=$(rsc --x1 .version rl10 index proc 2>/dev/null)
+    if [[ "$new_installed_version" == "$desired" ]]; then
+      logger -t rightlink "New version active - ${new_installed_version}"
       break
     else
       logger -t rightlink "Waiting for new version to become active."
       sleep 2
     fi
   done
-  if [[ $new_installed_version != $desired ]]; then
-    logger -t rightlink "New version does not appear to be desired version: $new_installed_version"
+  if [[ "$new_installed_version" != "$desired" ]]; then
+    logger -t rightlink "New version does not appear to be desired version: ${new_installed_version}"
     exit 1
   fi
 
   # Report to audit entry that RightLink ugpraded.
-  instance_json=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
-    "http://127.0.0.1:$RS_RLL_PORT/api/sessions/instance"`
-  re='\{"rel":"self","href":"(/api/clouds/[0-9]+/instances/[0-9a-zA-Z]*)"\}'
-  if [[ $instance_json =~ $re ]]; then
-    instance_href="${BASH_REMATCH[1]}"
-    curl --silent --show-error --request POST --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
-      "http://127.0.0.1:$RS_RLL_PORT/api/audit_entries" \
-      --data-urlencode "audit_entry[auditee_href]=${instance_href}" \
-      --data-urlencode "audit_entry[detail]=RightLink updated to '${new_installed_version}'" \
-      --data-urlencode 'audit_entry[summary]=RightLink updated'
+  instance_href=$(rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance 2>/dev/null)
+  if [[ -n "$instance_json" ]]; then
+    audit_entry_href=$(rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
+                     "audit_entry[detail]=RightLink updated to '${new_installed_version}'" "audit_entry[summary]=RightLink updated" 2>/dev/null)
+    if [[ -n "$audit_entry_href" ]]; then
+      logger -t rightlink "audit entry created at ${audit_entry_href}"
+    else
+      logger -t rightlink "failed to create audit entry"
+    fi
   else
     logger -t rightlink "unable to obtain instance href for audit entries"
   fi
   exit 0
 }
 
-source ${RLL_SECRET}
+# Query RightLink info
+json=$(rsc rl10 index /rll/proc)
 
 # Detemine bin_path
-rl_bin=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
-  "http://127.0.0.1:$RS_RLL_PORT/rll/proc/bin_path"`
-prefix_url='https://rightlink.rightscale.com/rll'
+rl_bin=$(echo "$json" | rsc --x1 .bin_path json)
 
 # Determine current version of rightlink
-current_version=`curl --silent --show-error --request GET --header X-RLL-Secret:$RS_RLL_SECRET --globoff \
-  "http://127.0.0.1:$RS_RLL_PORT/rll/proc/version"`
+current_version=$(echo "$json" | rsc --x1 .version json)
 
-if [ -z $current_version ]; then
-  echo "Can't determine current version of RLL"
+if [[ -z "$current_version" ]]; then
+  echo "Can't determine current version of RightLink"
   exit 1
 fi
 
@@ -89,36 +81,36 @@ fi
 re="^\s*${current_version}\s*:\s*(\S+)\s*$"
 match=`curl --silent --show-error --retry 3 ${UPGRADES_FILE_LOCATION} | egrep ${re} || true`
 if [[ "$match" =~ $re ]]; then
-  desired=${BASH_REMATCH[1]}
+  desired="${BASH_REMATCH[1]}"
 else
   echo "Cannot determine latest version from upgrade file"
   echo "Tried to match /^${current_version}:/ in ${UPGRADES_FILE_LOCATION}"
   exit 0
 fi
 
-if [[ $desired == $current_version ]]; then
-  echo "RightLink is already up-to-date (current=$current_version)"
+if [[ "$desired" == "$current_version" ]]; then
+  echo "RightLink is already up-to-date (current=${current_version})"
   exit 0
 fi
 
 echo "RightLink needs update:"
-echo "  from current=$current_version"
-echo "  to   desired=$desired"
+echo "  from current=${current_version}"
+echo "  to   desired=${desired}"
 
-echo "downloading RightLink version '$desired'"
+echo "downloading RightLink version '${desired}'"
 
 # Download new version
 cd /tmp
-rm -rf rightlink rightlink.tgz
-curl --silent --show-error --retry 3 --output rightlink.tgz $prefix_url/$desired/rightlink.tgz
+sudo rm -rf rightlink rightlink.tgz
+sudo curl --silent --show-error --retry 3 --output rightlink.tgz https://rightlink.rightscale.com/rll/${desired}/rightlink.tgz
 tar zxf rightlink.tgz || (cat rightlink.tgz; exit 1)
 
 # Check downloaded version
-mv rightlink/rightlink ${rl_bin}-new
+sudo mv rightlink/rightlink ${rl_bin}-new
 echo "checking new version"
 new=`${rl_bin}-new -version | awk '{print $2}'`
-if [[ $new == $desired ]]; then
-  echo "new version looks right: $new"
+if [[ "$new" == "$desired" ]]; then
+  echo "new version looks right: ${new}"
   echo "restarting RightLink to pick up new version"
   # Fork a new task since this main process is started
   # by RightLink and we are restarting it.

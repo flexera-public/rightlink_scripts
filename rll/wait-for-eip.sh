@@ -1,6 +1,12 @@
 #! /bin/bash -x
 
-source /var/lib/rightscale-identity
+rs_vars=$(sudo cat /var/lib/rightscale-identity)
+
+re="expected_public_ip='([^']+)'"
+if [[ "$rs_vars" =~ $re ]]; then
+  expected_public_ip="${BASH_REMATCH[1]}"
+fi
+
 if [[ -z "$expected_public_ip" ]]; then
   echo "No public IP address to wait for"
   exit 0
@@ -12,6 +18,11 @@ if [[ "$expected_public_ip" =~ rfc1918 ]]; then
   exit 0
 fi
 echo "Expecting to be assigned public IP $expected_public_ip"
+
+re="api_hostname='([^']+)'"
+if [[ "$rs_vars" =~ $re ]]; then
+  api_hostname="${BASH_REMATCH[1]}"
+fi
 
 targets=(my.rightscale.com us-3.rightscale.com us-4.rightscale.com island1.rightscale.com island10.rightscale.com $api_hostname)
 echo "Checking public IP against ${targets[@]}"
