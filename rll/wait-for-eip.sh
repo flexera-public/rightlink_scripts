@@ -13,7 +13,7 @@ if [[ -z "$expected_public_ip" ]]; then
 fi
 
 rfc1918="^(192\.168|10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.)"
-if [[ "$expected_public_ip" =~ rfc1918 ]]; then
+if [[ "$expected_public_ip" =~ $rfc1918 ]]; then
   echo "External IP is within rfc1918 range: $expected_public_ip, not waiting"
   exit 0
 fi
@@ -32,15 +32,24 @@ bad_ip=true
 t0=`date +%s`
 while [[ "$bad_ip" == true && $((`date +%s` - $t0 < 300)) ]]; do
   bad_ip=false
-  for t in "${targets[@]}"; do
-    x=`curl --max-time 1 -S -s http://$t/ip/mine`
-    if [[ "$x" =~ ^[.0-9]*$ && ! "$x" =~ ^127\. && "$x" != "$expected_public_ip" ]]; then
-      echo "$t responded with $x which is not the $expected_public_ip we expect"
+  # check each API host
+  for target in "${targets[@]}"; do
+    # query the API for the servers IP address
+    my_ip=$(curl --max-time 1 -S -s http://$target/ip/mine)
+    if [[ "$my_ip" =~ ^[.0-9]*$ && ! "$my_ip" =~ ^127\. && "$x" != "$expected_public_ip" ]]; then
+      echo "$target responded with: $my_ip which is not the IP we expect: $expected_public_ip"
       bad_ip=true
-      sleep 5
+      break
     else
-      echo "$t responded with $x"
+      echo "$target responded with $my_ip"
     fi
   done
+  sleep 5
 done
-echo "No incorrect public IP address detected after $(((`date +%s` - $t0))) seconds"
+
+if [[ "$bad_ip" == true ]]; then
+  echo "One or more API Hosts is returning an IP address that is different than expected"
+  exit 1
+else
+  echo "No incorrect public IP address detected after $(((`date +%s` - $t0))) seconds"
+fi
