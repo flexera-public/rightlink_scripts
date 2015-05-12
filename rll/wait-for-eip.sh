@@ -27,29 +27,34 @@ fi
 targets=(my.rightscale.com us-3.rightscale.com us-4.rightscale.com island1.rightscale.com island10.rightscale.com $api_hostname)
 echo "Checking public IP against ${targets[@]}"
 
-# spend at most a few minutes waiting for nobody to tell us that we have the wrong IP address
-bad_ip=true
-t0=`date +%s`
-while [[ "$bad_ip" == true && $((`date +%s` - $t0 < 300)) ]]; do
-  bad_ip=false
-  # check each API host
+# spend at most 15 minutes checking the API hosts for either the expected IP address or an incorrect IP address
+start_time=$(date +%s)
+while [[ $(($(date +%s) - $start_time < 900)) ]]; then
+  # reset matching API responses to zero
+  matching_responses=0
+  # check each API
   for target in "${targets[@]}"; do
     # query the API for the servers IP address
     my_ip=$(curl --max-time 1 -S -s http://$target/ip/mine)
-    if [[ "$my_ip" =~ ^[.0-9]*$ && ! "$my_ip" =~ ^127\. && "$x" != "$expected_public_ip" ]]; then
+    if [[ "$my_ip" =~ ^[.0-9]*$ && ! "$my_ip" =~ ^127\. && "$my_ip" != "$expected_public_ip" ]]; then
       echo "$target responded with: $my_ip which is not the IP we expect: $expected_public_ip"
-      bad_ip=true
-      break
+    elif [[ "$my_ip" == "$expected_public_ip" ]]; then
+      matching_responses+=1
     else
       echo "$target responded with $my_ip"
     fi
   done
-  sleep 5
+  # check to see if all API hosts reported IPs that match the expected IP and exit the script
+  if [[ "$matching_responses" == "${#targets[@]}" ]]; then
+    echo "All API hosts are reporting the expected IP address: $expected_public_ip"
+    exit 0
+  else
+    echo "One or more API Hosts is returning an IP address that is different than expected"
+    echo "Sleeping 15 seconds and retrying ... "
+    sleep 15
+  fi
 done
 
-if [[ "$bad_ip" == true ]]; then
-  echo "One or more API Hosts is returning an IP address that is different than expected"
-  exit 1
-else
-  echo "No incorrect public IP address detected after $(((`date +%s` - $t0))) seconds"
-fi
+# if all API hosts are returning the expected IP address after 15 minutes then exit with an error
+echo "One or more API Hosts is returning an IP address that is different than expected after $(((`date +%s` - $t0))) seconds"
+exit 1
