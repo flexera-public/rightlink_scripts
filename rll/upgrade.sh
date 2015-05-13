@@ -14,7 +14,7 @@ upgrade_rightlink() {
   # Use 'logger' here instead of 'echo' since stdout from this is not sent to
   # audit entries as RightLink is down for a short time during the upgrade process.
 
-  res=$(rsc rl10 upgrade /rll/upgrade exec=${rl_bin}-new 2>/dev/null)
+  res=$(rsc rl10 upgrade /rll/upgrade exec=${rl_bin}-new 2>/dev/null || true)
   if [[ "$res" =~ successful ]]; then
     # Delete the old version if it exists from the last upgrade.
     sudo rm -rf ${rl_bin}-old
@@ -31,7 +31,7 @@ upgrade_rightlink() {
   for retry_counter in {1..5}; do
     # The auth information is updated on an upgrade.  Continue to source the
     # auth file to grab the updated auth info once RightLink has restarted.
-    new_installed_version=$(rsc --x1 .version rl10 index proc 2>/dev/null)
+    new_installed_version=$(rsc --x1 .version rl10 index proc 2>/dev/null || true)
     if [[ "$new_installed_version" == "$desired" ]]; then
       logger -t rightlink "New version active - ${new_installed_version}"
       break
