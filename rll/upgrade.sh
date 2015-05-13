@@ -47,7 +47,7 @@ upgrade_rightlink() {
 
   # Report to audit entry that RightLink ugpraded.
   instance_href=$(rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance 2>/dev/null)
-  if [[ -n "$instance_json" ]]; then
+  if [[ -n "$instance_href" ]]; then
     audit_entry_href=$(rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
                      "audit_entry[detail]=RightLink updated to '${new_installed_version}'" "audit_entry[summary]=RightLink updated" 2>/dev/null)
     if [[ -n "$audit_entry_href" ]]; then
