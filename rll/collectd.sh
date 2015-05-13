@@ -122,11 +122,11 @@ collectd_thresholds_conf="$collectd_conf_dir/thresholds.conf"
 # Install platform specific collectd packages
 if [[ -d /etc/apt ]]; then
   # Install from RightScale repo, which is expected to be configured...
-  sudo -E apt-get install -y curl collectd-core=4\*
+  sudo apt-get install -y curl collectd-core=4\*
 elif [[ -d /etc/yum.repos.d ]]; then
   # keep these lines separate, yum doesn't fail for missing packages when grouped together
-  sudo -E yum install -y "collectd-4*"
-  sudo -E yum install -y curl
+  sudo yum install -y "collectd-4*"
+  sudo yum install -y curl
 fi
 
 sudo mkdir --mode=0755 --parents $collectd_conf_plugins_dir $collectd_base_dir $collectd_plugin_dir

@@ -29,8 +29,8 @@ if [[ -d /etc/apt ]]; then
 deb [arch=amd64] http://mirror.rightscale.com/rightscale_software_ubuntu/latest $distro_codename main
 deb-src [arch=amd64] http://mirror.rightscale.com/rightscale_software_ubuntu/latest $distro_codename main
 EOF
-  time sudo -E apt-get -qy update
-  time sudo -E apt-get -qy install unattended-upgrades
+  time sudo apt-get -qy update
+  time sudo apt-get -qy install unattended-upgrades
 
 #
 # CentOS
@@ -42,8 +42,8 @@ elif [[ `cat /etc/redhat-release` =~ ^CentOS.*\ ([0-9])\. ]]; then
        sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
        sudo sed -i 's/https/http/' /etc/yum.repos.d/epel.repo # versions of 6.x have trouble with https...
      fi
-     time sudo -E yum -y install yum-plugin-security
-     time sudo -E yum -y --security update-minimal
+     time sudo yum -y install yum-plugin-security
+     time sudo yum -y --security update-minimal
      ;;
   7) sudo rpm --import http://mirror.rightscale.com/rightlink/rightscale.pub
      sudo dd of=/etc/yum.repos.d/RightScale-Software.repo <<EOF
@@ -53,8 +53,8 @@ baseurl=http://mirror.rightscale.com/rightscale_software/centos/${ver}/x86_64
 gpgcheck=1
 gpgkey=http://mirror.rightscale.com/rightlink/rightscale.pub
 EOF
-     time sudo -E yum -y install yum-plugin-security
-     time sudo -E yum -y --security update-minimal
+     time sudo yum -y install yum-plugin-security
+     time sudo yum -y --security update-minimal
      ;;
   esac
 
@@ -68,8 +68,8 @@ elif [[ `cat /etc/redhat-release` =~ ^Red\ Hat.*\ ([0-9])\. ]]; then
     if ! yum list installed epel-release-6-8.noarch; then
       sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
     fi
-    time sudo -E yum -y install yum-plugin-security
-    time sudo -E yum -y --security update-minimal
+    time sudo yum -y install yum-plugin-security
+    time sudo yum -y --security update-minimal
     ;;
   7)
     if ! yum list installed epel-release-7-5.noarch; then
@@ -82,9 +82,9 @@ baseurl=http://mirror.rightscale.com/rightscale_software/centos/${ver}/x86_64
 gpgcheck=1
 gpgkey=http://mirror.rightscale.com/rightlink/rightscale.pub
 EOF
-    time sudo -E yum -y install yum-plugin-security
+    time sudo yum -y install yum-plugin-security
     # update-minimal fails on RHEL7, see https://bugzilla.redhat.com/show_bug.cgi?id=1048584
-    time sudo -E yum -y --security update
+    time sudo yum -y --security update
     ;;
   esac
 
@@ -104,9 +104,9 @@ gpgkey=http://mirror.rightscale.com/rightlink/rightscale.pub
 enabled=1
 priority=5
 EOF
-    time sudo -E yum -y install yum-plugin-security
+    time sudo yum -y install yum-plugin-security
     # update-minimal fails on RHEL7, see https://bugzilla.redhat.com/show_bug.cgi?id=1048584
-    time sudo -E yum -y --security update
+    time sudo yum -y --security update
     ;;
   esac
 
