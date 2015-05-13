@@ -1,4 +1,4 @@
-#! /bin/bash -x
+#! /bin/bash
 
 rs_vars=$(sudo cat /var/lib/rightscale-identity)
 

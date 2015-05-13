@@ -1,11 +1,8 @@
-#! /bin/bash
+#! /bin/bash -e
 
 # Will compare current version of rightlink 'running' with latest version provided from 'upgrades'
 # file. If they differ, will update to latest version.  Note that latest version can be an older version
 # if a downgrade is best.
-
-# -e will immediatly exit out of script at point of error
-set -e
 
 UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rightlink/upgrades"}
 
