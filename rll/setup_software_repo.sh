@@ -7,7 +7,7 @@ set -ex
 #
 # Ubuntu / Debian
 #
-if [ -d /etc/apt ]; then
+if [[ -d /etc/apt ]]; then
   # We build packages for ubuntu, but not debian. Packages are often compatible though,
   # see this handy table of equivalence, pulled off askubuntu:
   # 14.04 - 14.10        jessie
@@ -19,42 +19,42 @@ if [ -d /etc/apt ]; then
   wheezy) distro_codename=precise;;
   squeeze) distro_codename=lucid;;
   esac
-    
+
   if [[ -e /usr/bin/curl ]]; then
-    curl -s http://mirror.rightscale.com/rightlink/rightscale.pub | apt-key add -
+    curl -s http://mirror.rightscale.com/rightlink/rightscale.pub | sudo apt-key add -
   else
-    wget -q -O- http://mirror.rightscale.com/rightlink/rightscale.pub | apt-key add -
+    wget -q -O- http://mirror.rightscale.com/rightlink/rightscale.pub | sudo apt-key add -
   fi
-  cat >/etc/apt/sources.list.d/rightscale.sources.list <<EOF
+  sudo dd of=/etc/apt/sources.list.d/rightscale.sources.list <<EOF
 deb [arch=amd64] http://mirror.rightscale.com/rightscale_software_ubuntu/latest $distro_codename main
 deb-src [arch=amd64] http://mirror.rightscale.com/rightscale_software_ubuntu/latest $distro_codename main
 EOF
-  time apt-get -qy update
-  time apt-get -qy install unattended-upgrades
+  time sudo apt-get -qy update
+  time sudo apt-get -qy install unattended-upgrades
 
 #
 # CentOS
 #
 elif [[ `cat /etc/redhat-release` =~ ^CentOS.*\ ([0-9])\. ]]; then
-  ver=${BASH_REMATCH[1]}
-  case $ver in
+  ver="${BASH_REMATCH[1]}"
+  case "$ver" in
   6) if ! yum list installed epel-release-6-8.noarch; then
-       rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
-       sed -i 's/https/http/' /etc/yum.repos.d/epel.repo # versions of 6.x have trouble with https...
+       sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+       sudo sed -i 's/https/http/' /etc/yum.repos.d/epel.repo # versions of 6.x have trouble with https...
      fi
-     time yum -y install yum-plugin-security
-     time yum -y --security update-minimal
+     time sudo yum -y install yum-plugin-security
+     time sudo yum -y --security update-minimal
      ;;
-  7) rpm --import http://mirror.rightscale.com/rightlink/rightscale.pub
-     cat > /etc/yum.repos.d/RightScale-Software.repo <<EOF
+  7) sudo rpm --import http://mirror.rightscale.com/rightlink/rightscale.pub
+     sudo dd of=/etc/yum.repos.d/RightScale-Software.repo <<EOF
 [rightscale]
 name=RightScale
 baseurl=http://mirror.rightscale.com/rightscale_software/centos/${ver}/x86_64
 gpgcheck=1
 gpgkey=http://mirror.rightscale.com/rightlink/rightscale.pub
 EOF
-     time yum -y install yum-plugin-security
-     time yum -y --security update-minimal
+     time sudo yum -y install yum-plugin-security
+     time sudo yum -y --security update-minimal
      ;;
   esac
 
@@ -62,29 +62,29 @@ EOF
 # RedHat
 #
 elif [[ `cat /etc/redhat-release` =~ ^Red\ Hat.*\ ([0-9])\. ]]; then
-  ver=${BASH_REMATCH[1]}
-  case $ver in
+  ver="${BASH_REMATCH[1]}"
+  case "$ver" in
   6)
     if ! yum list installed epel-release-6-8.noarch; then
-      rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
+      sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm
     fi
-    time yum -y install yum-plugin-security
-    time yum -y --security update-minimal
+    time sudo yum -y install yum-plugin-security
+    time sudo yum -y --security update-minimal
     ;;
-  7) 
+  7)
     if ! yum list installed epel-release-7-5.noarch; then
-      rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+      sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
     fi
-    cat > /etc/yum.repos.d/RightScale-Software.repo <<EOF
+    sudo dd of=/etc/yum.repos.d/RightScale-Software.repo <<EOF
 [rightscale]
 name=RightScale
 baseurl=http://mirror.rightscale.com/rightscale_software/centos/${ver}/x86_64
 gpgcheck=1
 gpgkey=http://mirror.rightscale.com/rightlink/rightscale.pub
 EOF
-    time yum -y install yum-plugin-security
+    time sudo yum -y install yum-plugin-security
     # update-minimal fails on RHEL7, see https://bugzilla.redhat.com/show_bug.cgi?id=1048584
-    time yum -y --security update
+    time sudo yum -y --security update
     ;;
   esac
 
@@ -92,10 +92,10 @@ EOF
 # AWS-Linux
 #
 elif [[ `cat /etc/system-release` =~ ^Amazon\ Linux.*\ ([0-9]+)\. ]]; then
-  ver=${BASH_REMATCH[1]}
-  case $ver in
+  ver="${BASH_REMATCH[1]}"
+  case "$ver" in
   2014)
-    cat > /etc/yum.repos.d/RightScale-Software.repo <<EOF
+    sudo dd of=/etc/yum.repos.d/RightScale-Software.repo <<EOF
 [rightscale]
 name=RightScale
 baseurl=http://mirror.rightscale.com/rightscale_software/centos/7/x86_64
@@ -104,9 +104,9 @@ gpgkey=http://mirror.rightscale.com/rightlink/rightscale.pub
 enabled=1
 priority=5
 EOF
-    time yum -y install yum-plugin-security
+    time sudo yum -y install yum-plugin-security
     # update-minimal fails on RHEL7, see https://bugzilla.redhat.com/show_bug.cgi?id=1048584
-    time yum -y --security update
+    time sudo yum -y --security update
     ;;
   esac
 

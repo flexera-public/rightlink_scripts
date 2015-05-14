@@ -24,9 +24,9 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
 
   if (( ${#prefix} >= ${#suffix} && ${#prefix} > 1 )); then
     echo "Setting hostname to prefix '$prefix'"
-    hostname "$prefix"
+    sudo hostname "$prefix"
   elif (( ${#suffix} > 1 )); then
     echo "Setting hostname to suffix '$suffix'"
-    hostname "$suffix"
+    sudo hostname "$suffix"
   fi
 fi
