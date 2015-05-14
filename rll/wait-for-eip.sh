@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# On AWS, if an elastic IP address is specified this script will wait until all API Hosts are
+# reporting the expected IP address for the server, which is recorded in the user-data
+
 rs_vars=$(sudo cat /var/lib/rightscale-identity)
 
 re="expected_public_ip='([^']+)'"
@@ -32,12 +35,15 @@ start_time=$(date +%s)
 while [[ $(($(date +%s) - $start_time < 900)) ]]; then
   # reset matching API responses to zero
   matching_responses=0
+  # reset array of target API Hosts returned bad IPs
+  bad_ips=()
   # check each API
   for target in "${targets[@]}"; do
     # query the API for the servers IP address
     my_ip=$(curl --max-time 1 -S -s http://$target/ip/mine)
     if [[ "$my_ip" =~ ^[.0-9]*$ && ! "$my_ip" =~ ^127\. && "$my_ip" != "$expected_public_ip" ]]; then
       echo "$target responded with: $my_ip which is not the IP we expect: $expected_public_ip"
+      bad_ips+=("$target")
     elif [[ "$my_ip" == "$expected_public_ip" ]]; then
       matching_responses+=1
     else
@@ -49,12 +55,12 @@ while [[ $(($(date +%s) - $start_time < 900)) ]]; then
     echo "All API hosts are reporting the expected IP address: $expected_public_ip"
     exit 0
   else
-    echo "One or more API Hosts is returning an IP address that is different than expected"
+    echo "The follow API Hosts are returning an IP address that is different than expected: ${bad_ips[@]}"
     echo "Sleeping 15 seconds and retrying ... "
     sleep 15
   fi
 done
 
-# if all API hosts are returning the expected IP address after 15 minutes then exit with an error
-echo "One or more API Hosts is returning an IP address that is different than expected after $(((`date +%s` - $t0))) seconds"
+# if any API hosts are returning something other than the expected IP address after 15 minutes then exit with an error
+echo "The follow API Hosts are returning an IP address that is different than expected after $(((`date +%s` - $t0))) seconds: ${bad_ips[@]}"
 exit 1

@@ -99,7 +99,7 @@ echo "downloading RightLink version '${desired}'"
 # Download new version
 cd /tmp
 sudo rm -rf rightlink rightlink.tgz
-sudo curl --silent --show-error --retry 3 --output rightlink.tgz https://rightlink.rightscale.com/rll/${desired}/rightlink.tgz
+curl --silent --show-error --retry 3 --output rightlink.tgz https://rightlink.rightscale.com/rll/${desired}/rightlink.tgz
 tar zxf rightlink.tgz || (cat rightlink.tgz; exit 1)
 
 # Check downloaded version

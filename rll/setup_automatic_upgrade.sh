@@ -40,7 +40,7 @@ EOF
   # Random minute 0-59
   cron_minute=$(( $RANDOM % 60 ))
 
-  sudo bash -c "umask 077 && echo '${cron_minute} ${cron_hour} * * * root ${exec_file}' > ${cron_file}"
+  sudo bash -c "umask 077 && echo '${cron_minute} ${cron_hour} * * * rightlink ${exec_file}' > ${cron_file}"
 
   # Set perms regardless of umask since the file could be overwritten with existing perms.
   sudo chmod 0600 ${cron_file}

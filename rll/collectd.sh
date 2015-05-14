@@ -28,7 +28,7 @@
 # $2: the temporary file path with new contents to check against
 #
 function run_check_write_needed() {
-  [[ ! -f $1 ]] || [[ `run_checksum $2` != `run_checksum $1` ]]
+  sudo [ ! -f $1 ] || [[ `run_checksum $2` != `run_checksum $1` ]]
 }
 
 # Get the SHA256 checksum of a file.
@@ -82,7 +82,7 @@ EOF
   # Overwrite and backup the collectd plugin configration if it has changed
   if run_check_write_needed $collectd_plugin_conf $collectd_plugin_conf_tmp; then
     sudo chmod 0644 $collectd_plugin_conf_tmp
-    [[ -f $collectd_plugin_conf ]] && sudo cp --archive $collectd_plugin_conf "${collectd_plugin_conf}.`date -u +%Y%m%d%H%M%S`"
+    sudo [ -f $collectd_plugin_conf ] && sudo cp --archive $collectd_plugin_conf "${collectd_plugin_conf}.`date -u +%Y%m%d%H%M%S`"
     sudo mv --force $collectd_plugin_conf_tmp $collectd_plugin_conf
     collectd_service_notify=1
   fi
@@ -159,7 +159,7 @@ EOF
 # Overwrite and backup the collectd configuration if it has changed
 if run_check_write_needed $collectd_conf $collectd_conf_tmp; then
   sudo chmod 0644 $collectd_conf_tmp
-  [[ -f $collectd_conf ]] && sudo cp --archive $collectd_conf "${collectd_conf}.`date -u +%Y%m%d%H%M%S`"
+  sudo [ -f $collectd_conf ] && sudo cp --archive $collectd_conf "${collectd_conf}.`date -u +%Y%m%d%H%M%S`"
   sudo mv --force $collectd_conf_tmp $collectd_conf
   collectd_service_notify=1
 fi
