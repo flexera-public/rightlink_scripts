@@ -31,7 +31,7 @@ else
 /usr/local/bin/rsc --rl10 cm15 schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rll::upgrade
 EOF
 
-  sudo chown root:root ${exec_file}
+  sudo chown rightlink:rightlink ${exec_file}
   sudo chmod 0700 ${exec_file}
 
   # Random hour 0-23
