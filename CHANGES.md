@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.1.1
+--------
+- Modified setup_software_repo.sh and collectd.sh to use TSS for monitoring.
+
 10.1.rc0
 --------
 - Modified wait-for-eip.sh to reflect variable name changes
