@@ -1,9 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
-10.1.0
+10.1.rc0
 --------
 - Modified wait-for-eip.sh to reflect variable name changes
+- Update scripts to use sudo as RightLink now runs as the rightlink user and not as root
 
 10.0.rc4
 --------
