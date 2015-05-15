@@ -276,5 +276,5 @@ elif [[ $collectd_service_notify -eq 1 ]]; then
 fi
 
 # Add the RightScale monitoring active tag
-rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_monitoring:state=active &&\
+/usr/local/bin/rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_monitoring:state=active &&\
   logger -s -t RightScale "Setting monitoring active tag"

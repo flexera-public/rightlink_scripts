@@ -11,7 +11,7 @@ upgrade_rightlink() {
   # Use 'logger' here instead of 'echo' since stdout from this is not sent to
   # audit entries as RightLink is down for a short time during the upgrade process.
 
-  res=$(rsc rl10 upgrade /rll/upgrade exec=${rl_bin}-new 2>/dev/null || true)
+  res=$(/usr/local/bin/rsc rl10 upgrade /rll/upgrade exec=${rl_bin}-new 2>/dev/null || true)
   if [[ "$res" =~ successful ]]; then
     # Delete the old version if it exists from the last upgrade.
     sudo rm -rf ${rl_bin}-old
@@ -28,7 +28,7 @@ upgrade_rightlink() {
   for retry_counter in {1..5}; do
     # The auth information is updated on an upgrade.  Continue to source the
     # auth file to grab the updated auth info once RightLink has restarted.
-    new_installed_version=$(rsc --x1 .version rl10 index proc 2>/dev/null || true)
+    new_installed_version=$(/usr/local/bin/rsc --x1 .version rl10 index proc 2>/dev/null || true)
     if [[ "$new_installed_version" == "$desired" ]]; then
       logger -t rightlink "New version active - ${new_installed_version}"
       break
@@ -43,9 +43,9 @@ upgrade_rightlink() {
   fi
 
   # Report to audit entry that RightLink ugpraded.
-  instance_href=$(rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance 2>/dev/null)
+  instance_href=$(/usr/local/bin/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance 2>/dev/null)
   if [[ -n "$instance_href" ]]; then
-    audit_entry_href=$(rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
+    audit_entry_href=$(/usr/local/bin/rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
                      "audit_entry[detail]=RightLink updated to '${new_installed_version}'" "audit_entry[summary]=RightLink updated" 2>/dev/null)
     if [[ -n "$audit_entry_href" ]]; then
       logger -t rightlink "audit entry created at ${audit_entry_href}"
@@ -59,13 +59,13 @@ upgrade_rightlink() {
 }
 
 # Query RightLink info
-json=$(rsc rl10 index /rll/proc)
+json=$(/usr/local/bin/rsc rl10 index /rll/proc)
 
 # Detemine bin_path
-rl_bin=$(echo "$json" | rsc --x1 .bin_path json)
+rl_bin=$(echo "$json" | /usr/local/bin/rsc --x1 .bin_path json)
 
 # Determine current version of rightlink
-current_version=$(echo "$json" | rsc --x1 .version json)
+current_version=$(echo "$json" | /usr/local/bin/rsc --x1 .version json)
 
 if [[ -z "$current_version" ]]; then
   echo "Can't determine current version of RightLink"
