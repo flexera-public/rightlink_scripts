@@ -86,6 +86,8 @@ EOF
     sudo mv --force $collectd_plugin_conf_tmp $collectd_plugin_conf
     collectd_service_notify=1
   fi
+
+  echo "collectd plugin $collectd_plugin configured"
 }
 
 # Declare a list for temporary files to clean up on exit and set the command to delete them if they still exist when the
