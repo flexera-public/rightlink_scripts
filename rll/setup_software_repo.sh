@@ -8,7 +8,7 @@
 #
 if [[ -d /etc/apt ]]; then
   # Autopopulate this ENV var for all subsequent scripts
-  rsc --rl10 rl10 update /rll/env/DEBIAN_FRONTEND payload=noninteractive
+  /usr/local/bin/rsc rl10 update /rll/env/DEBIAN_FRONTEND payload=noninteractive
   export DEBIAN_FRONTEND=noninteractive
   time sudo apt-get -qy update
   time sudo apt-get -qy install unattended-upgrades
