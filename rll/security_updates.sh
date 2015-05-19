@@ -1,7 +1,6 @@
 #! /bin/bash -e
 
 # Install security updates
-# Set up needed external repositories for collectd.
 
 #
 # Ubuntu / Debian
@@ -63,4 +62,6 @@ elif [[ `cat /etc/system-release` =~ ^Amazon\ Linux.*\ ([0-9]+)\. ]]; then
   time sudo yum -y install yum-plugin-security
   # update-minimal fails on RHEL7, see https://bugzilla.redhat.com/show_bug.cgi?id=1048584
   time sudo yum -y --security update
+else
+  echo "WARNING: security updates not installed as we could not determine your OS distro."
 fi
