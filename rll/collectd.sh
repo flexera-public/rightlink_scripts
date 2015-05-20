@@ -2,8 +2,11 @@
 
 # ---
 # RightScript Name: BASE collectd
-# Description: Install and setup collectd and basic set of plugins.
-# Packages: collectd
+# Description: Install and setup collectd and basic set of plugins. This configures
+#   collectd to work with RightScale TSS (Time Series Storage), the backend system
+#   for aggregating monitoring data. Collectd sends its monitoring data to the 
+#   RightLink process on the localhost over http using the write_http plugin. RightLink
+#   then forwards that data to the TSS servers over HTTPS with authentication.
 # Inputs:
 #   RS_INSTANCE_UUID:
 #     Input Type: single
@@ -96,7 +99,6 @@ if [[ ! "$COLLECTD_SERVER" =~ tss ]]; then
   exit 1
 fi
 
-
 # Collectd package is located in the EPEL repository. Install if its not already
 # installed.
 if [[ -e /etc/redhat-release ]]; then
@@ -166,6 +168,13 @@ elif [[ -d /etc/yum.repos.d ]]; then
   # keep these lines separate, yum doesn't fail for missing packages when grouped together
   sudo yum install -y curl
   sudo yum install -y collectd
+fi
+
+# For TSS, collectd connects to the rightlink process, which runs with a random
+# high port for localhost (127.0.0.1). Without this permission relaxed, we'll get  
+# permission denied connecting to that local ip 
+if sestatus 2>/dev/null | grep "SELinux status" | grep enabled; then
+  setsebool -P collectd_tcp_network_connect 1
 fi
 
 sudo mkdir --mode=0755 --parents $collectd_conf_plugins_dir $collectd_base_dir $collectd_plugin_dir

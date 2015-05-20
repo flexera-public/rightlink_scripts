@@ -9,8 +9,8 @@ if [[ -d /etc/apt ]]; then
   export DEBIAN_FRONTEND=noninteractive
   time sudo apt-get -qy update
   time sudo apt-get -qy install unattended-upgrades
-elif [[ -e /etc/redhat-release ]]; then
-  # All RHEL variants
+elif [[ -e /etc/redhat-release || -n "$(grep Amazon /etc/system-release 2>/dev/null)" ]]; then
+  # RHEL/CentOS/Amazon Linux
   time sudo yum -y install yum-plugin-security
   # update-minimal may fail on RHEL7, see https://bugzilla.redhat.com/show_bug.cgi?id=1048584
   time sudo yum -y --security update-minimal || time sudo yum -y --security update

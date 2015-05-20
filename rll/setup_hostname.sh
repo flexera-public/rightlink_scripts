@@ -1,11 +1,9 @@
-#! /bin/bash
+#! /bin/bash -e
 
 # The server's hostname is set to the longest valid prefix or suffix of
 # this SERVER_HOSTNAME variable eg 'my.example.com V2', 'NEW my.example.com', and
 # 'database.io my.example.com' all set the hostname to 'my.example.com'.
 # If SERVER_HOSTNAME is empty, will maintain current hostname.
-
-set -ex
 
 if [[ -n "$SERVER_HOSTNAME" ]]; then
   prefix=

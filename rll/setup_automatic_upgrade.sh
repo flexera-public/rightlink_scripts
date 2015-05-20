@@ -1,9 +1,6 @@
-#! /bin/bash
+#! /bin/bash -e
 
 # Add entry in /etc/cron.d/ to daily check and excute an upgrade for rightlink.
-
-# -e will immediatly exit out of script at point of error
-set -e
 
 cron_file='/etc/cron.d/rightlink-upgrade'
 exec_file='/usr/local/bin/rightlink_check_upgrade'
