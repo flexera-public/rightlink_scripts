@@ -1,6 +1,6 @@
 #! /bin/bash -e
 
-# Add entry in /etc/cron.d/ to daily check and excute an upgrade for rightlink.
+# Add entry in /etc/cron.d/ to check and execute an upgrade for rightlink daily.
 
 cron_file='/etc/cron.d/rightlink-upgrade'
 exec_file='/usr/local/bin/rightlink_check_upgrade'

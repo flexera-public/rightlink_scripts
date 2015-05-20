@@ -38,7 +38,7 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
   if ! host "$hostname" >/dev/null 2>&1; then
     if ! grep "$hostname" /etc/hosts >/dev/null 2>&1; then
       echo "Adding $hostname to /etc/hosts"
-      echo "127.0.0.1 $hostname" >> /etc/hosts
+      echo "127.0.0.1 $hostname" | sudo tee -a /etc/hosts
     fi
   fi
 fi

@@ -3,10 +3,10 @@
 # ---
 # RightScript Name: BASE collectd
 # Description: Install and setup collectd and basic set of plugins. This configures
-#   collectd to work with RightScale TSS (Time Series Storage), the backend system
-#   for aggregating monitoring data. Collectd sends its monitoring data to the 
-#   RightLink process on the localhost over http using the write_http plugin. RightLink
-#   then forwards that data to the TSS servers over HTTPS with authentication.
+#   collectd to work with RightScale TSS (Time Series Storage), a backend system
+#   for aggregating and displaying monitoring data. Collectd sends its monitoring 
+#   data to the RightLink process on the localhost as HTTP using the write_http plugin. 
+#   RightLink then forwards that data to the TSS servers over HTTPS with authentication.
 # Inputs:
 #   RS_INSTANCE_UUID:
 #     Input Type: single
