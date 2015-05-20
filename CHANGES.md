@@ -1,6 +1,13 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.1.rc1
+--------
+- Changes to use RightScale TSS for monitoring:
+  - Modified collectd config to use write_http plugin to route monitoring traffic through RightLink.
+  - Removed usage of forward ported collectd 4 and RightScale Software repo.
+  - Renamed setup_software_repo.sh to security_updates.sh.
+
 10.1.rc0
 --------
 - Modified wait-for-eip.sh to reflect variable name changes

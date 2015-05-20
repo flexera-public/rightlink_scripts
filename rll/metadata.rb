@@ -5,7 +5,7 @@ description "Base scripts for RightLink10 on Linux (RLL) to initialize basic fun
 version     '10.1.1'
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
-recipe      "rll::setup_software_repo", "Initializes repositories"
+recipe      "rll::security_updates", "Installs security updates"
 recipe      "rll::setup_hostname", "Changes the hostname of the server"
 recipe      "rll::collectd", "Installs and configures collectd for RightScale monitoring"
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
