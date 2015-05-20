@@ -96,6 +96,39 @@ if [[ ! "$COLLECTD_SERVER" =~ tss ]]; then
   exit 1
 fi
 
+
+# Collectd package is located in the EPEL repository. Install if its not already
+# installed.
+if [[ -e /etc/redhat-release ]]; then
+  if [[ `cat /etc/redhat-release` =~ ^([^0-9]+)\ ([0-9])\. ]]; then
+    distro="${BASH_REMATCH[1]}"
+    ver="${BASH_REMATCH[2]}"
+  else
+    echo "Could not parse distro and version from /etc/redhat-release"
+    exit 1
+  fi
+
+  case "$ver" in
+  6)
+    if ! yum list installed "epel-release-6*"; then
+      echo "Installing EPEL repository"
+      sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+      if [[ "$distro" =~ CentOS ]]; then 
+        # versions of CentOS 6.x have trouble with https...
+        sudo sed -i 's/https/http/' /etc/yum.repos.d/epel.repo
+      fi
+    fi
+    ;;
+  7)
+    if ! yum list installed "epel-release-7*"; then
+      echo "Installing EPEL repository"
+      sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+    fi
+    ;;
+  esac
+fi
+
+
 # Declare a list for temporary files to clean up on exit and set the command to delete them if they still exist when the
 # script exits
 declare -a mktemp_files
