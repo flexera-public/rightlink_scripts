@@ -338,9 +338,7 @@ if [[ "$(collectd -h)" =~ "collectd 4" ]]; then
   collectd_ver=4
 fi
 configure_collectd_plugin write_http \
-  "<URL \"http://127.0.0.1:$RS_RLL_PORT/rll/tss/collectdv$collectd_ver\">" \
-  "</URL>"
-
+  "URL \"http://127.0.0.1:$RS_RLL_PORT/rll/tss/collectdv$collectd_ver\""
 configure_collectd_plugin load
 configure_collectd_plugin processes
 configure_collectd_plugin users
