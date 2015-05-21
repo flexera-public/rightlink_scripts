@@ -339,7 +339,6 @@ if [[ "$(collectd -h)" =~ "collectd 4" ]]; then
 fi
 configure_collectd_plugin write_http \
   "<URL \"http://127.0.0.1:$RS_RLL_PORT/rll/tss/collectdv$collectd_ver\">" \
-  "  BufferSize 16384" \
   "</URL>"
 
 configure_collectd_plugin load
