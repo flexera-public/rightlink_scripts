@@ -99,6 +99,31 @@ if [[ ! "$COLLECTD_SERVER" =~ tss ]]; then
   exit 1
 fi
 
+# TSS is compatible with both collectd 4 and 5 while the previous monitoring backend
+# only supported collectd 4. We forward ported collectd 4 to newer OSes b/c of this.
+# If we installed a custom forward port of collectd4 previously, remove it now to
+# replace it with OS standard collectd.
+if which apt-get >/dev/null 2>&1; then
+  if [[ -e /etc/apt/preferences.d/rightscale-collectd-pin-1001 ]]; then
+    sudo rm /etc/apt/preferences.d/rightscale-collectd-pin-1001
+  fi
+  rs_version="$(apt-cache showpkg collectd-core | grep rightscale | head -n 1 | awk '{print $1}')"
+  if [[ -n "$rs_version" ]]; then
+    installed_version=$(dpkg -l | grep '^ii' | grep collectd-core | awk '{print $3}')
+    if [[ "$installed_version" == "$rs_version" ]]; then
+      echo "Removing collectd 4 package"
+      sudo apt-get purge -y collectd collectd-core
+    fi
+  fi
+elif yum list collectd 2>&1 | grep '@rightscale-epel' >/dev/null 2>&1; then
+  if grep collectd-4 /etc/yum/pluginconf.d/versionlock.list >/dev/null 2>&1; then
+    sudo sed -i '/collectd/d' /etc/yum/pluginconf.d/versionlock.list
+  fi
+  echo "Removing collectd 4 package"
+  sudo yum remove -y "collectd*"
+fi
+
+
 # Collectd package is located in the EPEL repository. Install if its not already
 # installed.
 if [[ -e /etc/redhat-release ]]; then
