@@ -32,7 +32,7 @@ echo "Checking public IP against ${targets[@]}"
 
 # spend at most 15 minutes checking the API hosts for either the expected IP address or an incorrect IP address
 start_time=$(date +%s)
-while [[ $(($(date +%s) - $start_time < 900)) ]]; then
+while [[ $(($(date +%s) - $start_time)) < 900 ]]; do
   # reset matching API responses to zero
   matching_responses=0
   # reset array of target API Hosts returned bad IPs
@@ -45,7 +45,7 @@ while [[ $(($(date +%s) - $start_time < 900)) ]]; then
       echo "$target responded with: $my_ip which is not the IP we expect: $expected_public_ip"
       bad_ips+=("$target")
     elif [[ "$my_ip" == "$expected_public_ip" ]]; then
-      matching_responses+=1
+      ((matching_responses+=1))
     else
       echo "$target responded with $my_ip"
     fi
