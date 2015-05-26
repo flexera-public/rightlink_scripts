@@ -7,6 +7,7 @@ Changelog for the RightLink10 Base ServerTemplate
   - Modified collectd config to use write_http plugin to route monitoring traffic through RightLink.
   - Removed usage of forward ported collectd 4 and RightScale Software repo.
   - Renamed setup_software_repo.sh to security_updates.sh.
+- Fixed syntax errors in wait-for-eip.sh
 
 10.1.rc0
 --------
