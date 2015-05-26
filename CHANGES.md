@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+Unreleased changes
+------------------
+- Make collectd.sh throw errors on broken configs.
+
 10.1.rc1
 --------
 - Changes to use RightScale TSS for monitoring:
