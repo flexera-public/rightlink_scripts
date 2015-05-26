@@ -349,6 +349,12 @@ if [[ -d /etc/yum.repos.d ]]; then
   sudo chkconfig $collectd_service on
 fi
 
+if collectd -T 2>&1 | grep 'Parse error' >/dev/null 2>&1; then
+  echo "ERROR: collectd config contains syntax errors:"
+  collectd -T
+  exit 1
+fi
+
 # Start the collectd service if it is not running or restart it if it needs to be restarted
 if ! sudo service $collectd_service status; then
   sudo service $collectd_service start
