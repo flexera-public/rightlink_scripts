@@ -1,8 +1,8 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
-Unreleased changes
-------------------
+10.1.2
+------
 - Make collectd.sh throw errors on broken configs.
 
 10.1.rc1
