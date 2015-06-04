@@ -28,7 +28,7 @@ attribute   "COLLECTD_SERVER",
   :display_name => "RightScale monitoring server to send data to",
   :required => "optional",
   :type => "string",
-  :default => "env:RS_SKETCHY",
+  :default => "env:RS_TSS",
   :recipes => ["rll::collectd"]
 
 attribute   "RS_INSTANCE_UUID",
