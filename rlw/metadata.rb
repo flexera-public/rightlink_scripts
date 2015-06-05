@@ -2,7 +2,7 @@ name        "rlw"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Windows (RLL) to initialize basic functionality"
-version     '10.1.2'
+version     '0.2015.2646234889'
 
 recipe      "rlw::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rlw::install_updates", "Installs windows updates"
