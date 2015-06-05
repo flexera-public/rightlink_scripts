@@ -34,7 +34,7 @@ attribute   "WINDOWS_UPDATES_REBOOT_SETTING",
   :type => "string",
   :choice => ["Do Not Allow Reboot", "Allow Reboot"],
   :default => "Do Not Allow Reboot",
-  :recipes => ["rlw::install_updates", "install_updates_by_kb"]
+  :recipes => ["rlw::setup_hostname", "rlw::install_updates", "install_updates_by_kb"]
 
 attribute   "WINDOWS_AUTOMATIC_UPDATES_POLICY",
   :display_name => "SSC version to use",
