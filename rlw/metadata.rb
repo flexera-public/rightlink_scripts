@@ -5,45 +5,71 @@ description "Base scripts for RightLink10 on Windows (RLL) to initialize basic f
 version     '10.1.2'
 
 recipe      "rlw::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
-recipe      "rll::security_updates", "Installs security updates"
+recipe      "rlw::install_updates", "Installs windows updates"
+recipe      "rlw::install_updates_by_kb", "Microsoft KB number of update to be installed"
 recipe      "rlw::setup_hostname", "Changes the hostname of the server"
 recipe      "rlw::ssc", "Installs and configures SSC for RightScale monitoring"
 recipe      "rlw::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
+recipe      "rlw::update_policy", "Define the Windows automatic update policy for the instance"
 recipe      "rlw::shutdown-reason", "Print out the reason for shutdown"
 recipe      "rlw::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 recipe      "rlw::test-script", "Test operational script, used by righlinklite/tester"
 
 attribute   "SERVER_HOSTNAME",
   :display_name => "Hostname for this server",
-  :description => "The server's hostname is set to the longest valid prefix or suffix of " +
-  "this variable. E.g. 'my.example.com V2', 'NEW my.example.com', and " +
-  "'database.io my.example.com' all set the hostname to 'my.example.com'. " +
-  "Set to an empty string to avoid any change to the hostname.",
+  :description => "The server's hostname may contain letters (a-z, A-Z), numbers (0-9), and hyphens (-), " +
+  "but no spaces or periods (.). The name may not consist entirely of digits, and " +
+  "may not be longer than 63 characters.",
   :required => "optional",
   :type => "string",
   :default => "env:RS_SERVER_NAME",
   :recipes => ["rlw::setup_hostname"]
+
+attribute   "WINDOWS_UPDATES_REBOOT_SETTING"
+  :display_name => "Specify how the Windows automatic updates should be applied to a running server. " +
+  "For example, you may not want the server to automatically reboot itself after applying an update. " +
+  "Set to 'Allow Reboot' for automatic reboots.",
+  :required => "optional",
+  :type => "string",
+  :choice => ["Do Not Allow Reboot", "Allow Reboot"],
+  :default => "Do Not Allow Reboot",
+  :recipes => ["rlw::install_updates", "install_updates_by_kb"]
+
+attribute   "WINDOWS_AUTOMATIC_UPDATES_POLICY"
+  :display_name => "SSC version to use",
+  :required => "optional",
+  :type => "string",
+  :choice => ["Disable automatic updates", "Notify before download",
+              "Notify before installation", "Install updates automatically"],
+  :default => "Disable automatic updates",
+  :recipes => ["rlw::update_policy"]
+
+attribute   "KB_ARTICLE_NUMBER"
+  :display_name => "Microsoft KB Article to download and install",
+  :required => "optional",
+  :type => "string",
+  :recipes => ["rlw::install_updates_by_kb"]
 
 attribute   "SSC_SERV_VERSION",
   :display_name => "SSC version to use",
   :required => "optional",
   :type => "string",
   :default => "3.5.0",
-  :recipes => ["rll::ssc"]
+  :recipes => ["rlw::install_updates"]
 
 attribute   "SSC_SERV_PLATFORM",
   :display_name => "SSC platform to use",
   :required => "optional",
   :type => "string",
   :default => "x86-64",
-  :recipes => ["rll::ssc"]
+  :recipes => ["rlw::ssc"]
 
 attribute   "RS_INSTANCE_UUID",
   :display_name => "RightScale monitoring ID for this server",
   :required => "optional",
   :type => "string",
   :default => "env:RS_INSTANCE_UUID",
-  :recipes => ["rll::ssc"]
+  :recipes => ["rlw::ssc"]
 
 attribute   "ENABLE_AUTO_UPGRADE",
   :display_name => "Enables auto upgrade of RightLink10",
