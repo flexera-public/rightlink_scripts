@@ -25,8 +25,9 @@ attribute   "SERVER_HOSTNAME",
   :default => "env:RS_SERVER_NAME",
   :recipes => ["rlw::setup_hostname"]
 
-attribute   "WINDOWS_UPDATES_REBOOT_SETTING"
-  :display_name => "Specify how the Windows automatic updates should be applied to a running server. " +
+attribute   "WINDOWS_UPDATES_REBOOT_SETTING",
+  :display_name => "Setting whether to reboot automatically",
+  :description => "Specify how the Windows automatic updates should be applied to a running server. " +
   "For example, you may not want the server to automatically reboot itself after applying an update. " +
   "Set to 'Allow Reboot' for automatic reboots.",
   :required => "optional",
@@ -35,7 +36,7 @@ attribute   "WINDOWS_UPDATES_REBOOT_SETTING"
   :default => "Do Not Allow Reboot",
   :recipes => ["rlw::install_updates", "install_updates_by_kb"]
 
-attribute   "WINDOWS_AUTOMATIC_UPDATES_POLICY"
+attribute   "WINDOWS_AUTOMATIC_UPDATES_POLICY",
   :display_name => "SSC version to use",
   :required => "optional",
   :type => "string",
@@ -44,7 +45,7 @@ attribute   "WINDOWS_AUTOMATIC_UPDATES_POLICY"
   :default => "Disable automatic updates",
   :recipes => ["rlw::update_policy"]
 
-attribute   "KB_ARTICLE_NUMBER"
+attribute   "KB_ARTICLE_NUMBER",
   :display_name => "Microsoft KB Article to download and install",
   :required => "optional",
   :type => "string",
