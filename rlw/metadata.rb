@@ -65,6 +65,13 @@ attribute   "SSC_SERV_PLATFORM",
   :default => "x86-64",
   :recipes => ["rlw::ssc"]
 
+attribute   "RS_TSS",
+  :display_name => "RightScale monitoring server to send data to",
+  :required => "optional",
+  :type => "string",
+  :default => "env:RS_TSS",
+  :recipes => ["rlw::ssc"]
+
 attribute   "RS_INSTANCE_UUID",
   :display_name => "RightScale monitoring ID for this server",
   :required => "optional",
