@@ -26,11 +26,13 @@ Set-ItemProperty "$SSCServRegRoot\Write_HTTP" Enabled 'true'
 $ProxyPort = Get-Content C:\ProgramData\RightScale\RightLink\secret | Select-String ^RS_RLL_PORT= | % { $_ -replace '^RS_RLL_PORT=', '' }
 $SSCServRegProxy = "$SSCServRegRoot\Write_HTTP\RightLinkProxy"
 
-New-Item $SSCServRegProxy
-New-ItemProperty $SSCServRegProxy URL -Value "http://localhost:$ProxyPort/rll/tss/collectdv5"
-New-ItemProperty $SSCServRegProxy Username
-New-ItemProperty $SSCServRegProxy Password
-New-ItemProperty $SSCServRegProxy StoreRates -Value true
+if (!$SSCServRegProxy) {
+  New-Item $SSCServRegProxy
+  New-ItemProperty $SSCServRegProxy URL -Value "http://localhost:$ProxyPort/rll/tss/collectdv5"
+  New-ItemProperty $SSCServRegProxy Username
+  New-ItemProperty $SSCServRegProxy Password
+  New-ItemProperty $SSCServRegProxy StoreRates -Value true
+}
 
 & rsc rl10 put_hostname /rll/tss/hostname hostname=$env:RS_TSS
 Start-Service 'SSC Service'
