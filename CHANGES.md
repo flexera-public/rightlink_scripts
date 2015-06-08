@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+Unreleased changes
+------
+- Fix up decommission reason to calculate if a stop or service restart was issued.
+
 10.1.2
 ------
 - Make collectd.sh throw errors on broken configs.
