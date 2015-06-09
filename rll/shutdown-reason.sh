@@ -27,7 +27,7 @@
 
 echo "Decommissioning. Calculating reason for decommission: "
 
-rs_decom_reason="$(rsc rl10 show /rll/proc/shutdown_kind)"
+rs_decom_reason="$(/usr/local/bin/rsc rl10 show /rll/proc/shutdown_kind)"
 os_decom_reason=service_restart # Our default
 if [[ `/usr/bin/systemctl` =~ -\.mount ]] || [[ "$(readlink /sbin/init)" =~ systemd ]]; then
   # Systemd doesn't use runlevels, so we can't rely on that
