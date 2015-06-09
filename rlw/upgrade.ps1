@@ -23,63 +23,66 @@ function Expand-Zipfile($zipFile, $targetDir, $basePath = $Null)
   }
 }
 
-function UpgradeRightLink() {
-  # Self upgrade API call is not yet supported on Windows, but we can still use the API call to verify the exe
-  $upgradeCheck = & "${RIGHTLINK_DIR}\rsc.exe" rl10 upgrade /rll/upgrade exec="${binPath}-new.exe" 2> $null
-  if ($upgradeCheck -match 'successful') {
-    # Delete the old version if it exists from the last upgrade.
-    if (Test-Path -Path "${RIGHTLINK_DIR}\rightlink-old.exe") {
-      Remove-Item -Path "${RIGHTLINK_DIR}\rightlink-old.exe" -Force
-    }
-    # Keep the old version in case of issues, ie we need to manually revert back.
-    Rename-Item -Path "${RIGHTLINK_DIR}\rightlink.exe" -newName "rightlink-old.exe" -Force
-    Rename-Item -Path "${RIGHTLINK_DIR}\rightlink-new.exe" -newName "rightlink.exe" -Force
-    # We kill the current running rightlink process,
-    # Since we renamed the new version to rightlink.exe, it should be started automatically by NSSM
-    Stop-Process -Name 'rightlink' -Force
-  } else {
-    Write-Output "Error: ${upgradeCheck}"
-    Exit 1
-  }
-  # Check updated version in production by connecting to local proxy
-  # The update takes a few seconds so retries are done.
-  for ($i = 1; $i -le 5; $i += 1) {
-    $newInstalledVersion = & "${RIGHTLINK_DIR}\rsc.exe" --x1 .version rl10 index proc 2> $null
-    if ($newInstalledVersion -eq $desiredVersion) {
-      Write-Output "New version active - ${newInstalledVersion}"
-      break
-    } else {
-      Write-Output 'Waiting for new version to become active.'
-      Sleep 2
-    }
-  }
-  if ($newInstalledVersion -ne $desiredVersion) {
-    Write-Output "New version does not appear to be desired version: ${newInstalledVersion}"
-    # Put the old version of RightLink back because something seemed to have gone wrong
-    Rename-Item -Path "${RIGHTLINK_DIR}\rightlink.exe" -newName "rightlink-new.exe" -Force
-    Rename-Item -Path "${RIGHTLINK_DIR}\rightlink-old.exe" -newName "rightlink.exe" -Force
-    # Stop the new rightlink process so that we revert back to the old version when NSSM restarts RightLink
-    Stop-Process -Name 'rightlink' -Force
-    Exit 1
-  }
+$upgradeFunction = {
+  function upgradeRightLink($currentVersion, $desiredVersion) {
+    $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
 
-  # Report to audit entry that RightLink ugpraded.
-  $instanceHref = & "${RIGHTLINK_DIR}\rsc.exe" --rl10 --x1 ':has(.rel:val(\"self\")).href' `
-                  cm15 index_instance_session /api/sessions/instance 2> $null
-  if ($instanceHref) {
-    $auditEntryHref = & "${RIGHTLINK_DIR}\rsc.exe" --rl10 --xh 'location' cm15 create /api/audit_entries `
-                      "audit_entry[auditee_href]=${instanceHref}" `
-                      "audit_entry[detail]=RightLink updated to '${newInstalledVersion}'" `
-                      "audit_entry[summary]=RightLink updated" 2> $null
-    if ($auditEntryHref) {
-      Write-Output "Audit entry created at ${auditEntryHref}"
+    # Self upgrade API call is not yet supported on Windows, but we can still use the API call to verify the exe
+    $upgradeCheck = & ${RIGHTLINK_DIR}\rsc.exe rl10 upgrade /rll/upgrade exec=${RIGHTLINK_DIR}\rightlink-new.exe 2> $null
+    if ($upgradeCheck -match 'successful') {
+      # Delete the old version if it exists from the last upgrade.
+      if (Test-Path -Path ${RIGHTLINK_DIR}\rightlink-old.exe) {
+        Remove-Item -Path ${RIGHTLINK_DIR}\rightlink-old.exe -Force
+      }
+      # Keep the old version in case of issues, ie we need to manually revert back.
+      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink.exe -newName 'rightlink-old.exe' -Force
+      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink-new.exe -newName 'rightlink.exe' -Force
+      # We kill the current running rightlink process,
+      # Since we renamed the new version to rightlink.exe, it should be started automatically by NSSM
+      Stop-Process -Name 'rightlink' -Force
     } else {
-      Write-Output 'Failed to create audit entry'
+      Write-Output """Error: ${upgradeCheck}"""
+      Exit 1
     }
-  } else {
-    Write-Output 'Unable to obtain instance HREF for audit entries'
+    # Check updated version in production by connecting to local proxy
+    # The update takes a few seconds so retries are done.
+    for ($i = 1; $i -le 5; $i += 1) {
+      $newInstalledVersion = & ${RIGHTLINK_DIR}\rsc.exe --x1 .version rl10 index proc 2> $null
+      if ($newInstalledVersion -eq $desiredVersion) {
+        Write-Output """New version active - ${newInstalledVersion}"""
+        break
+      } else {
+        Write-Output 'Waiting for new version to become active.'
+        Sleep 2
+      }
+    }
+    if ($newInstalledVersion -ne $desiredVersion) {
+      Write-Output """New version does not appear to be desired version: ${newInstalledVersion}"""
+      # Put the old version of RightLink back because something seemed to have gone wrong
+      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink.exe -newName 'rightlink-new.exe' -Force
+      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink-old.exe -newName 'rightlink.exe' -Force
+      # Stop the new rightlink process so that we revert back to the old version when NSSM restarts RightLink
+      Stop-Process -Name 'rightlink' -Force
+      Exit 1
+    }
+
+    # Report to audit entry that RightLink ugpraded.
+    $instanceHref = & ${RIGHTLINK_DIR}\rsc.exe --rl10 --x1 ':has(.rel:val(\"\"\"self\"\"\")).href' `
+                    cm15 index_instance_session /api/sessions/instance 2> $null
+    if ($instanceHref) {
+      $auditEntryHref = & ${RIGHTLINK_DIR}\rsc.exe --rl10 --xh 'location' cm15 create /api/audit_entries `
+                        """audit_entry[auditee_href]=${instanceHref}""" `
+                        """audit_entry[detail]=RightLink updated to '${newInstalledVersion}'""" `
+                        """audit_entry[summary]=RightLink updated""" 2> $null
+      if ($auditEntryHref) {
+        Write-Output """Audit entry created at ${auditEntryHref}"""
+      } else {
+        Write-Output 'Failed to create audit entry'
+      }
+    } else {
+      Write-Output 'Unable to obtain instance HREF for audit entries'
+    }
   }
-  Exit 0
 }
 
 $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
@@ -147,7 +150,7 @@ if (Test-Path -Path $TMP_DIR\rightlink.zip) {
 $wc = New-Object System.Net.WebClient
 $wc.DownloadFile($RIGHTLINK_URL, "${TMP_DIR}\rightlink.zip")
 
-# Expand the archive into C:\Temp
+# Expand the archive into C:\Temp\Upgrade
 Expand-Zipfile "${TMP_DIR}\rightlink.zip" $TMP_DIR | Out-Null
 
 # Check downloaded version
@@ -161,12 +164,8 @@ $newVersion = & "${binPath}-new.exe" --version | % { $_.Split(" ")[1] }
 if ($newVersion -eq $desiredVersion) {
   Write-Output "New version looks right: ${newVersion}"
   Write-Output 'Restarting RightLink to pick up new version'
-  # Fork a new task since this main process is started
-  # by RightLink and we are restarting it.
-  $upgradeFunction = UpgradeRightLink
-  Start-Job -ScriptBlock $upgradeFunction
-  # Start-Process Powershell -ArgumentList $upgradeFunction
-  Get-Job | Wait-Job
+  # Fork a new task since this main process is started by RightLink and we are restarting it.
+  Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"
 } else {
   Write-Output "Updated version does not appear to be desired version: ${newVersion}"
 }
