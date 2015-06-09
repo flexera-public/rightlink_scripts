@@ -10,9 +10,9 @@ if ($env:SERVER_HOSTNAME -and $env:SERVER_HOSTNAME -ne (& hostname)) {
   Rename-Computer $env:SERVER_HOSTNAME
 
   # Host Name does not take effect until after a computer restart
-  if ($env:WINDOWS_UPDATES_REBOOT_SETTING -eq "Allow Reboot") {
+  if ($env:WINDOWS_UPDATES_REBOOT_SETTING -eq 'Allow Reboot') {
     Restart-Computer -Force
   } else {
-    return "Reboot is required, but not allowed by WINDOWS_UPDATES_REBOOT_SETTING input. Please do the reboot manually."
+    return 'Reboot is required, but not allowed by WINDOWS_UPDATES_REBOOT_SETTING input. Please do the reboot manually.'
   }
 }

@@ -26,8 +26,6 @@ upgrade_rightlink() {
   # Check updated version in production by connecting to local proxy
   # The update takes a few seconds so retries are done.
   for retry_counter in {1..5}; do
-    # The auth information is updated on an upgrade.  Continue to source the
-    # auth file to grab the updated auth info once RightLink has restarted.
     new_installed_version=$(/usr/local/bin/rsc --x1 .version rl10 index proc 2>/dev/null || true)
     if [[ "$new_installed_version" == "$desired" ]]; then
       logger -t rightlink "New version active - ${new_installed_version}"
