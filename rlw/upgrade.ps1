@@ -129,7 +129,7 @@ Write-Output "  to   desired = ${desiredVersion}"
 Write-Output "Downloading RightLink version '${desiredVersion}'"
 
 # Download new version
-$TMP_DIR = 'C:\Windows\Temp'
+$TMP_DIR = 'C:\Windows\Temp\Upgrade'
 $RIGHTLINK_URL = "https://rightlink.rightscale.com/rll/${desiredVersion}/rightlink.zip"
 
 # If temp directory doesn't exist then create it
