@@ -164,7 +164,7 @@ if ($newVersion -eq $desiredVersion) {
   # Fork a new task since this main process is started
   # by RightLink and we are restarting it.
   $upgradeFunction = UpgradeRightLink
-  Start-Job -ScriptBlock $upgradeFunction
+  Start-Process Powershell -ArgumentList $upgradeFunction
 } else {
   Write-Output "Updated version does not appear to be desired version: ${newVersion}"
 }
