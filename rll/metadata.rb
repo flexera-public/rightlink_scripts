@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     '10.1.2'
+version     '0.2015.3797357231'
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rll::security_updates", "Installs security updates"
@@ -53,16 +53,36 @@ attribute   "UPGRADES_FILE_LOCATION",
   :default => "https://rightlink.rightscale.com/rightlink/upgrades",
   :recipes => ["rll::upgrade"]
 
-attribute   "TEST_VAR",
-  :display_name => "test variable to print for regression tests",
+attribute   "UTF8_STRING_INPUT",
+  :display_name => "UTF8 String Input",
   :required => "recommended",
   :type => "string",
-  :default => "test value",
+  :default => "hello,здравствуйте",
   :recipes => ["rll::test-script"]
 
-attribute   "TEST_CRED",
-  :display_name => "test credential to print for regression tests",
+attribute   "STRING_INPUT_1",
+  :display_name => "String Input 1",
   :required => "recommended",
   :type => "string",
-  :default => "cred:AWS_ACCESS_KEY_ID",
+  :default => "Default String Input 1",
+  :recipes => ["rll::test-script"]
+
+attribute   "STRING_INPUT_2",
+  :display_name => "String Input 2",
+  :required => "recommended",
+  :type => "string",
+  :default => "Default String Input 2",
+  :recipes => ["rll::test-script"]
+
+attribute   "CRED_INPUT",
+  :display_name => "Credential Input",
+  :required => "recommended",
+  :type => "string",
+  :recipes => ["rll::test-script"]
+
+attribute   "ARRAY_INPUT_1",
+  :display_name => "Array Input 1",
+  :required => "recommended",
+  :type => "array",
+  :default => ["ARRAY_ITEM_1", "ARRAY_ITEM_2", "ARRAY_ITEM_3"],
   :recipes => ["rll::test-script"]
