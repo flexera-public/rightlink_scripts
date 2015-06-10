@@ -94,10 +94,6 @@ if (!$env:UPGRADES_FILE_LOCATION) {
 # Query RightLink info
 $json = & "${RIGHTLINK_DIR}\rsc.exe" rl10 index /rll/proc
 
-# Detemine bin_path
-$binPath = Write-Output $json | & "${RIGHTLINK_DIR}\rsc.exe" --x1 .bin_path json 2> $null |
-           % { $_ -Replace '.exe', '' }
-
 # Determine current version of rightlink
 $currentVersion = Write-Output $json | & "${RIGHTLINK_DIR}\rsc.exe" --x1 .version json 2> $null
 
@@ -140,10 +136,10 @@ if (!(Test-Path -Path $TMP_DIR)) {
   New-Item -Path $TMP_DIR -Type Directory | Out-Null
 }
 
-if (Test-Path -Path $TMP_DIR\rightlink) {
+if (Test-Path -Path ${TMP_DIR}\rightlink) {
   Remove-Item "${TMP_DIR}\rightlink" -Force -Recurse
 }
-if (Test-Path -Path $TMP_DIR\rightlink.zip) {
+if (Test-Path -Path ${TMP_DIR}\rightlink.zip) {
   Remove-Item "${TMP_DIR}\rightlink.zip" -Force
 }
 
@@ -154,12 +150,12 @@ $wc.DownloadFile($RIGHTLINK_URL, "${TMP_DIR}\rightlink.zip")
 Expand-Zipfile "${TMP_DIR}\rightlink.zip" $TMP_DIR | Out-Null
 
 # Check downloaded version
-if (Test-Path -Path ${binPath}-new.exe) {
-  Remove-Item "${binPath}-new.exe" -Force
+if (Test-Path -Path ${RIGHTLINK_DIR}\rightlink-new.exe) {
+  Remove-Item "${RIGHTLINK_DIR}\rightlink-new.exe" -Force
 }
-Move-Item -Path "${TMP_DIR}\RightLink\rightlink.exe" -Destination "${binPath}-new.exe" -Force
+Move-Item -Path "${TMP_DIR}\RightLink\rightlink.exe" -Destination "${RIGHTLINK_DIR}\rightlink-new.exe" -Force
 Write-Output 'Checking new version'
-$newVersion = & "${binPath}-new.exe" --version | % { $_.Split(" ")[1] }
+$newVersion = & "${RIGHTLINK_DIR}\rightlink-new.exe" --version | % { $_.Split(" ")[1] }
 
 if ($newVersion -eq $desiredVersion) {
   Write-Output "New version looks right: ${newVersion}"

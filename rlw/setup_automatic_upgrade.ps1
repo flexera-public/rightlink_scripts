@@ -23,7 +23,7 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
     Set-ScheduledJob -InputObject $scheduledJob -Trigger $trigger
   } else {
     Register-ScheduledJob -Name 'rightlink_check_upgrade' -Trigger $trigger -ScriptBlock {
-      & "C:\Program Files\RightScale\RightLink\rsc.exe" --rl10 cm15 schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rlw::upgrade
+      & 'C:\Program Files\RightScale\RightLink\rsc.exe' --rl10 cm15 schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rlw::upgrade
     }
   }
 
@@ -33,6 +33,5 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
     Write-Output 'Automatic upgrade enabled.'
   } else {
     Write-Output 'The scheduled job failed to be created!'
-    Exit 1
   }
 }

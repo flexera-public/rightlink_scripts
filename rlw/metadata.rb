@@ -7,13 +7,13 @@ version     '0.2015.2646234889'
 recipe      "rlw::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rlw::install_updates", "Installs windows updates"
 recipe      "rlw::install_updates_by_kb", "Microsoft KB number of update to be installed"
+recipe      "rlw::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 recipe      "rlw::setup_hostname", "Changes the hostname of the server"
+recipe      "rlw::shutdown-reason", "Print out the reason for shutdown"
 recipe      "rlw::ssc", "Installs and configures SSC for RightScale monitoring"
+recipe      "rlw::test-script", "Test operational script, used by righlinklite/tester"
 recipe      "rlw::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rlw::update_policy", "Define the Windows automatic update policy for the instance"
-recipe      "rlw::shutdown-reason", "Print out the reason for shutdown"
-recipe      "rlw::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
-recipe      "rlw::test-script", "Test operational script, used by righlinklite/tester"
 
 attribute   "SERVER_HOSTNAME",
   :display_name => "Hostname for this server",
@@ -94,16 +94,36 @@ attribute   "UPGRADES_FILE_LOCATION",
   :default => "https://rightlink.rightscale.com/rightlink/upgrades",
   :recipes => ["rlw::upgrade"]
 
-attribute   "TEST_VAR",
-  :display_name => "test variable to print for regression tests",
-  :required => "recommended",
-  :type => "string",
-  :default => "test value",
-  :recipes => ["rlw::test-script"]
+attribute   "UTF8_STRING_INPUT",
+  display_name: "UTF8 String Input",
+  required: "recommended",
+  type: "string",
+  default: "hello,здравствуйте",
+  recipes: ["rlw::test-script"]
 
-attribute   "TEST_CRED",
-  :display_name => "test credential to print for regression tests",
-  :required => "recommended",
-  :type => "string",
-  :default => "cred:AWS_ACCESS_KEY_ID",
-  :recipes => ["rlw::test-script"]
+attribute   "STRING_INPUT_1",
+  display_name: "String Input 1",
+  required: "recommended",
+  type: "string",
+  default: "Default String Input 1",
+  recipes: ["rlw::test-script"]
+
+attribute   "STRING_INPUT_2",
+  display_name: "String Input 2",
+  required: "recommended",
+  type: "string",
+  default: "Default String Input 2",
+  recipes: ["rlw::test-script"]
+
+attribute   "CRED_INPUT",
+  display_name: "Credential Input",
+  required: "recommended",
+  type: "string",
+  recipes: ["rlw::test-script"]
+
+attribute   "ARRAY_INPUT_1",
+  display_name: "Array Input 1",
+  required: "recommended",
+  type: "array",
+  default: ["ARRAY_ITEM_1", "ARRAY_ITEM_2", "ARRAY_ITEM_3"],
+  recipes: ["rlw::test-script"]
