@@ -1,6 +1,6 @@
 Write-Output '===== DECOMMISSIONING ====='
 
-$systemStateEntry = Get-Eventlog -LogName system -Source User32 | ? { $_.eventid -eq 1074 } | Select -First 1
+$systemStateEntry = Get-WinEvent -FilterHashtable @{logname='System'; id=1074} | Select -First 1
 
 switch -regex ($systemstateentry.message)
 {

@@ -34,10 +34,9 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
   }
 
   # Check to make sure that the job was scheduled
-  $newScheduledJob = SCHTASKS.exe /Query /TN 'rightlink_check_upgrade' /FO TABLE 2> $null
+  $newScheduledJob = SCHTASKS.exe /Query /TN 'rightlink_check_upgrade' 2> $null
   if ($newScheduledJob) {
     Write-Output 'Automatic upgrade enabled.'
-    Write-Output "${newScheduledJob}"
   } else {
     Write-Output 'The scheduled job failed to be created!'
     Exit 1
