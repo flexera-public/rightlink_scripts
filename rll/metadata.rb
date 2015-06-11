@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     '10.2.0'
+version     '10.1.3'
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rll::security_updates", "Installs security updates"
@@ -21,7 +21,7 @@ attribute   "SERVER_HOSTNAME",
 	"Set to an empty string to avoid any change to the hostname.",
   :required => "optional",
   :type => "string",
-  :default => "env:RS_SERVER_NAME",
+  :default => "",
   :recipes => ["rll::setup_hostname"]
 
 attribute   "COLLECTD_SERVER",

@@ -4,8 +4,8 @@
 # RightScript Name: BASE collectd
 # Description: Install and setup collectd and basic set of plugins. This configures
 #   collectd to work with RightScale TSS (Time Series Storage), a backend system
-#   for aggregating and displaying monitoring data. Collectd sends its monitoring 
-#   data to the RightLink process on the localhost as HTTP using the write_http plugin. 
+#   for aggregating and displaying monitoring data. Collectd sends its monitoring
+#   data to the RightLink process on the localhost as HTTP using the write_http plugin.
 #   RightLink then forwards that data to the TSS servers over HTTPS with authentication.
 # Inputs:
 #   RS_INSTANCE_UUID:
@@ -140,7 +140,7 @@ if [[ -e /etc/redhat-release ]]; then
     if ! yum list installed "epel-release-6*"; then
       echo "Installing EPEL repository"
       sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-      if [[ "$distro" =~ CentOS ]]; then 
+      if [[ "$distro" =~ CentOS ]]; then
         # versions of CentOS 6.x have trouble with https...
         sudo sed -i 's/https/http/' /etc/yum.repos.d/epel.repo
       fi
@@ -163,7 +163,7 @@ trap 'sudo rm --force "${mktemp_files[@]}"' EXIT
 
 collectd_base_dir=/var/lib/collectd
 collectd_types_db=/usr/share/collectd/types.db
-collectd_interval=10
+collectd_interval=20
 collectd_read_threads=5
 collectd_server_port=3011
 collectd_service=collectd
@@ -196,8 +196,8 @@ elif [[ -d /etc/yum.repos.d ]]; then
 fi
 
 # For TSS, collectd connects to the rightlink process, which runs with a random
-# high port for localhost (127.0.0.1). Without this permission relaxed, we'll get  
-# permission denied connecting to that local ip 
+# high port for localhost (127.0.0.1). Without this permission relaxed, we'll get
+# permission denied connecting to that local ip
 if sestatus 2>/dev/null | grep "SELinux status" | grep enabled; then
   sudo setsebool -P collectd_tcp_network_connect 1
 fi
