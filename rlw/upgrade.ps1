@@ -66,7 +66,7 @@ $upgradeFunction = {
       Exit 1
     }
 
-    # Report to audit entry that RightLink uggraded.
+    # Report to audit entry that RightLink upgraded.
     $instanceHref = & ${RIGHTLINK_DIR}\rsc.exe --rl10 --x1 ':has(.rel:val(\"\"\"self\"\"\")).href' `
                     cm15 index_instance_session /api/sessions/instance 2> $null
     if ($instanceHref) {
@@ -105,8 +105,8 @@ if (!$currentVersion) {
 # Fetch information about what we should become. The "upgrades" file consists of lines formatted
 # as "currentVersion:desiredVersion". If the "upgrades" file does not exist,
 # or if the current version is not in the file, no upgrade is done.
-$desiredVersion = (New-Object System.Net.WebClient).DownloadString($env:UPGRADES_FILE_LOCATION) |
-                  Select-String "\s*${currentVersion}\s*:\s*(\S+)\s*" | % { $_.matches.Groups[1].value }
+$desiredVersion = (New-Object System.Net.WebClient)DownloadString($env:UPGRADES_FILE_LOCATION) -Split "`n" |
+                  Select-String "^\s*${currentVersion}\s*:\s*(\S+)\s*$" | % { $_.Matches.Groups[1].Value }
 
 if (!$desiredVersion) {
   Write-Output 'Cannot determine latest version from upgrade file'

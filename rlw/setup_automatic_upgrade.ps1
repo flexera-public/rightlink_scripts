@@ -21,7 +21,7 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
     Write-Output 'Recreating schedule job'
     SCHTASKS.exe /Change /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /ST $jobStartTime
   } else {
-    SCHTASKS.exe /Create /RU 'SYSTEM' /ST ${jobHour}:${jobMinute} /SC DAILY `
+    SCHTASKS.exe /Create /RU 'SYSTEM' /ST $jobStartTime /SC DAILY `
     /TR "Powershell.exe & \\\`"C:\Program Files\RightScale\RightLink\rsc.exe\\\`" --rl10 cm15 schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rlw::upgrade" `
     /TN 'rightlink_check_upgrade'
   }

@@ -31,13 +31,13 @@ $SSCServRegProxy = "${SSCServRegRoot}\Write_HTTP\RightLinkProxy"
 if (!(Test-Path -Path $SSCServRegProxy)) {
   New-Item $SSCServRegProxy
   New-ItemProperty $SSCServRegProxy URL -Value "http://localhost:${ProxyPort}/rll/tss/collectdv5"
-  New-ItemProperty $SSCServRegProxy Username
-  New-ItemProperty $SSCServRegProxy Password
+  New-ItemProperty $SSCServRegProxy Username -Value ""
+  New-ItemProperty $SSCServRegProxy Password -Value ""
   New-ItemProperty $SSCServRegProxy StoreRates -Value true
 } else {
   Set-ItemProperty $SSCServRegProxy URL -Value "http://localhost:${ProxyPort}/rll/tss/collectdv5"
-  Set-ItemProperty $SSCServRegProxy Username
-  Set-ItemProperty $SSCServRegProxy Password
+  Set-ItemProperty $SSCServRegProxy Username -Value ""
+  Set-ItemProperty $SSCServRegProxy Password -Value ""
   Set-ItemProperty $SSCServRegProxy StoreRates -Value true
 }
 
