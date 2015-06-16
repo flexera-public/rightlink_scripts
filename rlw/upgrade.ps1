@@ -66,7 +66,7 @@ $upgradeFunction = {
       Exit 1
     }
 
-    # Report to audit entry that RightLink ugpraded.
+    # Report to audit entry that RightLink uggraded.
     $instanceHref = & ${RIGHTLINK_DIR}\rsc.exe --rl10 --x1 ':has(.rel:val(\"\"\"self\"\"\")).href' `
                     cm15 index_instance_session /api/sessions/instance 2> $null
     if ($instanceHref) {
@@ -105,10 +105,8 @@ if (!$currentVersion) {
 # Fetch information about what we should become. The "upgrades" file consists of lines formatted
 # as "currentVersion:desiredVersion". If the "upgrades" file does not exist,
 # or if the current version is not in the file, no upgrade is done.
-$upgradesFile = "${PSScriptRoot}\upgrades"
-(New-Object System.Net.WebClient).DownloadFile($env:UPGRADES_FILE_LOCATION, $upgradesFile)
-$desiredVersion = Get-Content $upgradesFile | Select-String "^\s*${currentVersion}\s*:\s*(\S+)\s*$" |
-                  % { $_ -replace "^\s*${currentVersion}\s*:\s*", '' }
+$desiredVersion = (New-Object System.Net.WebClient).DownloadString($env:UPGRADES_FILE_LOCATION) |
+                  Select-String "\s*${currentVersion}\s*:\s*(\S+)\s*" | % { $_.matches.Groups[1].value }
 
 if (!$desiredVersion) {
   Write-Output 'Cannot determine latest version from upgrade file'
@@ -136,6 +134,7 @@ if (!(Test-Path -Path $TMP_DIR)) {
   New-Item -Path $TMP_DIR -Type Directory | Out-Null
 }
 
+# Delete old RightLink folder and Archive in temp directory if they exist before downloading new version
 if (Test-Path -Path ${TMP_DIR}\rightlink) {
   Remove-Item "${TMP_DIR}\rightlink" -Force -Recurse
 }
@@ -164,4 +163,5 @@ if ($newVersion -eq $desiredVersion) {
   Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"
 } else {
   Write-Output "Updated version does not appear to be desired version: ${newVersion}"
+  Exit 1
 }

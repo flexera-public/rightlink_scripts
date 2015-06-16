@@ -12,21 +12,14 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
 } else {
   # Random hour 0-23
   $jobHour = Get-Random -Min 0 -Max 24
-  # Put a 0 on the front of the hour for the SCHTASKS time format
-  if ($jobHour -lt 10) {
-    $jobHour = "0" + $jobHour
-  }
-
   # Random minute 0-59
   $jobMinute = Get-Random -Min 0 -Max 60
-  # Put a 0 on the front of the minute for the SCHTASKS time format
-  if ($jobMinute -lt 10) {
-    $jobMinute = "0" + $jobMinute
-  }
+  # Create time format of ##:## needed for SCHTASKS
+  $jobStartTime = '{0:d2}:{1:d2}' -f $jobHour, $jobMinute
 
   if ($scheduledJob) {
     Write-Output 'Recreating schedule job'
-    SCHTASKS.exe /Change /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /ST ${jobHour}:${jobMinute}
+    SCHTASKS.exe /Change /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /ST $jobStartTime
   } else {
     SCHTASKS.exe /Create /RU 'SYSTEM' /ST ${jobHour}:${jobMinute} /SC DAILY `
     /TR "Powershell.exe & \\\`"C:\Program Files\RightScale\RightLink\rsc.exe\\\`" --rl10 cm15 schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rlw::upgrade" `

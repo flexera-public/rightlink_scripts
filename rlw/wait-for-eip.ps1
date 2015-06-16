@@ -30,7 +30,7 @@ Write-Output "Checking public IP against ${targets}"
 # spend at most 15 minutes checking the API hosts for either the expected IP address or an incorrect IP address
 $startTime = Get-Date
 $wc = New-Object System.Net.WebClient
-while ((New-TimeSpan -Start $startTime -End (Get-Date)).TotalSeconds -lt 900) {
+while ((New-TimeSpan -Start $startTime -End (Get-Date)).TotalMinutes -lt 15) {
   # reset matching API responses to zero
   $matchingResponses = 0
   # reset array of target API Hosts returned bad IPs

@@ -10,7 +10,7 @@ recipe      "rlw::install_updates_by_kb", "Microsoft KB number of update to be i
 recipe      "rlw::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 recipe      "rlw::setup_hostname", "Changes the hostname of the server"
 recipe      "rlw::shutdown-reason", "Print out the reason for shutdown"
-recipe      "rlw::ssc", "Installs and configures SSC for RightScale monitoring"
+recipe      "rlw::ssc-serv", "Installs and configures SSC for RightScale monitoring"
 recipe      "rlw::test-script", "Test operational script, used by righlinklite/tester"
 recipe      "rlw::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rlw::update_policy", "Define the Windows automatic update policy for the instance"
@@ -37,7 +37,7 @@ attribute   "WINDOWS_UPDATES_REBOOT_SETTING",
   :recipes => ["rlw::setup_hostname", "rlw::install_updates", "install_updates_by_kb"]
 
 attribute   "WINDOWS_AUTOMATIC_UPDATES_POLICY",
-  :display_name => "SSC version to use",
+  :display_name => "Windows Automatic Updates Policy",
   :required => "optional",
   :type => "string",
   :choice => ["Disable automatic updates", "Notify before download",
@@ -52,32 +52,32 @@ attribute   "KB_ARTICLE_NUMBER",
   :recipes => ["rlw::install_updates_by_kb"]
 
 attribute   "SSC_SERV_VERSION",
-  :display_name => "SSC version to use",
+  :display_name => "SSC Serv version to use",
   :required => "optional",
   :type => "string",
   :default => "3.5.0",
-  :recipes => ["rlw::install_updates"]
+  :recipes => ["rlw::ssc-serv"]
 
 attribute   "SSC_SERV_PLATFORM",
-  :display_name => "SSC platform to use",
+  :display_name => "SSC Serv platform to use",
   :required => "optional",
   :type => "string",
   :default => "x86-64",
-  :recipes => ["rlw::ssc"]
+  :recipes => ["rlw::ssc-serv"]
 
 attribute   "RS_TSS",
   :display_name => "RightScale monitoring server to send data to",
   :required => "optional",
   :type => "string",
   :default => "env:RS_TSS",
-  :recipes => ["rlw::ssc"]
+  :recipes => ["rlw::ssc-serv"]
 
 attribute   "RS_INSTANCE_UUID",
   :display_name => "RightScale monitoring ID for this server",
   :required => "optional",
   :type => "string",
   :default => "env:RS_INSTANCE_UUID",
-  :recipes => ["rlw::ssc"]
+  :recipes => ["rlw::ssc-serv"]
 
 attribute   "ENABLE_AUTO_UPGRADE",
   :display_name => "Enables auto upgrade of RightLink10",
