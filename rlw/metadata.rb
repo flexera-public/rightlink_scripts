@@ -22,7 +22,7 @@ attribute   "SERVER_HOSTNAME",
   "may not be longer than 63 characters.",
   :required => "optional",
   :type => "string",
-  :default => "env:RS_SERVER_NAME",
+  :default => "",
   :recipes => ["rlw::setup_hostname"]
 
 attribute   "WINDOWS_UPDATES_REBOOT_SETTING",
