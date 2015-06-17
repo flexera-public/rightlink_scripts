@@ -1,9 +1,12 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
-Unreleased changes
+10.1.3
 ------
-- Fix up decommission reason to calculate if a stop or service restart was issued.
+- shutdown-reason.sh now exports DECOM_REASON as an environment variable which will
+  be one of service_restart, stop, terminate, or reboot.
+- Have setup_hostname.sh add hostname to /etc/hosts to avoid sudo warnings
+- Changed test.sh script inputs
 
 10.1.2
 ------
