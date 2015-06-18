@@ -366,3 +366,6 @@ fi
 auth_tag=rs_monitoring:state=auth
 /usr/local/bin/rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=$auth_tag &&\
   logger -s -t RightScale "Setting monitoring active tag"
+
+# Enable utilization monitoring in RL10
+curl -XPUT "-HX-RLL-Secret:$RS_RLL_SECRET" "http://localhost:$RS_RLL_PORT/rll/tss/control?tss_id=$RS_INSTANCE_UUID"
