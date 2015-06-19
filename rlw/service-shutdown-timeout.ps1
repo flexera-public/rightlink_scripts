@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 if ($env:SERVICE_SHUTDOWN_TIMEOUT) {
   $ServiceShutdownTimeoutSeconds = [int]$env:SERVICE_SHUTDOWN_TIMEOUT
 } else {
-  $ServiceShutdownTimeoutSeconds = 60
+  $ServiceShutdownTimeoutSeconds = 300
 }
 $ServiceShutdownTimeoutMilliseconds = $ServiceShutdownTimeoutSeconds * 1000
 
