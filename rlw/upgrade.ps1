@@ -105,7 +105,7 @@ if (!$currentVersion) {
 # Fetch information about what we should become. The "upgrades" file consists of lines formatted
 # as "currentVersion:desiredVersion". If the "upgrades" file does not exist,
 # or if the current version is not in the file, no upgrade is done.
-$desiredVersion = (New-Object System.Net.WebClient)DownloadString($env:UPGRADES_FILE_LOCATION) -Split "`n" |
+$desiredVersion = (New-Object System.Net.WebClient).DownloadString($env:UPGRADES_FILE_LOCATION) -Split "`n" |
                   Select-String "^\s*${currentVersion}\s*:\s*(\S+)\s*$" | % { $_.Matches.Groups[1].Value }
 
 if (!$desiredVersion) {
