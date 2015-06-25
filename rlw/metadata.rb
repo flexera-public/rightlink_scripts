@@ -2,12 +2,11 @@ name        "rlw"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Windows (RLL) to initialize basic functionality"
-version     '0.2015.4068239413'
+version     '10.1.3'
 
 recipe      "rlw::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rlw::install_updates", "Installs windows updates"
 recipe      "rlw::install_updates_by_kb", "Microsoft KB number of update to be installed"
-recipe      "rlw::service-shutdown-timeout", "Sets amount of time for services to complete on shutdown"
 recipe      "rlw::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 recipe      "rlw::setup_hostname", "Changes the hostname of the server"
 recipe      "rlw::shutdown-reason", "Print out the reason for shutdown"
@@ -25,14 +24,6 @@ attribute   "SERVER_HOSTNAME",
   :type => "string",
   :default => "",
   :recipes => ["rlw::setup_hostname"]
-
-attribute   "SERVICE_SHUTDOWN_TIMEOUT",
-  :display_name => "Timeout in seconds",
-  :description => "The amount of time on shutdown or reboot that the operating system will wait to kill services.",
-  :required => "optional",
-  :type => "string",
-  :default => "",
-  :recipes => ["rlw::service-shutdown-timeout"]
 
 attribute   "WINDOWS_UPDATES_REBOOT_SETTING",
   :display_name => "Setting whether to reboot automatically",
