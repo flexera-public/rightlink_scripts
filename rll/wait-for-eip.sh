@@ -41,7 +41,7 @@ while [[ $(($(date +%s) - $start_time)) -lt 900 ]]; do
   for target in "${targets[@]}"; do
     # query the API for the servers IP address
     my_ip=$(curl --max-time 1 -S -s http://$target/ip/mine)
-    if [[ "$my_ip" =~ ^[.0-9]*$ && ! "$my_ip" =~ ^127\. && "$my_ip" != "$expected_public_ip" ]]; then
+    if [[ "$my_ip" =~ ^[.0-9]+$ && ! "$my_ip" =~ ^127\. && "$my_ip" != "$expected_public_ip" ]]; then
       echo "$target responded with: $my_ip which is not the IP we expect: $expected_public_ip"
       bad_ips+=("$target")
     elif [[ "$my_ip" == "$expected_public_ip" ]]; then
