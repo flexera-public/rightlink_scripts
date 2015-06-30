@@ -2,7 +2,7 @@ name        "rlw"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Windows (RLL) to initialize basic functionality"
-version     '10.1.2'
+version     '10.1.3'
 
 recipe      "rlw::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rlw::install_updates", "Installs windows updates"
@@ -22,7 +22,7 @@ attribute   "SERVER_HOSTNAME",
   "may not be longer than 63 characters.",
   :required => "optional",
   :type => "string",
-  :default => "env:RS_SERVER_NAME",
+  :default => "",
   :recipes => ["rlw::setup_hostname"]
 
 attribute   "WINDOWS_UPDATES_REBOOT_SETTING",
