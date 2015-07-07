@@ -29,7 +29,7 @@
 #     cf-mirror.rightscale.com - CloudFront version of mirror.rightscale.com
 
 FREEZE_DATE=${FREEZE_DATE//-/}
-if [[ "$FREEZE_DATE" == "" ]]; then
+if [[ -z "$FREEZE_DATE" ]]; then
   echo "Since FREEZE_DATE is not set, not configuring RightScale software mirrors"
 elif [[ ! "$FREEZE_DATE" =~ ^[0-9]{8}$ ]] && [[ ! "$FREEZE_DATE" = "latest" ]]; then
   echo "If FREEZE_DATE is set, it must be either 'latest' or in the format YYYY-MM-DD"
@@ -42,7 +42,7 @@ if [[ "$FREEZE_DATE" =~ ^[0-9]{8}$ ]] && [[ $FREEZE_DATE -gt $today ]]; then
 fi
 
 RUBYGEMS_FREEZE_DATE=${RUBYGEMS_FREEZE_DATE//-/}
-if [[ "$RUBYGEMS_FREEZE_DATE" == "" ]]; then
+if [[ -z "$RUBYGEMS_FREEZE_DATE" ]]; then
   echo "Since RUBYGEMS_FREEZE_DATE is not set, not configuring Rubygems mirror"
 elif [[ ! "$RUBYGEMS_FREEZE_DATE" =~ ^[0-9]{8}$ ]] && [[ ! "$RUBYGEMS_FREEZE_DATE" = "latest" ]]; then
   echo "If RUBYGEMS_FREEZE_DATE is set, it must be either 'latest' or in the format YYYY-MM-DD"
@@ -55,7 +55,7 @@ if [[ "$RUBYGEMS_FREEZE_DATE" =~ ^[0-9]{8}$ ]] && [[ $RUBYGEMS_FREEZE_DATE -gt $
 fi
 
 if [[ -n "$FREEZE_DATE" ]] || [[ -n "$RUBYGEMS_FREEZE_DATE" ]]; then
-  if [[ "$MIRROR_HOST" == "" ]]; then
+  if [[ -z "$MIRROR_HOST" ]]; then
     echo "MIRROR_HOST cannot be blank, possible values are cf-mirror.rightscale.com or ENV:RS_ISLAND"
   elif [[ ! "$MIRROR_HOST" =~ island|mirror ]]; then
     echo "MIRROR_HOST (= $MIRROR_HOST) appears to be invalid, possible values are cf-mirror.rightscale.com or ENV:RS_ISLAND"
@@ -101,24 +101,6 @@ echo "Distro version: $distro_ver"
 echo "Architecture: $arch"
 echo "OS Repositories Freeze Date: $freeze_date_msg"
 echo "Rubygems Freeze Date: $RUBYGEMS_FREEZE_DATE"
-
-mirror_base="http://$MIRROR_HOST"
-case $distro in
-redhat|centos)
-  freezedate="$FREEZE_DATE"
-  ;;
-ubuntu)
-  if [[ "$FREEZE_DATE" == "latest" ]]; then
-    freezedate="latest"
-  else
-    freezedate="${FREEZE_DATE:0:4}/${FREEZE_DATE:4:2}/${FREEZE_DATE:6:2}"
-  fi
-  ;;
-*)
-  echo "ERROR: Not configuring RightScale mirrors. Only Ubuntu and CentOS/RHEL distros are supported."
-  echo "You may disable this script by letting FREEZE_DATE to an empty string or ignore."
-  exit 1
-esac
 
 function content_changed() {
   sudo [ ! -f "$1" ] || [[ "$(checksum $2)" != "$(checksum $1)" ]]
@@ -184,6 +166,24 @@ function no_index_error() {
 # Main OS
 ########################
 if [[ -n "$FREEZE_DATE" ]]; then
+  mirror_base="http://$MIRROR_HOST"
+  case $distro in
+  redhat|centos)
+    freezedate="$FREEZE_DATE"
+    ;;
+  ubuntu)
+    if [[ "$FREEZE_DATE" == "latest" ]]; then
+      freezedate="latest"
+    else
+      freezedate="${FREEZE_DATE:0:4}/${FREEZE_DATE:4:2}/${FREEZE_DATE:6:2}"
+    fi
+    ;;
+  *)
+    echo "ERROR: Not configuring RightScale mirrors. Only Ubuntu and CentOS/RHEL distros are supported."
+    echo "You may disable this script by letting FREEZE_DATE to an empty string or ignore."
+    exit 1
+  esac
+
   case $distro in
   centos)
     echo "Setting up CentOS repositories at $mirror_base"
