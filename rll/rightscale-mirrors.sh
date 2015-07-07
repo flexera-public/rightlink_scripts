@@ -72,6 +72,13 @@ if which apt-get >/dev/null 2>&1; then
     distro_ver=${DISTRIB_RELEASE:-unknown}
     distro_codename=${DISTRIB_CODENAME:-unknown}
   fi
+elif [[ -f /etc/centos-release ]]; then
+  if [[ $(cat /etc/centos-release) =~ ^([^0-9]+)\ ([0-9])\. ]]; then
+    distro="${BASH_REMATCH[1]}"
+    distro=${distro/Red Hat/RedHat}
+    distro_ver="${BASH_REMATCH[2]}"
+    distro_ver=$(echo $distro_ver | cut -d. -f1)
+  fi
 elif [[ -f /etc/redhat-release ]]; then
   if [[ $(cat /etc/redhat-release) =~ ^([^0-9]+)\ ([0-9])\. ]]; then
     distro="${BASH_REMATCH[1]}"
