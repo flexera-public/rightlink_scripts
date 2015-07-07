@@ -15,7 +15,8 @@
 #   Ubuntu 12.04/14.04, CentOS 6/7
 # Additionally, on Redhat 6/7 Fedora EPEL will be set up, but not the main repository mirrors.
 
-# The following parameters are accepted:
+# To enable this functionality, have this script be the FIRST script in your
+# boot sequence. The following parameters are accepted:
 #   FREEZE_DATE - The date from which to pull OS/EPEL software. Accepts following parameters:
 #       empty string - disables usage of frozen mirrors (use config already on disk)
 #       YYYY-MM-DD - i.e 2015-06-01
