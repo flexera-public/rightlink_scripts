@@ -222,10 +222,8 @@ if [[ -n "$FREEZE_DATE" ]]; then
     ;;
   ubuntu)
     echo "Setting up Ubuntu repositories at $mirror_base/ubuntu_daily/$freezedate"
-    echo "Removing all mirrors from /etc/apt/sources.list"
-    write_cfg /etc/apt/sources.list ""
 
-    src=/etc/apt/sources.list.d/rightscale.sources.list
+    src=/etc/apt/sources.list
     echo "Writing Ubuntu repo config to $src"
     write_cfg $src \
       "deb $mirror_base/ubuntu_daily/$freezedate $distro_codename main restricted multiverse universe" \
