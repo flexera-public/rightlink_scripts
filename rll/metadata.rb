@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     '10.1.4'
+version     '10.1.3'
 
 recipe      "rll::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
 recipe      "rll::security_updates", "Installs security updates"
@@ -11,15 +11,14 @@ recipe      "rll::collectd", "Installs and configures collectd for RightScale mo
 recipe      "rll::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
 recipe      "rll::setup_automatic_upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
-recipe      "rll::rightscale-mirrors", "Setup software repository mirrors hosted by RightScale"
 recipe      "rll::test-script", "Test operational script, used by righlinklite/tester"
 
 attribute   "SERVER_HOSTNAME",
   :display_name => "Hostname for this server",
   :description => "The server's hostname is set to the longest valid prefix or suffix of " +
-    "this variable. E.g. 'my.example.com V2', 'NEW my.example.com', and " +
-    "'database.io my.example.com' all set the hostname to 'my.example.com'. " +
-    "Set to an empty string to avoid any change to the hostname.",
+	"this variable. E.g. 'my.example.com V2', 'NEW my.example.com', and " +
+	"'database.io my.example.com' all set the hostname to 'my.example.com'. " +
+	"Set to an empty string to avoid any change to the hostname.",
   :required => "optional",
   :type => "string",
   :default => "",
@@ -53,35 +52,6 @@ attribute   "UPGRADES_FILE_LOCATION",
   :type => "string",
   :default => "https://rightlink.rightscale.com/rightlink/upgrades",
   :recipes => ["rll::upgrade"]
-
-attribute   "MIRROR_HOST",
-  :display_name => "OS repository hostname",
-  :required => "recommended",
-  :description => "RightScale provides mirrors of some OS distributions. This would be the hostname of one of those mirrors (typically env:RS_ISLAND)",
-  :type => "string",
-  :default => "env:RS_ISLAND",
-  :recipes => ["rll::rightscale-mirrors"]
-
-attribute   "FREEZE_DATE",
-  :display_name => "OS repository freeze date",
-  :required => "recommended",
-  :type => "string",
-  :description => "Day from which to set RightScale-hosted OS repository mirror. Can be an empty string to disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a particular day",
-  :default => "",
-  :recipes => ["rll::rightscale-mirrors"]
-
-attribute   "RUBYGEMS_FREEZE_DATE",
-  :display_name => "Rubygems freeze date",
-  :required => "recommended",
-  :type => "string",
-  :description => "Day from which to set RightScale-hosted Rubygems mirror. Can be an empty string to disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a particular day",
-  :default => "",
-  :recipes => ["rll::rightscale-mirrors"]
-
-
-#####################
-# Inputs for internal testing below
-#####################
 
 attribute   "UTF8_STRING_INPUT",
   :display_name => "UTF8 String Input",
