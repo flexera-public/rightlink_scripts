@@ -139,7 +139,7 @@ function write_cfg() {
   shift
 
   # Create a temporary file for the collectd plugin configration
-  local file_tmp=$(sudo mktemp "${file}.XXXXXXXXXX.orig")
+  local file_tmp=$(sudo mktemp "${file}.XXXXXXXXXX")
   add_mktemp_file $file_tmp
 
   # Add each line
@@ -151,7 +151,7 @@ function write_cfg() {
   if content_changed $file $file_tmp; then
     echo "  Writing $file"
     sudo chmod 0644 $file_tmp
-    sudo [ -f $file ] && sudo cp --archive $file "${file}.$(date -u +%Y%m%d%H%M%S)"
+    sudo [ -f $file ] && sudo cp --archive $file "${file}.$(date -u +%Y%m%d%H%M%S).orig"
     sudo mv --force $file_tmp $file
   else
     echo "  Contents of $file unchanged"
