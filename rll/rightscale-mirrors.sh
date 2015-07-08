@@ -57,6 +57,7 @@ fi
 if [[ -n "$FREEZE_DATE" ]] || [[ -n "$RUBYGEMS_FREEZE_DATE" ]]; then
   if [[ -z "$MIRROR_HOST" ]]; then
     echo "MIRROR_HOST cannot be blank, possible values are cf-mirror.rightscale.com or ENV:RS_ISLAND"
+    exit 1
   elif [[ ! "$MIRROR_HOST" =~ island|mirror ]]; then
     echo "MIRROR_HOST (= $MIRROR_HOST) appears to be invalid, possible values are cf-mirror.rightscale.com or ENV:RS_ISLAND"
     exit 1
