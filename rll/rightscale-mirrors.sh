@@ -48,7 +48,6 @@ elif [[ ! "$RUBYGEMS_FREEZE_DATE" =~ ^[0-9]{8}$ ]] && [[ ! "$RUBYGEMS_FREEZE_DAT
   echo "If RUBYGEMS_FREEZE_DATE is set, it must be either 'latest' or in the format YYYY-MM-DD"
   exit 1
 fi
-today=$(date +"%Y%m%d")
 if [[ "$RUBYGEMS_FREEZE_DATE" =~ ^[0-9]{8}$ ]] && [[ $RUBYGEMS_FREEZE_DATE -gt $today ]]; then
   echo "RUBYGEMS_FREEZE_DATE can't be from a date in the future"
   exit 1
