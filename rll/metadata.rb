@@ -53,6 +53,10 @@ attribute   "UPGRADES_FILE_LOCATION",
   :default => "https://rightlink.rightscale.com/rightlink/upgrades",
   :recipes => ["rll::upgrade"]
 
+#####################
+# Inputs for internal testing below
+#####################
+
 attribute   "UTF8_STRING_INPUT",
   :display_name => "UTF8 String Input",
   :required => "recommended",
