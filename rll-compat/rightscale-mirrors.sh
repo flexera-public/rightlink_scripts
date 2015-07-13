@@ -187,7 +187,7 @@ if [[ -n "$FREEZE_DATE" ]]; then
     ;;
   *)
     echo "ERROR: Not configuring RightScale mirrors. Only Ubuntu and CentOS/RHEL distros are supported."
-    echo "You may disable this script by letting FREEZE_DATE to an empty string or ignore."
+    echo "You may disable this script by setting FREEZE_DATE to an empty string or ignore."
     exit 1
   esac
 
