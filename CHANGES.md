@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.1.4
+------
+- Added rll-compat::rightscale-mirrors for configuring RightScale-hosted OS repository mirrors
+
 10.1.3
 ------
 - shutdown-reason.sh now exports DECOM_REASON as an environment variable which will
