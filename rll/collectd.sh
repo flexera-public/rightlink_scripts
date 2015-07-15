@@ -199,7 +199,9 @@ fi
 # high port for localhost (127.0.0.1). Without this permission relaxed, we'll get
 # permission denied connecting to that local ip
 if sestatus 2>/dev/null | grep "SELinux status" | grep enabled; then
-  if getsebool -a | grep collectd_tcp_network_connect >/dev/null 2>&1; then
+  # Existence check - on CentOS 6 this variable doesn't exist and isn't needed
+  if getsebool collectd_tcp_network_connect >/dev/null 2>&1; then
+    echo "Setting SELinux variable collectd_tcp_network_connect to on"
     sudo setsebool -P collectd_tcp_network_connect 1
   fi
 fi
