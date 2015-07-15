@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.1.5
+------
+- Fix collectd.sh script failure on CentOS 6 when SELinux is enabled.
+
 10.1.4
 ------
 - Added rll-compat::rightscale-mirrors for configuring RightScale-hosted OS repository mirrors
