@@ -56,7 +56,7 @@ esac
 
 echo "  OS decommission reason is: $os_decom_reason"
 echo "  RightScale decommission reason is: $rs_decom_reason"
-echo "  Combined DECOM_REASON is $decom_reason"
+echo "  Combined DECOM_REASON is: $decom_reason"
 echo ""
 echo "exporting DECOM_REASON=$decom_reason into the environment for subsequent scripts"
 /usr/local/bin/rsc rl10 update /rll/env/DECOM_REASON payload=$decom_reason

@@ -4,6 +4,7 @@ Changelog for the RightLink10 Base ServerTemplate
 10.1.5
 ------
 - Fix collectd.sh script failure on CentOS 6 when SELinux is enabled.
+- Update rlw::shutdown-reason to have parity with Linux counterpart.
 
 10.1.4
 ------
