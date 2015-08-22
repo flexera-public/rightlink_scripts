@@ -8,6 +8,7 @@ recipe      "rlw::setup-automatic-upgrade", "Periodically checks if an upgrade i
 recipe      "rlw::shutdown-reason", "Print out the reason for shutdown"
 recipe      "rlw::upgrade", "Check whether a RightLink upgrade is available and do the upgrade"
 recipe      "rlw::wait-for-eip", "Wait for external IP address to be assigned (EC2 issue)"
+recipe      "rlw::enable_monitoring", "Enable built-in RightLink system monitoring."
 
 attribute   "ENABLE_AUTO_UPGRADE",
   :display_name => "Enables auto upgrade of RightLink10",
