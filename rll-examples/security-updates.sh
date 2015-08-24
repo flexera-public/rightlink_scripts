@@ -1,6 +1,10 @@
 #! /bin/bash -e
 
-# Install security updates
+# ---
+# RightScript Name: RL10 Linux Security Updates
+# Description: Installs security updates
+# ...
+#
 
 # Ubuntu/Debian
 if [[ -d /etc/apt ]]; then

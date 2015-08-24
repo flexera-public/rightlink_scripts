@@ -1,7 +1,13 @@
 #! /bin/bash
 
-# We pull the runlevel or equivalent from the init system and call it 
-# os_decom_reason. os_decom_reason possible values are: 
+# ---
+# RightScript Name: RL10 Linux Shutdown Reason
+# Description: Print out the reason for shutdown.
+# ...
+#
+
+# We pull the runlevel or equivalent from the init system and call it
+# os_decom_reason. os_decom_reason possible values are:
 #   shutdown = system is halting, powering off, or going into single user mode
 #   reboot = system is rebooting
 #   service_restart = service was restarted
@@ -11,7 +17,7 @@
 # stop/terminate/reboot from either the RightScale dashboard or the API. It will
 # be empty if we shutdown or rebooted at the command line, or if a shutdown/reboot
 # was issued on the cloud provider's console. Note we can't tell if a terminate
-# was issued on a cloud provider's console, as we just know the system is going 
+# was issued on a cloud provider's console, as we just know the system is going
 # down. rs_decom_reason possible values are:
 #   stop = instance is being stopped/shutdown but disk persists
 #   terminate = instance is being destroyed/deleted

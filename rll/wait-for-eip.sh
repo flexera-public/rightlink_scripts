@@ -1,7 +1,12 @@
 #! /bin/bash
 
-# On AWS, if an elastic IP address is specified this script will wait until all API Hosts are
-# reporting the expected IP address for the server, which is recorded in the user-data
+# ---
+# RightScript Name: RL10 Linux Wait For EIP
+# Description: On AWS, if an elastic IP address is specified this script will
+#   wait until all API Hosts are reporting the expected IP address for the server,
+#   which is recorded in the user-data
+# ...
+#
 
 rs_vars=$(sudo cat /var/lib/rightscale-identity)
 

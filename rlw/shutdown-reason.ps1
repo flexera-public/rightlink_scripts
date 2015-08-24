@@ -1,3 +1,9 @@
+# ---
+# RightScript Name: RL10 Windows Shutdown Reason
+# Description: Print out the reason for shutdown.
+# ...
+#
+
 # The decommission bundle on Windows is only executed if a stop/terminate/reboot
 # action is initiated via RightScale dashboard or using the RightScale API.
 # On Windows, if a stop/shutdown/reboot action is initiated from the instance or

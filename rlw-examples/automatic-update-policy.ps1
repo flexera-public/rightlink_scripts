@@ -1,3 +1,22 @@
+# ---
+# RightScript Name: RL10 Windows Automatic Update Policy
+# Description: Sets the policy for automatic updates.
+# Inputs:
+#   WINDOWS_AUTOMATIC_UPDATES_POLICY:
+#     Input Type: single
+#     Category: RightScale
+#     Description: The automatic updates policy setting.
+#     Default: text:Disable automatic updates
+#     Required: false
+#     Advanced: true
+#     Possible Values:
+#       - text:Disable automatic updates
+#       - text:Notify before download
+#       - text:Notify before installation
+#       - text:Install updates automatically
+# ...
+#
+
 $errorActionPreference = 'Stop'
 
 switch ($env:WINDOWS_AUTOMATIC_UPDATES_POLICY)

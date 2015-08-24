@@ -1,7 +1,7 @@
 #! /bin/bash -e
 
 # ---
-# RightScript Name: BASE collectd
+# RightScript Name: RL10 Linux Collectd
 # Description: Install and setup collectd and basic set of plugins. This configures
 #   collectd to work with RightScale TSS (Time Series Storage), a backend system
 #   for aggregating and displaying monitoring data. Collectd sends its monitoring
@@ -12,14 +12,15 @@
 #     Input Type: single
 #     Category: RightScale
 #     Default: env:RS_INSTANCE_UUID
-#     Required: true
+#     Description: The monitoring ID for this server.
+#     Required: false
 #     Advanced: true
 #   COLLECTD_SERVER:
 #     Input Type: single
 #     Category: RightScale
 #     Default: env:RS_TSS
 #     Description: The FQDN or IP address of the remote collectd server.
-#     Required: true
+#     Required: false
 #     Advanced: true
 # ...
 #

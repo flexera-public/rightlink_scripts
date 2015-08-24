@@ -1,6 +1,8 @@
 #! /bin/bash -e
 
-# RightScale provides mirrors of some OS distributions. Snapshots of these mirrors
+# ---
+# RightScript Name: RL10 Linux RightScale Mirrors
+# Description: RightScale provides mirrors of some OS distributions. Snapshots of these mirrors
 # are taken daily so that any the mirrors can be "frozen" to any given day. These
 # mirrors also usually come from a fixed IP range for firewall friendliness. The
 # mirrors may be browsed at mirror.rightscale.com. For further information, see
@@ -10,6 +12,35 @@
 #   CentOS Base, addons, extras, update mirrors (/centos)
 #   Fedora EPEL (/epel)
 #   Rubygems (/rubygems)
+# Inputs:
+#   FREEZE_DATE:
+#     Input Type: single
+#     Category: RightScale
+#     Description: Day from which to set RightScale-hosted OS repository mirror. Can be an empty string to
+#       disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull
+#       from a particular day
+#     Default: text
+#     Required: true
+#     Advanced: true
+#   RUBYGEMS_FREEZE_DATE:
+#     Input Type: single
+#     Category: RightScale
+#     Description: Day from which to set RightScale-hosted Rubygems mirror. Can be an empty string to disable
+#       this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a
+#       particular day
+#     Default: text
+#     Required: true
+#     Advanced: true
+#   MIRROR_HOST:
+#     Input Type: single
+#     Category: RightScale
+#     Description: RightScale provides mirrors of some OS distributions. This would be the hostname of one of
+#       those mirrors (typically env:RS_ISLAND)
+#     Default: text
+#     Required: true
+#     Advanced: true
+# ...
+#
 
 # Mirrors are currently only supported for the following distros:
 #   Ubuntu 12.04/14.04, CentOS 6/7
@@ -25,7 +56,7 @@
 #   MIRROR_HOST - host, possible values:
 #     ENV:RS_ISLAND - Island load balancers for your RightScale account. Note that this
 #                     is NOT guaranteed to be geographically closest, but is rather
-#                     assigned per acocunt
+#                     assigned per account
 #     cf-mirror.rightscale.com - CloudFront version of mirror.rightscale.com
 
 FREEZE_DATE=${FREEZE_DATE//-/}
