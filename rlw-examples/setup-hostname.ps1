@@ -8,7 +8,7 @@
 #     Description: The server's hostname may contain letters (a-z, A-Z), numbers (0-9), and hyphens (-),
 #       but no spaces or periods (.). The name may not consist entirely of digits, and may not be longer
 #       than 63 characters.
-#     Default: text
+#     Default: text:
 #     Required: false
 #     Advanced: true
 #   WINDOWS_UPDATES_REBOOT_SETTING:

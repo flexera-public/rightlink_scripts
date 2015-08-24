@@ -10,7 +10,7 @@
 #     Description: The server's hostname is set to the longest valid prefix or suffix of this variable.
 #       E.g. 'my.example.com V2', 'NEW my.example.com', and 'database.io my.example.com' all set the hostname to 'my.example.com'.
 #       Set to an empty string to avoid any change to the hostname.
-#     Default: text
+#     Default: text:
 #     Required: false
 #     Advanced: true
 # ...
