@@ -2,7 +2,7 @@ name        "rlw-examples"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Example scripts for RightLink10 on Windows (RLW)"
-version     '10.2.0'
+version     '10.1.5'
 
 recipe      "rlw-examples::install-updates", "Installs windows updates"
 recipe      "rlw-examples::install-updates-by-kb", "Microsoft KB number of update to be installed"
