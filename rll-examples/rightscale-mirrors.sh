@@ -3,10 +3,10 @@
 # ---
 # RightScript Name: RL10 Linux RightScale Mirrors
 # Description: RightScale provides mirrors of some OS distributions. Snapshots of these mirrors
-# are taken daily so that any the mirrors can be "frozen" to any given day. These
-# mirrors also usually come from a fixed IP range for firewall friendliness. The
-# mirrors may be browsed at mirror.rightscale.com. For further information, see
-# https://support.rightscale.com/12-Guides/RightScale_101/System_Architecture/Rightscale_OS_Software_Mirrors/.
+#   are taken daily so that any the mirrors can be "frozen" to any given day. These
+#   mirrors also usually come from a fixed IP range for firewall friendliness. The
+#   mirrors may be browsed at mirror.rightscale.com. For further information, see
+#   https://support.rightscale.com/12-Guides/RightScale_101/System_Architecture/Rightscale_OS_Software_Mirrors/.
 # The following are available:
 #   Ubuntu main, universe, security-updates mirrors (/ubuntu_daily)
 #   CentOS Base, addons, extras, update mirrors (/centos)
@@ -19,7 +19,7 @@
 #     Description: Day from which to set RightScale-hosted OS repository mirror. Can be an empty string to
 #       disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull
 #       from a particular day
-#     Default: text
+#     Default: text:
 #     Required: true
 #     Advanced: true
 #   RUBYGEMS_FREEZE_DATE:
@@ -28,7 +28,7 @@
 #     Description: Day from which to set RightScale-hosted Rubygems mirror. Can be an empty string to disable
 #       this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a
 #       particular day
-#     Default: text
+#     Default: text:
 #     Required: true
 #     Advanced: true
 #   MIRROR_HOST:
@@ -36,7 +36,7 @@
 #     Category: RightScale
 #     Description: RightScale provides mirrors of some OS distributions. This would be the hostname of one of
 #       those mirrors (typically env:RS_ISLAND)
-#     Default: text
+#     Default: text:
 #     Required: true
 #     Advanced: true
 # ...

@@ -19,7 +19,6 @@
 #     Default: text:
 #     Required: false
 #     Advanced: true
-#     Possible Values:
 # ...
 #
 
