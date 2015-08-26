@@ -1,3 +1,21 @@
+# ---
+# RightScript Name: RL10 Windows Setup Automatic Upgrade
+# Description: Creates a scheduled job that performs a daily check to see if
+#   an upgrade to RightLink is available and upgrades if there is.
+# Inputs:
+#   ENABLE_AUTO_UPGRADE:
+#     Input Type: single
+#     Category: RightScale
+#     Description: Enables or disables automatic upgrade of RightLink10.
+#     Default: text:true
+#     Required: false
+#     Advanced: true
+#     Possible Values:
+#       - text:true
+#       - text:false
+# ...
+#
+
 # This script either creates or updates a scheduled job that will run once a day that checks to
 # see if there is an upgrade for RightLink
 
@@ -21,8 +39,14 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
     Write-Output 'Recreating schedule job'
     SCHTASKS.exe /Change /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /ST $jobStartTime
   } else {
+    # Determine if running a rightscript or a recipe
+    if ((Get-Location) -match 'scripts') {
+      $rscCommand = "schedule_right_script /api/right_net/scheduler/schedule_right_script right_script=\\\`"RL10 Windows Upgrade\\\`""
+    } else {
+      $rscCommand = "schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rlw::upgrade"
+    }
     SCHTASKS.exe /Create /RU 'SYSTEM' /ST $jobStartTime /SC DAILY `
-    /TR "Powershell.exe & \\\`"C:\Program Files\RightScale\RightLink\rsc.exe\\\`" --rl10 cm15 schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rlw::upgrade" `
+    /TR "Powershell.exe & \\\`"C:\Program Files\RightScale\RightLink\rsc.exe\\\`" --rl10 cm15 $rscCommand" `
     /TN 'rightlink_check_upgrade'
   }
 
@@ -35,5 +59,3 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
     Exit 1
   }
 }
-
-

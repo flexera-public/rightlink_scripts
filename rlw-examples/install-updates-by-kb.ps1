@@ -1,3 +1,27 @@
+# ---
+# RightScript Name: RL10 Windows Install Updates By KB
+# Description: Installs a specific update identified by KB.
+# Inputs:
+#   WINDOWS_UPDATES_REBOOT_SETTING:
+#     Input Type: single
+#     Category: RightScale
+#     Description: Setting whether to reboot automatically.
+#     Default: text:Do Not Allow Reboot
+#     Required: false
+#     Advanced: true
+#     Possible Values:
+#       - text:Do Not Allow Reboot
+#       - text:Allow Reboot
+#   KB_ARTICLE_NUMBER:
+#     Input Type: single
+#     Category: RightScale
+#     Description: Microsoft KB Article to download and install.
+#     Default: text:
+#     Required: false
+#     Advanced: true
+# ...
+#
+
 $errorActionPreference = 'Stop'
 
 function ResolveError($errorRecord = $error[0])

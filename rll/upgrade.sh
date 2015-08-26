@@ -1,8 +1,22 @@
 #! /bin/bash -e
 
+# ---
+# RightScript Name: RL10 Linux Upgrade
+# Description: Check whether a RightLink upgrade is available and perform the upgrade.
+# Inputs:
+#   UPGRADES_FILE_LOCATION:
+#     Input Type: single
+#     Category: RightScale
+#     Description: External location of 'upgrades' file
+#     Default: text:https://rightlink.rightscale.com/rightlink/upgrades
+#     Required: false
+#     Advanced: true
+# ...
+#
+
 # Will compare current version of rightlink 'running' with latest version provided from 'upgrades'
 # file. If they differ, will update to latest version.  Note that latest version can be an older version
-# if a downgrade is best.
+# if a downgrade is best as found in the $UPGRADES_FILE_LOCATION
 
 UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rightlink/upgrades"}
 

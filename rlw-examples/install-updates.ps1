@@ -1,3 +1,20 @@
+# ---
+# RightScript Name: RL10 Windows Install Updates
+# Description: Installs all updates available.
+# Inputs:
+#   WINDOWS_UPDATES_REBOOT_SETTING:
+#     Input Type: single
+#     Category: RightScale
+#     Description: Setting whether to reboot automatically.
+#     Default: text:Do Not Allow Reboot
+#     Required: false
+#     Advanced: true
+#     Possible Values:
+#       - text:Do Not Allow Reboot
+#       - text:Allow Reboot
+# ...
+#
+
 $errorActionPreference = 'Stop'
 
 function ResolveError($errorRecord = $error[0])

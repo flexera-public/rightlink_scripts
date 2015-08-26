@@ -1,10 +1,11 @@
-name        "rll-compat"
+name        "rll-examples"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
-description "Compatibility scripts for RightLink10 on Linux (RLL)"
-version     '10.1.4'
+description "Example scripts for RightLink10 on Linux (RLL)"
+version     '10.1.5'
 
-recipe      "rll-compat::rightscale-mirrors", "Setup software repository mirrors hosted by RightScale"
+recipe      "rll-examples::security_updates", "Installs security updates"
+recipe      "rll-examples::rightscale-mirrors", "Setup software repository mirrors hosted by RightScale"
 
 attribute   "MIRROR_HOST",
   :display_name => "OS repository hostname",
@@ -12,7 +13,7 @@ attribute   "MIRROR_HOST",
   :description => "RightScale provides mirrors of some OS distributions. This would be the hostname of one of those mirrors (typically env:RS_ISLAND)",
   :type => "string",
   :default => "env:RS_ISLAND",
-  :recipes => ["rll-compat::rightscale-mirrors"]
+  :recipes => ["rll-examples::rightscale-mirrors"]
 
 attribute   "FREEZE_DATE",
   :display_name => "OS repository freeze date",
@@ -20,7 +21,7 @@ attribute   "FREEZE_DATE",
   :type => "string",
   :description => "Day from which to set RightScale-hosted OS repository mirror. Can be an empty string to disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a particular day",
   :default => "",
-  :recipes => ["rll-compat::rightscale-mirrors"]
+  :recipes => ["rll-examples::rightscale-mirrors"]
 
 attribute   "RUBYGEMS_FREEZE_DATE",
   :display_name => "Rubygems freeze date",
@@ -28,4 +29,4 @@ attribute   "RUBYGEMS_FREEZE_DATE",
   :type => "string",
   :description => "Day from which to set RightScale-hosted Rubygems mirror. Can be an empty string to disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a particular day",
   :default => "",
-  :recipes => ["rll-compat::rightscale-mirrors"]
+  :recipes => ["rll-examples::rightscale-mirrors"]
