@@ -125,7 +125,7 @@ function package_handler() {
   # Check if issue running command still existed after all retries
   if [ "$issue_running_command" = true ]; then
     echo "ERROR: Unable to run package application."
-    exit 1
+    return 1
   fi
 }
 
