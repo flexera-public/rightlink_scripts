@@ -94,53 +94,30 @@ EOF
   echo "collectd plugin $collectd_plugin configured"
 }
 
-# Run sudo apt-get with retries if an error occurs.
+# Run sudo apt-get|yum with retries if errors occur.
+# $@: full APT-GET(8) or yum(8) command
 #
-# $@: args passed into APT-GET(8) command-line
-#
-function sudo_apt-get() {
+function package_handler() {
   # Setting config variables for this function
   retries=5
   wait_time=10
 
-  while [ $retries -gt 0 ]; do
-    # Reset this variable before every iteration to be checked if changed
-    issue_running_command=false
-    sudo apt-get $@ || { issue_running_command=true; }
-    if [ "$issue_running_command" = true ]; then
-      (( retries-- ))
-      echo "Error occurred - will retry shortly"
-      sleep $wait_time
-    else
-      break
-    fi
-  done
-
-  # Check if issue running command still existed after all retries
-  if [ "$issue_running_command" = true ]; then
-    echo "ERROR: Unable to run package application."
+  # Check that the correct package application is being called
+  if [ "$1" != "apt-get" ] && [ "$1" != "yum" ]; then
+    echo "ERROR: invalid package command: $1"
     exit 1
   fi
-}
-
-# Run sudo yum with retries if an error occurs.
-#
-# $@: args passed into yum(8) command-line
-#
-function sudo_yum() {
-  # Setting config variables for this function
-  retries=5
-  wait_time=10
 
   while [ $retries -gt 0 ]; do
     # Reset this variable before every iteration to be checked if changed
     issue_running_command=false
-    sudo yum $@ || { issue_running_command=true; }
+    sudo $@ || { issue_running_command=true; }
     if [ "$issue_running_command" = true ]; then
       (( retries-- ))
       echo "Error occurred - will retry shortly"
       sleep $wait_time
     else
+      # Break out of loop since command was successful.
       break
     fi
   done
@@ -171,7 +148,7 @@ if which apt-get >/dev/null 2>&1; then
     installed_version=$(dpkg -l | grep '^ii' | grep collectd-core | awk '{print $3}')
     if [[ "$installed_version" == "$rs_version" ]]; then
       echo "Removing collectd 4 package"
-      sudo_apt-get purge -y collectd collectd-core
+      package_handler apt-get purge -y collectd collectd-core
     fi
   fi
 elif yum list collectd 2>&1 | grep '@rightscale-epel' >/dev/null 2>&1; then
@@ -179,7 +156,7 @@ elif yum list collectd 2>&1 | grep '@rightscale-epel' >/dev/null 2>&1; then
     sudo sed -i '/collectd/d' /etc/yum/pluginconf.d/versionlock.list
   fi
   echo "Removing collectd 4 package"
-  sudo_yum remove -y "collectd*"
+  package_handler yum remove -y "collectd*"
 fi
 
 
@@ -247,11 +224,11 @@ collectd_thresholds_conf="$collectd_conf_dir/thresholds.conf"
 
 # Install platform specific collectd packages
 if [[ -d /etc/apt ]]; then
-  sudo_apt-get install -y curl collectd-core
+  package_handler apt-get install -y curl collectd-core
 elif [[ -d /etc/yum.repos.d ]]; then
   # keep these lines separate, yum doesn't fail for missing packages when grouped together
-  sudo_yum install -y curl
-  sudo_yum install -y collectd
+  package_handler yum install -y curl
+  package_handler yum install -y collectd
 fi
 
 # For TSS, collectd connects to the rightlink process, which runs with a random
