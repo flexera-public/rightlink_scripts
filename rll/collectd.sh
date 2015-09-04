@@ -94,6 +94,36 @@ EOF
   echo "collectd plugin $collectd_plugin configured"
 }
 
+# Run passed-in command with retries if errors occur.
+#
+# $@: full line command
+#
+function retry_command() {
+  # Setting config variables for this function
+  retries=5
+  wait_time=10
+
+  while [ $retries -gt 0 ]; do
+    # Reset this variable before every iteration to be checked if changed
+    issue_running_command=false
+    $@ || { issue_running_command=true; }
+    if [ "$issue_running_command" = true ]; then
+      (( retries-- ))
+      echo "Error occurred - will retry shortly"
+      sleep $wait_time
+    else
+      # Break out of loop since command was successful.
+      break
+    fi
+  done
+
+  # Check if issue running command still existed after all retries
+  if [ "$issue_running_command" = true ]; then
+    echo "ERROR: Unable to run: '$@'"
+    return 1
+  fi
+}
+
 # Initialize variables
 if [[ ! "$COLLECTD_SERVER" =~ tss ]]; then
   echo "ERROR: This script will only run on a TSS enabled account. Contact RightScale Support to enable."
@@ -113,7 +143,7 @@ if which apt-get >/dev/null 2>&1; then
     installed_version=$(dpkg -l | grep '^ii' | grep collectd-core | awk '{print $3}')
     if [[ "$installed_version" == "$rs_version" ]]; then
       echo "Removing collectd 4 package"
-      sudo apt-get purge -y collectd collectd-core
+      retry_command sudo apt-get purge -y collectd collectd-core
     fi
   fi
 elif yum list collectd 2>&1 | grep '@rightscale-epel' >/dev/null 2>&1; then
@@ -121,7 +151,7 @@ elif yum list collectd 2>&1 | grep '@rightscale-epel' >/dev/null 2>&1; then
     sudo sed -i '/collectd/d' /etc/yum/pluginconf.d/versionlock.list
   fi
   echo "Removing collectd 4 package"
-  sudo yum remove -y "collectd*"
+  retry_command sudo yum remove -y "collectd*"
 fi
 
 
@@ -189,11 +219,11 @@ collectd_thresholds_conf="$collectd_conf_dir/thresholds.conf"
 
 # Install platform specific collectd packages
 if [[ -d /etc/apt ]]; then
-  sudo apt-get install -y curl collectd-core
+  retry_command sudo apt-get install -y curl collectd-core
 elif [[ -d /etc/yum.repos.d ]]; then
   # keep these lines separate, yum doesn't fail for missing packages when grouped together
-  sudo yum install -y curl
-  sudo yum install -y collectd
+  retry_command sudo yum install -y curl
+  retry_command sudo yum install -y collectd
 fi
 
 # For TSS, collectd connects to the rightlink process, which runs with a random
