@@ -2,11 +2,17 @@
 
 # ---
 # RightScript Name: RL10 Linux Collectd
-# Description: Install and setup collectd and basic set of plugins. This configures
+# Description: |
+#   Install and setup collectd and basic set of plugins. This configures
 #   collectd to work with RightScale TSS (Time Series Storage), a backend system
 #   for aggregating and displaying monitoring data. Collectd sends its monitoring
 #   data to the RightLink process on the localhost as HTTP using the write_http plugin.
 #   RightLink then forwards that data to the TSS servers over HTTPS with authentication.
+#
+#   ## Known Limitations:
+#   Running this script on very small instance types (less than 1GB memory) may result in a failure
+#   to install "collectd_tcp_network_connect" because of a lack of memory.
+#   This can be worked around by adding a 1GB or larger swap file to your server prior to running this script.
 # Inputs:
 #   RS_INSTANCE_UUID:
 #     Input Type: single
