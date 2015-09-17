@@ -16,30 +16,10 @@
 # file. If they differ, will update to latest version.  Note that latest version can be an older version
 # if a downgrade is best.
 
-function Expand-Zipfile($zipFile, $targetDir, $basePath = $Null)
-{
-  if (! $basePath) { $basePath = $zipFile }
-  $shell = New-Object -com Shell.Application
-  $zip = $shell.NameSpace($zipFile)
-
-  if (!(Test-Path -Path $targetDir)) {
-    New-Item -Path $targetDir -Type directory
-  }
-  foreach ($item in $zip.items()) {
-    $newPath = $item.path -replace [RegEx]::Escape($basePath), $targetDir
-    if ($item.Type -eq "File Folder") {
-      New-Item -Path $newPath -Type directory
-      Expand-Zipfile $item.Path $targetDir $basePath
-    } else {
-      $newDir = [io.path]::GetDirectoryName($newPath)
-      $shell.Namespace($newDir).CopyHere($item)
-    }
-  }
-}
-
 $upgradeFunction = {
   function upgradeRightLink($currentVersion, $desiredVersion) {
     $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
+    $TMP_DIR = 'C:\Windows\Temp\Upgrade'
 
     # Self upgrade API call is not yet supported on Windows, but we can still use the API call to verify the exe
     $upgradeCheck = & ${RIGHTLINK_DIR}\rsc.exe rl10 upgrade /rll/upgrade exec=${RIGHTLINK_DIR}\rightlink-new.exe 2> $null
@@ -96,6 +76,19 @@ $upgradeFunction = {
     } else {
       Write-Output 'Unable to obtain instance HREF for audit entries'
     }
+
+    # Update RSC after RightLink has successfully updated.
+    if (Test-Path -Path ${RIGHTLINK_DIR}\rsc.exe) {
+      Rename-Item -Path ${RIGHTLINK_DIR}\rsc.exe -newName 'rsc-old.exe' -Force
+    }
+    Move-Item -Path ${TMP_DIR}\RightLink\rsc.exe -Destination ${RIGHTLINK_DIR}\rsc.exe -Force
+    # If new RSC is correctly installed then remove the old version
+    if (Test-Path -Path ${RIGHTLINK_DIR}\rsc.exe) {
+      Remove-Item -Path ${RIGHTLINK_DIR}\rsc-old.exe -Force
+    } else {
+      Write-Output 'Failed to update to new version of RSC'
+      Rename-Item -Path ${RIGHTLINK_DIR}\rsc-old.exe -newName 'rsc.exe' -Force
+    }
   }
 }
 
@@ -120,7 +113,7 @@ if (!$currentVersion) {
 # as "currentVersion:desiredVersion". If the "upgrades" file does not exist,
 # or if the current version is not in the file, no upgrade is done.
 $desiredVersion = (New-Object System.Net.WebClient).DownloadString($env:UPGRADES_FILE_LOCATION) -Split "`n" |
-                  Select-String "^\s*${currentVersion}\s*:\s*(\S+)\s*$" | % { $_.Matches.Groups[1].Value }
+                  Select-String "^\s*${currentVersion}\s*:\s*(\S+)\s*$" | % { $_.Matches[0].Groups[1].Value }
 
 if (!$desiredVersion) {
   Write-Output 'Cannot determine latest version from upgrade file'
@@ -142,6 +135,8 @@ Write-Output "Downloading RightLink version '${desiredVersion}'"
 # Download new version
 $TMP_DIR = 'C:\Windows\Temp\Upgrade'
 $RIGHTLINK_URL = "https://rightlink.rightscale.com/rll/${desiredVersion}/rightlink.zip"
+$7ZIP = "${TMP_DIR}\7za.exe"
+$7ZIP_URL = 'https://rightlink.rightscale.com/rll/7zip/7za.exe'
 
 # If temp directory doesn't exist then create it
 if (!(Test-Path -Path $TMP_DIR)) {
@@ -150,7 +145,7 @@ if (!(Test-Path -Path $TMP_DIR)) {
 
 # Delete old RightLink folder and Archive in temp directory if they exist before downloading new version
 if (Test-Path -Path ${TMP_DIR}\rightlink) {
-  Remove-Item "${TMP_DIR}\rightlink" -Force -Recurse
+  Remove-Item "${TMP_DIR}\RightLink" -Force -Recurse
 }
 if (Test-Path -Path ${TMP_DIR}\rightlink.zip) {
   Remove-Item "${TMP_DIR}\rightlink.zip" -Force
@@ -159,8 +154,16 @@ if (Test-Path -Path ${TMP_DIR}\rightlink.zip) {
 $wc = New-Object System.Net.WebClient
 $wc.DownloadFile($RIGHTLINK_URL, "${TMP_DIR}\rightlink.zip")
 
+# Due to an bug in Windows 2008R2 being unable to copy files from a zip when powershell is run through a service,
+# We download 7-zip, a command line unzipping tool to expand the new version of RightLink10
+
+if (Test-Path -Path $7ZIP) {
+  Remove-Item "${TMP_DIR}\7za.exe" -Force
+}
+$wc.DownloadFile($7ZIP_URL, $7ZIP)
+
 # Expand the archive into C:\Temp\Upgrade
-Expand-Zipfile "${TMP_DIR}\rightlink.zip" $TMP_DIR | Out-Null
+& ${7ZIP} x "${TMP_DIR}\rightlink.zip" "-o${TMP_DIR}" -r -y | Out-Null
 
 # Check downloaded version
 if (Test-Path -Path ${RIGHTLINK_DIR}\rightlink-new.exe) {

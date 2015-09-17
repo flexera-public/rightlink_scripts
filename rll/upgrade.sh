@@ -67,6 +67,19 @@ upgrade_rightlink() {
   else
     logger -t rightlink "unable to obtain instance href for audit entries"
   fi
+
+  # Update RSC after RightLink has successfully updated.
+  if [[ -x /usr/local/bin/rsc ]]; then
+    sudo mv /usr/local/bin/rsc /usr/local/bin/rsc-old
+  fi
+  sudo mv /tmp/rightlink/rsc /usr/local/bin/rsc
+  # If new RSC is correctly installed then remove the old version
+  if [[ -x /usr/local/bin/rsc ]]; then
+    sudo rm -rf /usr/local/bin/rsc-old
+  else
+    logger -t rightlink "failed to update to new version of RSC"
+    sudo mv /usr/local/bin/rsc-old /usr/local/bin/rsc
+  fi
   exit 0
 }
 
