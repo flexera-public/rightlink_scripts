@@ -374,6 +374,7 @@ fi
 # Populate RS_RLL_PORT
 source /var/run/rightlink/secret
 /usr/local/bin/rsc rl10 put_hostname /rll/tss/hostname hostname=$COLLECTD_SERVER
+/usr/local/bin/rsc rl10 put_control /rll/tss/control enable_monitoring=extra
 collectd_ver=5
 if [[ "$(collectd -h)" =~ "collectd 4" ]]; then
   collectd_ver=4
@@ -402,8 +403,3 @@ if ! sudo service $collectd_service status; then
 elif [[ $collectd_service_notify -eq 1 ]]; then
   sudo service $collectd_service restart
 fi
-
-# Add the RightScale monitoring active tag
-auth_tag=rs_monitoring:state=auth
-/usr/local/bin/rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=$auth_tag &&\
-  logger -s -t RightScale "Setting monitoring active tag"
