@@ -4,8 +4,8 @@ license     "see LICENSE file in repository root"
 description "Example scripts for RightLink10 on Linux (RLL)"
 version     '10.1.5'
 
-recipe      "rll-examples::security_updates.sh", "Installs security updates"
-recipe      "rll-examples::rightscale-mirrors.sh", "Setup software repository mirrors hosted by RightScale"
+recipe      "rll-examples::security-updates", "Installs security updates"
+recipe      "rll-examples::rightscale-mirrors", "Setup software repository mirrors hosted by RightScale"
 
 attribute   "MIRROR_HOST",
   :display_name => "OS repository hostname",
