@@ -49,7 +49,7 @@ Developer Info
 --------------
 ### RightScripts
 In order to modify a script in this repo and update the matching RightScript, a few steps will need
-to be done.
+to be done.  Installation of `ruby 2.0` and `bundler` gem is required.
 
 The following setup should only need to be done once:
 
@@ -70,10 +70,10 @@ The following setup should only need to be done once:
 These next steps are the suggested workflow:
 
 1. Make a change, `git commit` the change
-1. Run `bundle exec rightscript_sync update path/to/script` to update the HEAD revision of the RightScript.
+1. Run `bundle exec rightscript_sync upload path/to/script` to update the HEAD revision of the RightScript.
    Remember, the name of the RightScript to update should be provided under `RightScript Name` in the YAML
    formatted header.
-   * example: `bundle exec rightscript_sync update rll/collectd.sh`
+   * example: `bundle exec rightscript_sync upload rll/collectd.sh`
 
 ### As a Chef Cookbook
 In order to modify a script in this repo and treat it as a Chef Cookbook, the recommended first steps are:
