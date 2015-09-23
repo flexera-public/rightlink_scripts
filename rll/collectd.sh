@@ -176,7 +176,7 @@ if [[ -e /etc/redhat-release ]]; then
   6)
     if ! yum list installed "epel-release-6*"; then
       echo "Installing EPEL repository"
-      sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+      retry_command sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
       if [[ "$distro" =~ CentOS ]]; then
         # versions of CentOS 6.x have trouble with https...
         sudo sed -i 's/https/http/' /etc/yum.repos.d/epel.repo
@@ -186,7 +186,7 @@ if [[ -e /etc/redhat-release ]]; then
   7)
     if ! yum list installed "epel-release-7*"; then
       echo "Installing EPEL repository"
-      sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+      retry_command sudo rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
     fi
     ;;
   esac
