@@ -67,5 +67,5 @@ while [[ $(($(date +%s) - $start_time)) -lt 900 ]]; do
 done
 
 # if any API hosts are returning something other than the expected IP address after 15 minutes then exit with an error
-echo "The follow API Hosts are returning an IP address that is different than expected after $(((`date +%s` - $t0))) seconds: ${bad_ips[@]}"
+echo "The follow API Hosts are returning an IP address that is different than expected after $(((`date +%s` - $start_time))) seconds: ${bad_ips[@]}"
 exit 1
