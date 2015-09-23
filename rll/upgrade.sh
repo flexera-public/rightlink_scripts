@@ -47,7 +47,7 @@ upgrade_rightlink() {
       break
     else
       logger -t rightlink "Waiting for new version to become active."
-      sleep 2
+      sleep 5
     fi
   done
   if [[ "$new_installed_version" != "$desired" ]]; then
@@ -55,7 +55,7 @@ upgrade_rightlink() {
     exit 1
   fi
 
-  # Report to audit entry that RightLink ugpraded.
+  # Report to audit entry that RightLink upgraded.
   for retry_counter in {1..5}; do
     instance_href=$(/usr/local/bin/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance || true)
     if [[ -n "$instance_href" ]]; then
@@ -63,7 +63,7 @@ upgrade_rightlink() {
       break
     else
       logger -t rightlink "Instance href not found, retrying"
-      sleep 1
+      sleep 5
     fi
   done
 
