@@ -140,11 +140,11 @@ The release steps for the Linux and Windows Base ServerTemplate at RightScale ar
 
 1. Check out the rightlink_scripts repo
 1. Create release branch: `git checkout -b 10.2.0` (use appropriate branch name to match release)
-1. Run `bundle exec rightscript_sync upload path/to/script` for each script to be released with the ServerTemplate.
-1. In the RightScale Dashboard, update the ServerTemplates with a new revisions for the RightScripts.
+1. Run `bundle exec rightscript_sync upload path/to/script` for each script to be released with the ServerTemplate and commit any of these updated RightScripts.
+1. In the RightScale Dashboard, update the ServerTemplates with a new revisions created from committing of the RightScripts.
 1. Check the MCIs on the HEAD revision of the ServerTemplates for the correct tags of the current RightLink release.
 1. Rename the ServerTemplate and edit the description to match the name of the RightLink release.
-1. Manually commit and publish ST
+1. Commit and publish ST
 
 License
 -------
