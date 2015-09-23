@@ -37,6 +37,7 @@ upgrade_rightlink() {
     logger -t rightlink "Error: ${res}"
     exit 1
   fi
+
   # Check updated version in production by connecting to local proxy
   # The update takes a few seconds so retries are done.
   for retry_counter in {1..5}; do
@@ -55,7 +56,17 @@ upgrade_rightlink() {
   fi
 
   # Report to audit entry that RightLink ugpraded.
-  instance_href=$(/usr/local/bin/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance 2>/dev/null)
+  for retry_counter in {1..5}; do
+    instance_href=$(/usr/local/bin/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance || true)
+    if [[ -n "$instance_href" ]]; then
+      logger -t rightlink "Instance href found: ${instance_href}"
+      break
+    else
+      logger -t rightlink "Instance href not found, retrying"
+      sleep 1
+    fi
+  done
+
   if [[ -n "$instance_href" ]]; then
     audit_entry_href=$(/usr/local/bin/rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
                      "audit_entry[detail]=RightLink updated to '${new_installed_version}'" "audit_entry[summary]=RightLink updated" 2>/dev/null)
