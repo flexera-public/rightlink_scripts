@@ -51,13 +51,13 @@ Developer Info
 In order to modify a script in this repo and update the matching RightScript, a few steps will need
 to be done.  Installation of `ruby 2.0` and `bundler` gem is required.
 
-The following setup should only need to be done once:
+The following setup should only need to be done once to setup the development environment:
 
 1. Import the official _RightLink 10.X.X Linux Base_ or _RightLink 10.X.X Windows Base_ ServerTemplate into
    your account. This will also import the RightScripts.
 1. Fork the repo on github and clone the fork to your workstation
 1. Create a branch (or use master, your choice)
-1. Run `bundle install` to install the `rightscript_sync` gem used to update the RightScript
+1. Run `bundle install` to install the `rightscript_sync` gem used to update RightScripts
 1. From the RightScale Dashboard, go to `Settings -> API Credentials` and obtain the `Refresh Token`
    and `Token Endpoint`
 1. Create a directory and file `~/.right_api_client/login.yml` consisting of:
