@@ -136,18 +136,14 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
 
 RightScale Release Process
 --------------------------
-The release steps for the Linux Base ServerTemplate at RightScale are as follows:
+The release steps for the Linux and Windows Base ServerTemplate at RightScale are as follows:
 
 1. Check out the rightlink_scripts repo
-1. Create release branch: `git checkout -b 10.0.rc2` (use appropriate branch name)
-1. Test-push: `./rs_push`, it will ask you to run a sed script to fix the Chef metadata.rb,
-   run it
-1. Re-run `./rs_push` to push the release branch to github and fetch it into RS
-1. Update the ServerTemplate with a new revision for the new version:
-   `./rs_make_st -s "RL10.0.rc1 Linux Base" -r 10.0.rc2`
-1. Check the images of the head revision of the ST, they should all have the name of the new version.
-1. Rename the ST and edit the description to fix the value of the tag to the new branch
-1. Test the ST (in the RLL tester, may have to adjust test.yml)
+1. Create release branch: `git checkout -b 10.2.0` (use appropriate branch name to match release)
+1. Run `bundle exec rightscript_sync upload path/to/script` for each script to be released with the ServerTemplate.
+1. In the RightScale Dashboard, update the ServerTemplates with a new revisions for the RightScripts.
+1. Check the MCIs on the HEAD revision of the ServerTemplates for the correct tags of the current RightLink release.
+1. Rename the ServerTemplate and edit the description to match the name of the RightLink release.
 1. Manually commit and publish ST
 
 License

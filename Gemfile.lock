@@ -37,3 +37,6 @@ PLATFORMS
 
 DEPENDENCIES
   rightscript_sync!
+
+BUNDLED WITH
+   1.10.6
