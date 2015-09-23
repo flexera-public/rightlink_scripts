@@ -55,7 +55,7 @@ upgrade_rightlink() {
     exit 1
   fi
 
-  # Report to audit entry that RightLink upgraded.
+  # Report to audit entry that RightLink was upgraded.
   for retry_counter in {1..5}; do
     instance_href=$(/usr/local/bin/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance || true)
     if [[ -n "$instance_href" ]]; then
