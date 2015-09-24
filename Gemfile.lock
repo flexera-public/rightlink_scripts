@@ -1,0 +1,43 @@
+GIT
+  remote: https://github.com/EfrainOlivares/rightscript_sync.git
+  revision: 6fc5bf3cf5db726d94252f583ba70f85f9ac03e1
+  branch: master
+  specs:
+    rightscript_sync (0.0.0)
+      right_api_client (~> 1.5.26)
+      terminal-table
+      thor
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    domain_name (0.5.24)
+      unf (>= 0.0.5, < 1.0.0)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
+    json (1.8.3)
+    mime-types (1.25.1)
+    netrc (0.10.3)
+    rest-client (1.8.0)
+      http-cookie (>= 1.0.2, < 2.0)
+      mime-types (>= 1.16, < 3.0)
+      netrc (~> 0.7)
+    right_api_client (1.5.28)
+      json (~> 1.0)
+      mime-types (~> 1.0)
+      rest-client (~> 1.6)
+    terminal-table (1.5.2)
+    thor (0.19.1)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  right_api_client (>= 1.5.28)
+  rightscript_sync!
+
+BUNDLED WITH
+   1.10.6

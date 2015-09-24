@@ -5,11 +5,22 @@ RightScripts for RightScale's RightLink10 agent used in the Base ServerTemplate 
 
 This repository contains the collection of RightScripts used in ServerTemplates that go with
 the new RightLink10 agent. The scripts for the base Linux ServerTemplate are in the
-`rll` subdirectory.
+`rll` subdirectory, and the scripts for the base Windows ServerTemplate are in the `rlw`
+subdirectory. Additional RightScripts are also in `rll-examples` and `rlw-examples`.  Each
+RightScript has a comment header providing metadata info in YAML format with the following
+fields: `RightScript Name`, `Decription`, and `Inputs`. These headers will be used
+to populate these fields when uploaded to the RightScale platform as RightScripts.
 
 How it Works
 ------------
+### RightScripts
+The directory structure is kept simple, having Linux RightScripts in the `rll` and `rll-examples`
+directories and Windows RightScripts in the `rlw` and `rlw-examples` directories.  The naming of
+the scripts in this repository is also done for simplicity. The RightScript name that is to be
+shown in the RightScale dashboard should be under the `RightScript Name` field in the YAML
+formatted comment header, described earlier.
 
+### Chef Cookbook
 This repository masquerades to RightScale as a Chef Cookbook repository but everything here
 really are RightScripts, i.e. shell scripts that are executed by the RightScale agent.
 
@@ -36,9 +47,43 @@ something like "./templates/daemon.conf" is entirely reasonable.
 
 Developer Info
 --------------
+### RightScripts
+In order to modify a script in this repo and update the matching RightScript, a few steps will need
+to be done.  Installation of `ruby 2.0` or greater and `bundler` gem is required.
 
-In order to modify a script in this repo the recommended first steps are:
-- Fork the repo on github and clone the fork to your laptop
+The following setup should only need to be done once to setup the development environment:
+
+1. Import the official _RightLink 10.X.X Linux Base_ or _RightLink 10.X.X Windows Base_ ServerTemplate into
+   your account. This will also import the RightScripts.
+1. Fork the repo on github and clone the fork to your workstation
+1. Create a branch (or use master, your choice)
+1. Run `bundle install` to install the `rightscript_sync` gem used to update RightScripts
+1. From the RightScale Dashboard, go to `Settings -> API Credentials` and obtain the `Refresh Token`
+   and `Token Endpoint`
+1. Create a directory and file `~/.right_api_client/login.yml` consisting of:
+
+   ```yml
+   :refresh_token: <Refresh Token>
+   :api_url: <Protocol and hostname of Token Endpoint only, ie https://us-3.rightscale.com>
+   ```
+
+These next steps are the suggested workflow:
+
+1. Make a change, `git commit` the change
+1. Run `bundle exec rightscript_sync upload path/to/script` to update the HEAD revision of the RightScript.
+   Remember, the name of the RightScript to update should be provided under `RightScript Name` in the YAML
+   formatted header.
+   * example: `bundle exec rightscript_sync upload rll/collectd.sh`
+1. Verify the HEAD revision of the script has been synced with your git commit and is identical.
+1. Review the inputs detected in the script after the sync. The RightScale platform does not currently handle
+   the input updates so you will need to verify and update any descriptions and default values.  Check the disable
+   checkbox for any variables which which may have been incorrectly detected as inputs, (for example: `$2`
+   incorrectly detected as `input 2`).
+
+
+### As a Chef Cookbook
+In order to modify a script in this repo and treat it as a Chef Cookbook, the recommended first steps are:
+- Fork the repo on github and clone the fork to your workstation
 - Create a branch (or use master, your choice)
 - Make a change, `git commit` the change,
 - Set the RS_KEY environment variable to your OAuth key for your account (found in the RS dashboard
@@ -97,19 +142,15 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
 
 RightScale Release Process
 --------------------------
-The release steps for the Linux Base ServerTemplate at RightScale are as follows:
+The release steps for the Linux and Windows Base ServerTemplate at RightScale are as follows:
 
 1. Check out the rightlink_scripts repo
-1. Create release branch: `git checkout -b 10.0.rc2` (use appropriate branch name)
-1. Test-push: `./rs_push`, it will ask you to run a sed script to fix the Chef metadata.rb,
-   run it
-1. Re-run `./rs_push` to push the release branch to github and fetch it into RS
-1. Update the ServerTemplate with a new revision for the new version:
-   `./rs_make_st -s "RL10.0.rc1 Linux Base" -r 10.0.rc2`
-1. Check the images of the head revision of the ST, they should all have the name of the new version.
-1. Rename the ST and edit the description to fix the value of the tag to the new branch
-1. Test the ST (in the RLL tester, may have to adjust test.yml)
-1. Manually commit and publish ST
+1. Create release branch: `git checkout -b 10.2.0` (use appropriate branch name to match release)
+1. Run `bundle exec rightscript_sync upload path/to/script` for each script to be released with the ServerTemplate and commit any of these updated RightScripts.
+1. In the RightScale Dashboard, update the ServerTemplates with a new revisions created from committing of the RightScripts.
+1. Check the MCIs on the HEAD revision of the ServerTemplates for the correct tags of the current RightLink release.
+1. Rename the ServerTemplate and edit the description to match the name of the RightLink release.
+1. Commit and publish ST
 
 License
 -------
