@@ -22,7 +22,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
-    right_api_client (1.5.27)
+    right_api_client (1.5.28)
       json (~> 1.0)
       mime-types (~> 1.0)
       rest-client (~> 1.6)
@@ -36,6 +36,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  right_api_client (>= 1.5.28)
   rightscript_sync!
 
 BUNDLED WITH
