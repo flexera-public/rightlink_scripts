@@ -49,7 +49,7 @@ Developer Info
 --------------
 ### RightScripts
 In order to modify a script in this repo and update the matching RightScript, a few steps will need
-to be done.  Installation of `ruby 2.0` and `bundler` gem is required.
+to be done.  Installation of `ruby 2.0` or greater and `bundler` gem is required.
 
 The following setup should only need to be done once to setup the development environment:
 
@@ -75,10 +75,10 @@ These next steps are the suggested workflow:
    formatted header.
    * example: `bundle exec rightscript_sync upload rll/collectd.sh`
 1. Verify the HEAD revision of the script has been synced with your git commit and is identical.
-1. Review the inputs detected in the script after the sync.  rightscript_sync does not handle the inputs so
-   you will need to verify and update any descriptions, default values as well as disable any variables which
-   which may have been incorrectly detected as inputs, (for example {2} incorrectly detected as 'input 2'.
-   If that is the case, simply check the disable checkbox on the input.
+1. Review the inputs detected in the script after the sync. The RightScale platform does not currently handle
+   the input updates so you will need to verify and update any descriptions and default values.  Check the disable
+   checkbox for any variables which which may have been incorrectly detected as inputs, (for example: `$2`
+   incorrectly detected as `input 2`).
 
 
 ### As a Chef Cookbook
