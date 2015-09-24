@@ -8,7 +8,7 @@ the new RightLink10 agent. The scripts for the base Linux ServerTemplate are in 
 `rll` subdirectory, and the scripts for the base Windows ServerTemplate are in the `rlw`
 subdirectory. Additional RightScripts are also in `rll-examples` and `rlw-examples`.  Each
 RightScript has a comment header providing metadata info in YAML format with the following
-fields: `RightScript Name`, `Decription`, and `Inputs`. This headers will be used
+fields: `RightScript Name`, `Decription`, and `Inputs`. These headers will be used
 to populate these fields when uploaded to the RightScale platform as RightScripts.
 
 How it Works
