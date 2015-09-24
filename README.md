@@ -74,6 +74,12 @@ These next steps are the suggested workflow:
    Remember, the name of the RightScript to update should be provided under `RightScript Name` in the YAML
    formatted header.
    * example: `bundle exec rightscript_sync upload rll/collectd.sh`
+1. Verify the HEAD revision of the script has been synced with your git commit and is identical.
+1. Review the inputs detected in the script after the sync.  rightscript_sync does not handle the inputs so
+   you will need to verify and update any descriptions, default values as well as disable any variables which
+   which may have been incorrectly detected as inputs, (for example {2} incorrectly detected as 'input 2'.
+   If that is the case, simply check the disable checkbox on the input.
+
 
 ### As a Chef Cookbook
 In order to modify a script in this repo and treat it as a Chef Cookbook, the recommended first steps are:
