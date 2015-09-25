@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     '10.1.5'
+version     '10.2.0'
 
 recipe      "rll::collectd", "Installs and configures collectd for RightScale monitoring"
 recipe      "rll::setup-automatic-upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
