@@ -1,8 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
-10.1.5
+10.2.0
 ------
+- Add retry commands to apt-get and yum commands for script robustness
+- Add RightScript metadata to all scripts and rightscript_sync gem
 - Fix collectd.sh script failure on CentOS 6 when SELinux is enabled.
 - Update rlw::shutdown-reason to have parity with Linux counterpart.
 - Move example scripts to their own cookbooks
