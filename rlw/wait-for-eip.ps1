@@ -29,7 +29,7 @@ if ($expectedPublicIP -match $rfc1918) {
 }
 Write-Output "Expecting to be assigned public IP ${expectedPublicIP}"
 
-$targets = @('my.rightscale.com', 'us-3.rightscale.com', 'us-4.rightscale.com', 'island1.rightscale.com', 'island10.rightscale.com', $api_hostname)
+$targets = @('my.rightscale.com', 'us-3.rightscale.com', 'us-4.rightscale.com', 'island1.rightscale.com', 'island10.rightscale.com', $apiHostname)
 Write-Output "Checking public IP against ${targets}"
 
 # spend at most 15 minutes checking the API hosts for either the expected IP address or an incorrect IP address
