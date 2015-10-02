@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.2.1
+------
+- Fix variable name and comments in wait-for-eip.ps1
+
 10.2.0
 ------
 - Add retry commands to apt-get and yum commands for script robustness
