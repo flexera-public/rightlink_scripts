@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+Unreleased changes
+-------------------
+- Created rll/enable-monitoring.sh (RL10 Linux Enable Monitoring)
+
 10.2.1
 ------
 - Fix variable name and comments in wait-for-eip.ps1
