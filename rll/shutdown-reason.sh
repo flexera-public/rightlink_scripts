@@ -31,9 +31,12 @@
 #   reboot
 #   service_restart
 
+# Determine if /usr/local/bin is read-only
+[[ -w /usr/local/bin ]] && BIN_DIR=/usr/local/bin || BIN_DIR=/opt/bin
+
 echo "Decommissioning. Calculating reason for decommission: "
 
-rs_decom_reason="$(/usr/local/bin/rsc rl10 show /rll/proc/shutdown_kind)"
+rs_decom_reason="$(${BIN_DIR}/rsc rl10 show /rll/proc/shutdown_kind)"
 os_decom_reason=service_restart # Our default
 if [[ `/usr/bin/systemctl 2>/dev/null` =~ -\.mount ]] || [[ "$(readlink /sbin/init)" =~ systemd ]]; then
   # Systemd doesn't use runlevels, so we can't rely on that
@@ -65,4 +68,4 @@ echo "  RightScale decommission reason is: $rs_decom_reason"
 echo "  Combined DECOM_REASON is: $decom_reason"
 echo ""
 echo "exporting DECOM_REASON=$decom_reason into the environment for subsequent scripts"
-/usr/local/bin/rsc rl10 update /rll/env/DECOM_REASON payload=$decom_reason
+${BIN_DIR}/rsc rl10 update /rll/env/DECOM_REASON payload=$decom_reason
