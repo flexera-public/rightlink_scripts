@@ -28,13 +28,13 @@ upgrade_rightlink() {
   # Use 'logger' here instead of 'echo' since stdout from this is not sent to
   # audit entries as RightLink is down for a short time during the upgrade process.
 
-  res=$($BIN_DIR/rsc rl10 upgrade /rll/upgrade exec=${rl_bin}-new 2>/dev/null || true)
+  res=$($BIN_DIR/rsc rl10 upgrade /rll/upgrade exec=$BIN_DIR/rightlink-new 2>/dev/null || true)
   if [[ "$res" =~ successful ]]; then
     # Delete the old version if it exists from the last upgrade.
-    sudo rm -rf ${rl_bin}-old
+    sudo rm -rf $BIN_DIR/rightlink-old
     # Keep the old version in case of issues, ie we need to manually revert back.
-    sudo mv ${rl_bin} ${rl_bin}-old
-    sudo cp ${rl_bin}-new ${rl_bin}
+    sudo mv $BIN_DIR/rightlink $BIN_DIR/rightlink-old
+    sudo cp $BIN_DIR/rightlink-new $BIN_DIR/rightlink
     logger -t rightlink "rightlink updated"
   else
     logger -t rightlink "Error: ${res}"
@@ -100,9 +100,6 @@ upgrade_rightlink() {
 # Query RightLink info
 json=$($BIN_DIR/rsc rl10 index /rll/proc)
 
-# Detemine bin_path
-rl_bin=$(echo "$json" | $BIN_DIR/rsc --x1 .bin_path json)
-
 # Determine current version of rightlink
 current_version=$(echo "$json" | $BIN_DIR/rsc --x1 .version json)
 
@@ -142,9 +139,9 @@ curl --silent --show-error --retry 3 --output rightlink.tgz https://rightlink.ri
 tar zxf rightlink.tgz || (cat rightlink.tgz; exit 1)
 
 # Check downloaded version
-sudo mv rightlink/rightlink ${rl_bin}-new
+sudo mv rightlink/rightlink $BIN_DIR/rightlink-new
 echo "checking new version"
-new=`${rl_bin}-new -version | awk '{print $2}'`
+new=`$BIN_DIR/rightlink-new -version | awk '{print $2}'`
 if [[ "$new" == "$desired" ]]; then
   echo "new version looks right: ${new}"
   echo "restarting RightLink to pick up new version"
