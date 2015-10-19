@@ -7,5 +7,8 @@
 # ...
 #
 
+# Determine location of rsc
+[[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
+
 # Enable built-in monitoring
-rsc rl10 update /rll/tss/control enable_monitoring=all
+$rsc rl10 update /rll/tss/control enable_monitoring=all
