@@ -45,7 +45,7 @@ else
 
   # Determine if running a rightscript or a recipe
   if [[ $(pwd) =~ scripts ]]; then
-    rsc_command="schedule_right_script /api/right_net/scheduler/schedule_right_script right_script=\"RL10 Linux Upgrade (IV-3183)\""
+    rsc_command="schedule_right_script /api/right_net/scheduler/schedule_right_script right_script=\"RL10 Linux Upgrade\""
   else
     rsc_command="schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rll::upgrade"
   fi
