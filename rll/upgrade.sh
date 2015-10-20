@@ -20,18 +20,21 @@
 
 UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rightlink/upgrades"}
 
+# Determine directory location of rightlink / rsc
+[[ -e /usr/local/bin/rightlink ]] && bin_dir=/usr/local/bin || bin_dir=/opt/bin
+
 upgrade_rightlink() {
 
   # Use 'logger' here instead of 'echo' since stdout from this is not sent to
   # audit entries as RightLink is down for a short time during the upgrade process.
 
-  res=$(/usr/local/bin/rsc rl10 upgrade /rll/upgrade exec=${rl_bin}-new 2>/dev/null || true)
+  res=$(${bin_dir}/rsc rl10 upgrade /rll/upgrade exec=${bin_dir}/rightlink-new 2>/dev/null || true)
   if [[ "$res" =~ successful ]]; then
     # Delete the old version if it exists from the last upgrade.
-    sudo rm -rf ${rl_bin}-old
+    sudo rm -rf ${bin_dir}/rightlink-old
     # Keep the old version in case of issues, ie we need to manually revert back.
-    sudo mv ${rl_bin} ${rl_bin}-old
-    sudo cp ${rl_bin}-new ${rl_bin}
+    sudo mv ${bin_dir}/rightlink ${bin_dir}/rightlink-old
+    sudo cp ${bin_dir}/rightlink-new ${bin_dir}/rightlink
     logger -t rightlink "rightlink updated"
   else
     logger -t rightlink "Error: ${res}"
@@ -41,7 +44,7 @@ upgrade_rightlink() {
   # Check updated version in production by connecting to local proxy
   # The update takes a few seconds so retries are done.
   for retry_counter in {1..5}; do
-    new_installed_version=$(/usr/local/bin/rsc --x1 .version rl10 index proc 2>/dev/null || true)
+    new_installed_version=$(${bin_dir}/rsc --x1 .version rl10 index proc 2>/dev/null || true)
     if [[ "$new_installed_version" == "$desired" ]]; then
       logger -t rightlink "New version active - ${new_installed_version}"
       break
@@ -57,7 +60,7 @@ upgrade_rightlink() {
 
   # Report to audit entry that RightLink was upgraded.
   for retry_counter in {1..5}; do
-    instance_href=$(/usr/local/bin/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance || true)
+    instance_href=$(${bin_dir}/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance || true)
     if [[ -n "$instance_href" ]]; then
       logger -t rightlink "Instance href found: ${instance_href}"
       break
@@ -68,7 +71,7 @@ upgrade_rightlink() {
   done
 
   if [[ -n "$instance_href" ]]; then
-    audit_entry_href=$(/usr/local/bin/rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
+    audit_entry_href=$(${bin_dir}/rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
                      "audit_entry[detail]=RightLink updated to '${new_installed_version}'" "audit_entry[summary]=RightLink updated" 2>/dev/null)
     if [[ -n "$audit_entry_href" ]]; then
       logger -t rightlink "audit entry created at ${audit_entry_href}"
@@ -80,28 +83,22 @@ upgrade_rightlink() {
   fi
 
   # Update RSC after RightLink has successfully updated.
-  if [[ -x /usr/local/bin/rsc ]]; then
-    sudo mv /usr/local/bin/rsc /usr/local/bin/rsc-old
+  if [[ -x ${bin_dir}/rsc ]]; then
+    sudo mv ${bin_dir}/rsc ${bin_dir}/rsc-old
   fi
-  sudo mv /tmp/rightlink/rsc /usr/local/bin/rsc
+  sudo mv /tmp/rightlink/rsc ${bin_dir}/rsc
   # If new RSC is correctly installed then remove the old version
-  if [[ -x /usr/local/bin/rsc ]]; then
-    sudo rm -rf /usr/local/bin/rsc-old
+  if [[ -x ${bin_dir}/rsc ]]; then
+    sudo rm -rf ${bin_dir}/rsc-old
   else
     logger -t rightlink "failed to update to new version of RSC"
-    sudo mv /usr/local/bin/rsc-old /usr/local/bin/rsc
+    sudo mv ${bin_dir}/rsc-old ${bin_dir}/rsc
   fi
   exit 0
 }
 
-# Query RightLink info
-json=$(/usr/local/bin/rsc rl10 index /rll/proc)
-
-# Detemine bin_path
-rl_bin=$(echo "$json" | /usr/local/bin/rsc --x1 .bin_path json)
-
 # Determine current version of rightlink
-current_version=$(echo "$json" | /usr/local/bin/rsc --x1 .version json)
+current_version=$(${bin_dir}/rsc rl10 show /rll/proc/version)
 
 if [[ -z "$current_version" ]]; then
   echo "Can't determine current version of RightLink"
@@ -139,9 +136,9 @@ curl --silent --show-error --retry 3 --output rightlink.tgz https://rightlink.ri
 tar zxf rightlink.tgz || (cat rightlink.tgz; exit 1)
 
 # Check downloaded version
-sudo mv rightlink/rightlink ${rl_bin}-new
+sudo mv rightlink/rightlink ${bin_dir}/rightlink-new
 echo "checking new version"
-new=`${rl_bin}-new -version | awk '{print $2}'`
+new=`${bin_dir}/rightlink-new --version | awk '{print $2}'`
 if [[ "$new" == "$desired" ]]; then
   echo "new version looks right: ${new}"
   echo "restarting RightLink to pick up new version"

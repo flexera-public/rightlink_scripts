@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+Unreleased Changes
+------------------
+- Update scripts with support for CoreOS
+
 10.2.1
 ------
 - Fix variable name and comments in wait-for-eip.ps1
