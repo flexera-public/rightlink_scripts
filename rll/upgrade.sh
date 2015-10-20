@@ -20,7 +20,7 @@
 
 UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.com/rightlink/upgrades"}
 
-# Determine base directory of rightlink / rsc
+# Determine directory location of rightlink / rsc
 [[ -e /usr/local/bin/rightlink ]] && bin_dir=/usr/local/bin || bin_dir=/opt/bin
 
 upgrade_rightlink() {

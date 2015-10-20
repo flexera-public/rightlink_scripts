@@ -18,8 +18,8 @@
 # ...
 #
 
-# Determine base directory of rightlink / rsc
-[[ -e /usr/local/bin/rightlink ]] && bin_dir=/usr/local/bin || bin_dir=/opt/bin
+# Determine directory location of rightlink / rsc
+[[ -e /usr/local/bin/rsc ]] && bin_dir=/usr/local/bin || bin_dir=/opt/bin
 
 # Add entry in /etc/cron.d/ to check and execute an upgrade for rightlink daily.
 cron_file='/etc/cron.d/rightlink-upgrade'
@@ -56,7 +56,7 @@ else
   # Random minute 0-59
   scheduled_minute=$(( $RANDOM % 60 ))
 
-  if [[ $(cat /etc/os-release) =~ CoreOS ]]; then
+  if [[ $(cat /etc/os-release 2>/dev/null) =~ CoreOS ]]; then
   # Generate service file to be executed by systemd timers
   sudo dd of="${service_file}" 2>/dev/null <<EOF
 [Unit]

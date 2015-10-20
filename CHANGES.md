@@ -3,7 +3,7 @@ Changelog for the RightLink10 Base ServerTemplate
 
 Unreleased Changes
 ------------------
-- Update scripts with with support for CoreOS
+- Update scripts with support for CoreOS
 
 10.2.1
 ------

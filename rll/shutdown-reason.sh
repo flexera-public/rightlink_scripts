@@ -31,7 +31,7 @@
 #   reboot
 #   service_restart
 
-# Determine if /usr/local/bin is read-only
+# Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
 echo "Decommissioning. Calculating reason for decommission: "
