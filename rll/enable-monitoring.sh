@@ -16,11 +16,14 @@
 #   RIGHTLINK_MONITORING:
 #     Input Type: single
 #     Category: RightScale
-#     Description: Use RightLink monitoring instead of installing and setting up collectd.
+#     Description: |
+#       Use RightLink monitoring instead of installing and setting up collectd. Setting to
+#       'auto' will use code to select mode.
 #     Required: false
 #     Advanced: true
-#     Default: text:false
+#     Default: text:auto
 #     Possible Values:
+#       - text:auto
 #       - text:true
 #       - text:false
 #   RS_INSTANCE_UUID:
@@ -142,8 +145,20 @@ function retry_command() {
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
+# Determine what mode to use if RIGHTLINK_MONITORING is set to 'auto'
+if [[ "$RIGHTLINK_MONITORING" == "auto" ]]; then
+  # Currently, the only criteria to automatically use RightLink monitoring is if OS is CoreOS
+  if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+    rightlink_monitoring="true"
+  else
+    rightlink_monitoring="false"
+  fi
+else
+  rightlink_monitoring=$RIGHTLINK_MONITORING
+fi
+
 # Determine if enabling RightLink monitoring or collectd
-if [[ "$RIGHTLINK_MONITORING" == "true" ]]; then
+if [[ "$rightlink_monitoring" == "true" ]]; then
   # Enable built-in monitoring
   $rsc rl10 update /rll/tss/control enable_monitoring=all
 else
@@ -176,7 +191,6 @@ else
     echo "Removing collectd 4 package"
     retry_command sudo yum remove -y "collectd*"
   fi
-  
   
   # Collectd package is located in the EPEL repository. Install if its not already
   # installed.
