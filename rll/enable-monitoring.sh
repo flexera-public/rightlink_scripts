@@ -160,6 +160,7 @@ fi
 # Determine if enabling RightLink monitoring or collectd
 if [[ "$rightlink_monitoring" == "true" ]]; then
   # Enable built-in monitoring
+  echo "Using RightLink monitoring"
   $rsc rl10 update /rll/tss/control enable_monitoring=all
 else
   # Initialize variables
@@ -167,6 +168,7 @@ else
     echo "ERROR: This script will only run on a TSS enabled account. Contact RightScale Support to enable."
     exit 1
   fi
+  echo "Using collectd for monitoring"
   
   # TSS is compatible with both collectd 4 and 5 while the previous monitoring backend
   # only supported collectd 4. We forward ported collectd 4 to newer OSes b/c of this.
