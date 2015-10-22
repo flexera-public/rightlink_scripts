@@ -4,6 +4,7 @@ Changelog for the RightLink10 Base ServerTemplate
 Unreleased Changes
 ------------------
 - Update scripts with support for CoreOS
+- Replaced rll/collectd.sh with rll/enable-monitoring.sh (RL10 Linux Enable Monitoring)
 
 10.2.1
 ------
