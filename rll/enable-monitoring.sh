@@ -13,19 +13,19 @@
 #   to install "collectd_tcp_network_connect" because of a lack of memory.
 #   This can be worked around by adding a 1GB or larger swap file to your server prior to running this script.
 # Inputs:
-#   RIGHTLINK_MONITORING:
+#   MONITORING_METHOD:
 #     Input Type: single
 #     Category: RightScale
 #     Description: |
-#       Use RightLink monitoring instead of installing and setting up collectd. Setting to
-#       'auto' will use code to select mode.
+#       Determine the method of monitoring to use, either RightLink monitoring or collectd. Setting to
+#       'auto' will use code to select method. 
 #     Required: false
 #     Advanced: true
 #     Default: text:auto
 #     Possible Values:
 #       - text:auto
-#       - text:true
-#       - text:false
+#       - text:collectd
+#       - text:rightlink
 #   RS_INSTANCE_UUID:
 #     Input Type: single
 #     Category: RightScale
@@ -145,20 +145,20 @@ function retry_command() {
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
-# Determine what mode to use if RIGHTLINK_MONITORING is set to 'auto'
-if [[ "$RIGHTLINK_MONITORING" == "auto" ]]; then
+# Determine what mode to use if MONITORING_METHOD is set to 'auto'
+if [[ "$MONITORING_METHOD" == "auto" ]]; then
   # Currently, the only criteria to automatically use RightLink monitoring is if OS is CoreOS
   if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
-    rightlink_monitoring="true"
+    monitoring_method="rightlink"
   else
-    rightlink_monitoring="false"
+    monitoring_method="collectd"
   fi
 else
-  rightlink_monitoring=$RIGHTLINK_MONITORING
+  monitoring_method=$MONITORING_METHOD
 fi
 
-# Determine if enabling RightLink monitoring or collectd
-if [[ "$rightlink_monitoring" == "true" ]]; then
+# Determine if using RightLink monitoring or collectd
+if [[ "$monitoring_method" == "rightlink" ]]; then
   # Enable built-in monitoring
   echo "Using RightLink monitoring"
   $rsc rl10 update /rll/tss/control enable_monitoring=all
