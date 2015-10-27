@@ -2,9 +2,9 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     '10.2.1'
+version     '10.2.2'
 
-recipe      "rll::collectd", "Installs and configures collectd for RightScale monitoring"
+recipe      "rll::enable-monitoring", "Enables RightLink monitoring or installs collectd for RightScale monitoring"
 recipe      "rll::setup-automatic-upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 recipe      "rll::setup-hostname", "Changes the hostname of the server"
 recipe      "rll::shutdown-reason", "Print out the reason for shutdown"
@@ -22,19 +22,28 @@ attribute   "SERVER_HOSTNAME",
   :default => "",
   :recipes => ["rll::setup-hostname"]
 
+attribute   "MONITORING_METHOD",
+  :display_name => "Monitoring method to use, either RightLink monitoring or collectd. " +
+  "Setting to 'auto' will use code to select method.",
+  :required => "optional",
+  :type => "string",
+  :default => "auto",
+  :choice => ["auto", "collectd", "rightlink"],
+  :recipes => ["rll::enable-monitoring"]
+
 attribute   "COLLECTD_SERVER",
-  :display_name => "RightScale monitoring server to send data to",
+  :display_name => "If using collectd, the FQDN or IP address of the remote collectd server.",
   :required => "optional",
   :type => "string",
   :default => "env:RS_TSS",
-  :recipes => ["rll::collectd"]
+  :recipes => ["rll::enable-monitoring"]
 
 attribute   "RS_INSTANCE_UUID",
-  :display_name => "RightScale monitoring ID for this server",
+  :display_name => "If using collectd, the monitoring ID for this server.",
   :required => "optional",
   :type => "string",
   :default => "env:RS_INSTANCE_UUID",
-  :recipes => ["rll::collectd"]
+  :recipes => ["rll::enable-monitoring"]
 
 attribute   "ENABLE_AUTO_UPGRADE",
   :display_name => "Enables auto upgrade of RightLink10",
