@@ -73,7 +73,7 @@ These next steps are the suggested workflow:
 1. Run `bundle exec rightscript_sync upload path/to/script` to update the HEAD revision of the RightScript.
    Remember, the name of the RightScript to update should be provided under `RightScript Name` in the YAML
    formatted header.
-   * example: `bundle exec rightscript_sync upload rll/collectd.sh`
+   * example: `bundle exec rightscript_sync upload rll/enable-monitoring.sh`
 1. Verify the HEAD revision of the script has been synced with your git commit and is identical.
 1. Review the inputs detected in the script after the sync. The RightScale platform does not currently handle
    the input updates so you will need to verify and update any descriptions and default values.  Check the disable
