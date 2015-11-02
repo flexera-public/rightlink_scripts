@@ -40,7 +40,7 @@
 #     Category: RightScale
 #     Description: RightScale provides mirrors of some OS distributions. This would be the hostname of one of
 #       those mirrors (typically env:RS_ISLAND)
-#     Default: "text:"
+#     Default: env:RS_ISLAND
 #     Required: true
 #     Advanced: true
 # ...
