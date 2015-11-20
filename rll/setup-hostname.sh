@@ -25,12 +25,13 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
   prefix=
   suffix=
 
-  re='^[-A-Za-z0-9_][-A-Za-z0-9_.]*[-A-Za-z0-9_]'
+  re='^[-A-Za-z0-9_][-A-Za-z0-9_.]*[-A-Za-z0-9_]( #[0-9]+){0,1}'
   if [[ "$SERVER_HOSTNAME" =~ $re ]]; then
     prefix=${BASH_REMATCH[0]}
     echo "prefix set to ${prefix}"
   fi
-  re='[-A-Za-z0-9_][-A-Za-z0-9._]*[-A-Za-z0-9_]$'
+
+  re='[-A-Za-z0-9_][-A-Za-z0-9._]*[-A-Za-z0-9_]( #[0-9]+){0,1}$'
   if [[ "$SERVER_HOSTNAME" =~ $re ]]; then
     suffix=${BASH_REMATCH[0]}
     echo "suffix set to ${suffix}"
@@ -42,6 +43,21 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
   elif (( ${#suffix} > 1 )); then
     echo "Setting hostname to suffix '$suffix'"
     hostname="$suffix"
+  fi
+
+  #
+  # Check for a numeric suffix (like in a server array)
+  # example:  array_name #1
+  # and convert into:  array_name-1
+  #
+  if [ $( echo $hostname | grep "#" -c ) -gt 0 ]; then
+    numeric_suffix=$( echo $hostname | cut -d'#' -f2 )
+    hostname=$( echo $hostname | cut -d'#' -f1 )
+    echo "Find array numeric suffix '$numeric_suffix'"
+
+    sname=$(echo $hostname | cut -d'.' -f 1)
+    dname=${hostname#"$sname"}
+    hostname="$sname-$numeric_suffix$dname"
   fi
 
   sudo hostname "$hostname"
