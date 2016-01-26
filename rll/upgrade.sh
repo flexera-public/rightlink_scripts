@@ -28,7 +28,7 @@ upgrade_rightlink() {
   # Use 'logger' here instead of 'echo' since stdout from this is not sent to
   # audit entries as RightLink is down for a short time during the upgrade process.
 
-  res=$(${bin_dir}/rsc --timeout=60 rl10 upgrade /rll/upgrade exec=${bin_dir}/rightlink-new 2>/dev/null || true)
+  res=$(${bin_dir}/rsc rl10 upgrade /rll/upgrade exec=${bin_dir}/rightlink-new 2>/dev/null || true)
   if [[ "$res" =~ successful ]]; then
     # Delete the old version if it exists from the last upgrade.
     sudo rm -rf ${bin_dir}/rightlink-old
@@ -145,8 +145,10 @@ if [[ "$new" == "$desired" ]]; then
   # We pre-run the self-check now so we can fail fast.
   . <(sudo sed '/^export/!s/^/export /' /var/lib/rightscale-identity)
   self_check_output=$(${bin_dir}/rightlink-new --selfcheck >/dev/null 2>&1)
-  if [ "$?" -ne 0 ]; then
-      echo "Initial self-check failed:"
+  if [ "$?" -eq 0 ]; then
+    echo "new version passed connectivity check"
+  else
+      echo "initial self-check failed:"
       echo "$self_check_output"
       exit 1
   fi

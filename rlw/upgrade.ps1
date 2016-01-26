@@ -24,17 +24,24 @@ $upgradeFunction = {
     $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
     $TMP_DIR = 'C:\Windows\Temp\Upgrade'
 
-    # Delete the old version if it exists from the last upgrade.
-    if (Test-Path -Path ${RIGHTLINK_DIR}\rightlink-old.exe) {
-      Remove-Item -Path ${RIGHTLINK_DIR}\rightlink-old.exe -Force
+    # The self-upgrade API call doesn't actually upgrade the executable on Windows, but it does flush out audit entries
+    # and test connectivity.
+    $upgradeCheck = & ${RIGHTLINK_DIR}\rsc.exe rl10 upgrade /rll/upgrade exec=${RIGHTLINK_DIR}\rightlink-new.exe 2> $null
+    if ($upgradeCheck -match 'successful') {
+      # Delete the old version if it exists from the last upgrade.
+      if (Test-Path -Path ${RIGHTLINK_DIR}\rightlink-old.exe) {
+        Remove-Item -Path ${RIGHTLINK_DIR}\rightlink-old.exe -Force
+      }
+      # Keep the old version in case of issues, ie we need to manually revert back.
+      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink.exe -newName 'rightlink-old.exe' -Force
+      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink-new.exe -newName 'rightlink.exe' -Force
+      # We kill the current running rightlink process,
+      # Since we renamed the new version to rightlink.exe, it should be started automatically by NSSM
+      Stop-Process -Name 'rightlink' -Force
+    } else {
+      Write-Output """Error: ${upgradeCheck}"""
+      Exit 1
     }
-    # Keep the old version in case of issues, ie we need to manually revert back.
-    Rename-Item -Path ${RIGHTLINK_DIR}\rightlink.exe -newName 'rightlink-old.exe' -Force
-    Rename-Item -Path ${RIGHTLINK_DIR}\rightlink-new.exe -newName 'rightlink.exe' -Force
-    # We kill the current running rightlink process,
-    # Since we renamed the new version to rightlink.exe, it should be started automatically by NSSM
-    Stop-Process -Name 'rightlink' -Force
-
     # Check updated version in production by connecting to local proxy
     # The update takes a few seconds so retries are done.
     for ($i = 1; $i -le 5; $i += 1) {
@@ -90,6 +97,8 @@ $upgradeFunction = {
 }
 
 $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
+$RS_DIR = 'C:\ProgramData\RightScale\RightLink'
+$RS_ID_FILE = "${RS_DIR}\rightscale-identity"
 
 if (!$env:UPGRADES_FILE_LOCATION) {
   $env:UPGRADES_FILE_LOCATION = 'https://rightlink.rightscale.com/rightlink/upgrades'
@@ -173,17 +182,24 @@ $newVersion = & "${RIGHTLINK_DIR}\rightlink-new.exe" --version | % { $_.Split(" 
 if ($newVersion -eq $desiredVersion) {
   Write-Output "New version looks right: ${newVersion}"
 
-  # The self-upgrade API call doesn't actually upgrade the executable on Windows, but it does flush out audit entries
-  # and test connectivity. Call that now before to so we can report an error if it fails, then 
-  $upgradeCheck = & ${RIGHTLINK_DIR}\rsc.exe --timeout=60 rl10 upgrade /rll/upgrade exec=${RIGHTLINK_DIR}\rightlink-new.exe 2> $null
-  if ($upgradeCheck -match 'successful') {
-    Write-Output 'Restarting RightLink to pick up new version'
-    # Fork a new task since this main process is started by RightLink and we are restarting it.
-    Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"
+  # Do an initial self-check as we can't get status after we fork off the background process.
+  foreach ($line in (Get-Content $RS_ID_FILE)) {
+    if ($line -match '^([^=]+)=(.+)$') {
+      [environment]::SetEnvironmentVariable($matches[1], $matches[2])
+    }
+  }
+  $selfCheckOutput =  & "${RIGHTLINK_DIR}\rightlink-new.exe" --selfcheck 2>&1
+  if ($selfCheckOutput -match "Self-check succeeded") {
+    Write-Output "New version passed connectivity check"
   } else {
-    Write-Output """Error: ${upgradeCheck}"""
+    Write-Output "Initial self-check failed:"
+    Write-Output "$selfCheckOutput"
     Exit 1
   }
+
+  Write-Output 'Restarting RightLink to pick up new version'
+  # Fork a new task since this main process is started by RightLink and we are restarting it.
+  Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"
 } else {
   Write-Output "Updated version does not appear to be desired version: ${newVersion}"
   Exit 1
