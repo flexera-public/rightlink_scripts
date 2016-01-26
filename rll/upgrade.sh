@@ -144,13 +144,13 @@ if [[ "$new" == "$desired" ]]; then
 
   # We pre-run the self-check now so we can fail fast.
   . <(sudo sed '/^export/!s/^/export /' /var/lib/rightscale-identity)
-  self_check_output=$(${bin_dir}/rightlink-new --selfcheck >/dev/null 2>&1)
-  if [ "$?" -eq 0 ]; then
+  self_check_output=$(${bin_dir}/rightlink-new --selfcheck 2>&1)
+  if [[ "$self_check_output" =~ "Self-check succeeded" ]]; then
     echo "new version passed connectivity check"
   else
-      echo "initial self-check failed:"
-      echo "$self_check_output"
-      exit 1
+    echo "initial self-check failed:"
+    echo "$self_check_output"
+    exit 1
   fi
 
   echo "restarting RightLink to pick up new version"
