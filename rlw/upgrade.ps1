@@ -18,10 +18,14 @@
 
 $upgradeFunction = {
   function upgradeRightLink($currentVersion, $desiredVersion) {
+    # Give the rightscript process this was called from time to finish
+    Sleep 5
+
     $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
     $TMP_DIR = 'C:\Windows\Temp\Upgrade'
 
-    # Self upgrade API call is not yet supported on Windows, but we can still use the API call to verify the exe
+    # The self-upgrade API call doesn't actually upgrade the executable on Windows, but it does flush out audit entries
+    # and test connectivity.
     $upgradeCheck = & ${RIGHTLINK_DIR}\rsc.exe rl10 upgrade /rll/upgrade exec=${RIGHTLINK_DIR}\rightlink-new.exe 2> $null
     if ($upgradeCheck -match 'successful') {
       # Delete the old version if it exists from the last upgrade.
@@ -93,6 +97,8 @@ $upgradeFunction = {
 }
 
 $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
+$RS_DIR = 'C:\ProgramData\RightScale\RightLink'
+$RS_ID_FILE = "${RS_DIR}\rightscale-identity"
 
 if (!$env:UPGRADES_FILE_LOCATION) {
   $env:UPGRADES_FILE_LOCATION = 'https://rightlink.rightscale.com/rightlink/upgrades'
@@ -175,6 +181,22 @@ $newVersion = & "${RIGHTLINK_DIR}\rightlink-new.exe" --version | % { $_.Split(" 
 
 if ($newVersion -eq $desiredVersion) {
   Write-Output "New version looks right: ${newVersion}"
+
+  # Do an initial self-check as we can't get status after we fork off the background process.
+  foreach ($line in (Get-Content $RS_ID_FILE)) {
+    if ($line -match '^([^=]+)=(.+)$') {
+      [environment]::SetEnvironmentVariable($matches[1], $matches[2])
+    }
+  }
+  $selfCheckOutput =  & "${RIGHTLINK_DIR}\rightlink-new.exe" --selfcheck 2>&1
+  if ($selfCheckOutput -match "Self-check succeeded") {
+    Write-Output "New version passed connectivity check"
+  } else {
+    Write-Output "Initial self-check failed:"
+    Write-Output "$selfCheckOutput"
+    Exit 1
+  }
+
   Write-Output 'Restarting RightLink to pick up new version'
   # Fork a new task since this main process is started by RightLink and we are restarting it.
   Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"

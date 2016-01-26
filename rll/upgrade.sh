@@ -24,7 +24,7 @@ UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.c
 [[ -e /usr/local/bin/rightlink ]] && bin_dir=/usr/local/bin || bin_dir=/opt/bin
 
 upgrade_rightlink() {
-
+  sleep 1
   # Use 'logger' here instead of 'echo' since stdout from this is not sent to
   # audit entries as RightLink is down for a short time during the upgrade process.
 
@@ -141,6 +141,18 @@ echo "checking new version"
 new=`${bin_dir}/rightlink-new --version | awk '{print $2}'`
 if [[ "$new" == "$desired" ]]; then
   echo "new version looks right: ${new}"
+
+  # We pre-run the self-check now so we can fail fast.
+  . <(sudo sed '/^export/!s/^/export /' /var/lib/rightscale-identity)
+  self_check_output=$(${bin_dir}/rightlink-new --selfcheck 2>&1)
+  if [[ "$self_check_output" =~ "Self-check succeeded" ]]; then
+    echo "new version passed connectivity check"
+  else
+    echo "initial self-check failed:"
+    echo "$self_check_output"
+    exit 1
+  fi
+
   echo "restarting RightLink to pick up new version"
   # Fork a new task since this main process is started
   # by RightLink and we are restarting it.
