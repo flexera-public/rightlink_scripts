@@ -18,26 +18,23 @@
 
 $upgradeFunction = {
   function upgradeRightLink($currentVersion, $desiredVersion) {
+    # Give the rightscript process this was called from time to finish
+    Sleep 5
+
     $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
     $TMP_DIR = 'C:\Windows\Temp\Upgrade'
 
-    # Self upgrade API call is not yet supported on Windows, but we can still use the API call to verify the exe
-    $upgradeCheck = & ${RIGHTLINK_DIR}\rsc.exe rl10 upgrade /rll/upgrade exec=${RIGHTLINK_DIR}\rightlink-new.exe 2> $null
-    if ($upgradeCheck -match 'successful') {
-      # Delete the old version if it exists from the last upgrade.
-      if (Test-Path -Path ${RIGHTLINK_DIR}\rightlink-old.exe) {
-        Remove-Item -Path ${RIGHTLINK_DIR}\rightlink-old.exe -Force
-      }
-      # Keep the old version in case of issues, ie we need to manually revert back.
-      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink.exe -newName 'rightlink-old.exe' -Force
-      Rename-Item -Path ${RIGHTLINK_DIR}\rightlink-new.exe -newName 'rightlink.exe' -Force
-      # We kill the current running rightlink process,
-      # Since we renamed the new version to rightlink.exe, it should be started automatically by NSSM
-      Stop-Process -Name 'rightlink' -Force
-    } else {
-      Write-Output """Error: ${upgradeCheck}"""
-      Exit 1
+    # Delete the old version if it exists from the last upgrade.
+    if (Test-Path -Path ${RIGHTLINK_DIR}\rightlink-old.exe) {
+      Remove-Item -Path ${RIGHTLINK_DIR}\rightlink-old.exe -Force
     }
+    # Keep the old version in case of issues, ie we need to manually revert back.
+    Rename-Item -Path ${RIGHTLINK_DIR}\rightlink.exe -newName 'rightlink-old.exe' -Force
+    Rename-Item -Path ${RIGHTLINK_DIR}\rightlink-new.exe -newName 'rightlink.exe' -Force
+    # We kill the current running rightlink process,
+    # Since we renamed the new version to rightlink.exe, it should be started automatically by NSSM
+    Stop-Process -Name 'rightlink' -Force
+
     # Check updated version in production by connecting to local proxy
     # The update takes a few seconds so retries are done.
     for ($i = 1; $i -le 5; $i += 1) {
@@ -175,9 +172,18 @@ $newVersion = & "${RIGHTLINK_DIR}\rightlink-new.exe" --version | % { $_.Split(" 
 
 if ($newVersion -eq $desiredVersion) {
   Write-Output "New version looks right: ${newVersion}"
-  Write-Output 'Restarting RightLink to pick up new version'
-  # Fork a new task since this main process is started by RightLink and we are restarting it.
-  Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"
+
+  # The self-upgrade API call doesn't actually upgrade the executable on Windows, but it does flush out audit entries
+  # and test connectivity. Call that now before to so we can report an error if it fails, then 
+  $upgradeCheck = & ${RIGHTLINK_DIR}\rsc.exe --timeout=60 rl10 upgrade /rll/upgrade exec=${RIGHTLINK_DIR}\rightlink-new.exe 2> $null
+  if ($upgradeCheck -match 'successful') {
+    Write-Output 'Restarting RightLink to pick up new version'
+    # Fork a new task since this main process is started by RightLink and we are restarting it.
+    Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"
+  } else {
+    Write-Output """Error: ${upgradeCheck}"""
+    Exit 1
+  }
 } else {
   Write-Output "Updated version does not appear to be desired version: ${newVersion}"
   Exit 1
