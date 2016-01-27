@@ -51,7 +51,7 @@ $upgradeFunction = {
         break
       } else {
         Write-Output 'Waiting for new version to become active.'
-        Sleep 2
+        Sleep 5
       }
     }
     if ($newInstalledVersion -ne $desiredVersion) {
