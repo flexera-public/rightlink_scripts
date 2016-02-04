@@ -406,7 +406,7 @@ EOF
   
   # Populate RS_RLL_PORT
   source /var/run/rightlink/secret
-  $rsc rl10 update /rll/tss/control enable_monitoring=extra
+  $rsc rl10 update /rll/tss/control enable_monitoring=util
   collectd_ver=5
   if [[ "$(collectd -h)" =~ "collectd 4" ]]; then
     collectd_ver=4
