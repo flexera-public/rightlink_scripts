@@ -3,6 +3,7 @@
 # ---
 # RightScript Name: RL10 Linux Shutdown Reason
 # Description: Print out the reason for shutdown.
+# Inputs: {}
 # ...
 #
 

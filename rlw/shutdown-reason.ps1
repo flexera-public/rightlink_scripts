@@ -1,6 +1,7 @@
 # ---
 # RightScript Name: RL10 Windows Shutdown Reason
 # Description: Print out the reason for shutdown.
+# Inputs: {}
 # ...
 #
 
