@@ -3,6 +3,7 @@
 # Description: On AWS, if an elastic IP address is specified this script will
 #   wait until all API Hosts are reporting the expected IP address for the server,
 #   which is recorded in the user-data
+# Inputs: {}
 # ...
 #
 
