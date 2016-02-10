@@ -9,6 +9,7 @@ recipe      "rlw-examples::install-updates-by-kb", "Microsoft KB number of updat
 recipe      "rlw-examples::setup-hostname", "Changes the hostname of the server"
 recipe      "rlw-examples::automatic-update-policy", "Define the Windows automatic update policy for the instance"
 recipe      "rlw-examples::iis-monitoring", "Installs IIS specific monitoring"
+recipe      "rlw-examples::mssql-monitoring", "Installs Microsoft SQL Server specific monitoring"
 
 attribute   "WINDOWS_UPDATES_REBOOT_SETTING",
   :display_name => "Setting whether to reboot automatically",
