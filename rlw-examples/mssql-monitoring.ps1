@@ -7,4 +7,9 @@
 # ...
 #
 
-rsc rl10 create /rll/tss/exec/mssql_monitor executable=[System.IO.Path]::GetFullPath(".\attachments\mssql-monitor.ps1")
+$attachDir = $Env:RS_ATTACH_DIR
+if ($attachDir) {
+  $attachDir = [System.IO.Path]::GetFullPath(".\attachments")
+}
+
+rsc rl10 create /rll/tss/exec/mssql_monitor executable=[io.path]::combine($attachDir, "mssql-monitor.ps1")
