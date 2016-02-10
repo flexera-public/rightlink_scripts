@@ -1,5 +1,10 @@
 # ---
 # RightScript Name: SYS IIS monitoring install
 # Description: Installs IIS specific monitoring.
+# Inputs: {}
+# Attachments:
+#   - attachments/iis-monitor.ps1
+# ...
 #
+
 rsc rl10 create /rll/tss/exec/iis_monitor executable=[System.IO.Path]::GetFullPath(".\attachments\iis-monitor.ps1")
