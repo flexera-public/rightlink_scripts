@@ -8,7 +8,7 @@
 #
 
 $attachDir = $Env:RS_ATTACH_DIR
-if ($attachDir) {
+if (!$attachDir) {
   $attachDir = [System.IO.Path]::GetFullPath(".\attachments")
 }
 
