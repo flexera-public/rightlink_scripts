@@ -6,7 +6,7 @@
 while ($True) {
   $nowT = [Math]::Floor([decimal](Get-Date(Get-Date).ToUniversalTime()-uformat "%s"))
 
-  # Collecting he percentage of pages found in the buffer cache without having to read from disk
+  # Collecting the percentage of pages found in the buffer cache without having to read from disk
   # see: https://technet.microsoft.com/en-us/library/ms189628(v=sql.110).aspx
   $res =  Get-WmiObject -Query "select Buffercachehitratio from Win32_PerfFormattedData_MSSQLSERVER_SQLServerBufferManager"
   if ($res) {
@@ -114,12 +114,6 @@ while ($True) {
     Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/sql-server-mirroring/redo-queue-kb interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.RedoQueueKB)"
     Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/sql-server-mirroring/transaction-delay interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TransactionDelay)"
   }
-
-  $res =  Get-WmiObject -Query "select State from RS_SQLSTATE"
-  if ($res) {
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/sql-server-mirroring/mirroring-state interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.State)"
-  }
-
 
   # Collecting number of lock requests per second that resulted in a deadlock
   # see: https://msdn.microsoft.com/en-us/library/ms190216.aspx
