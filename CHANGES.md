@@ -1,6 +1,11 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+Unreleased Changes
+------------------
+- Documented the use of the Go based `right_st` tool instead of the `rightscript_sync` Ruby tool
+- Cleaned up RightScripts' to pass `right_st validate`
+
 10.3.0
 ------
 - Update scripts with support for CoreOS
