@@ -7,8 +7,7 @@
 # ...
 #
 
-$RS_DIR = 'C:\ProgramData\RightScale\RightLink'
-$RS_ID_FILE = "${RS_DIR}\rightscale-identity"
+$RS_ID_FILE  = "$env:ProgramData\RightScale\RightLink\rightscale-identity"
 
 foreach ($line in (Get-Content $RS_ID_FILE)) {
   if ($line -match 'expected_public_ip=(.+)') {
