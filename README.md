@@ -8,7 +8,7 @@ the new RightLink10 agent. The scripts for the base Linux ServerTemplate are in 
 `rll` subdirectory, and the scripts for the base Windows ServerTemplate are in the `rlw`
 subdirectory. Additional RightScripts are also in `rll-examples` and `rlw-examples`.  Each
 RightScript has a comment header providing metadata info in YAML format with the following
-fields: `RightScript Name`, `Decription`, and `Inputs`. These headers will be used
+fields: `RightScript Name`, `Description`, and `Inputs`. These headers will be used
 to populate these fields when uploaded to the RightScale platform as RightScripts.
 
 How it Works
@@ -125,7 +125,7 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
 ./rs_run rll::my_script
 ```
 - When done, you can `git commit` your changes and push them using the `./rs_push` script, which
-  will ensure that the RS platform refetches the respository.
+  will ensure that the RS platform refetches the repository.
 - Note that if you need to clone multiple repos onto your server you cannot tell RL10 to search
   more than one repo for scripts. A work-around is to create a separate directory for RL10 that
   contains symlinks to all the cookbook directories you want RL10 to search.
