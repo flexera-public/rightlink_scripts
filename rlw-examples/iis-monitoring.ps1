@@ -3,7 +3,7 @@
 # Description: Installs IIS specific monitoring.
 # Inputs: {}
 # Attachments:
-#   - attachments/iis-monitor.ps1
+#   - iis-monitor.ps1
 # ...
 #
 

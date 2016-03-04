@@ -3,6 +3,7 @@
 # ---
 # RightScript Name: RL10 Linux Security Updates
 # Description: Installs security updates
+# Inputs: {}
 # ...
 #
 

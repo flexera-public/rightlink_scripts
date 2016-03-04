@@ -23,7 +23,7 @@
 #     Description: Day from which to set RightScale-hosted OS repository mirror. Can be an empty string to
 #       disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull
 #       from a particular day
-#     Default: "text:"
+#     Default: blank
 #     Required: true
 #     Advanced: true
 #   RUBYGEMS_FREEZE_DATE:
@@ -32,7 +32,7 @@
 #     Description: Day from which to set RightScale-hosted Rubygems mirror. Can be an empty string to disable
 #       this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a
 #       particular day
-#     Default: "text:"
+#     Default: blank
 #     Required: true
 #     Advanced: true
 #   MIRROR_HOST:
@@ -43,6 +43,10 @@
 #     Default: env:RS_ISLAND
 #     Required: true
 #     Advanced: true
+# Attachments:
+#   - RPM-GPG-KEY-EPEL-5
+#   - RPM-GPG-KEY-EPEL-6
+#   - RPM-GPG-KEY-EPEL-7
 # ...
 #
 

@@ -8,7 +8,7 @@ the new RightLink10 agent. The scripts for the base Linux ServerTemplate are in 
 `rll` subdirectory, and the scripts for the base Windows ServerTemplate are in the `rlw`
 subdirectory. Additional RightScripts are also in `rll-examples` and `rlw-examples`.  Each
 RightScript has a comment header providing metadata info in YAML format with the following
-fields: `RightScript Name`, `Decription`, and `Inputs`. These headers will be used
+fields: `RightScript Name`, `Description`, and `Inputs`. These headers will be used
 to populate these fields when uploaded to the RightScale platform as RightScripts.
 
 How it Works
@@ -49,33 +49,25 @@ Developer Info
 --------------
 ### RightScripts
 In order to modify a script in this repo and update the matching RightScript, a few steps will need
-to be done.  Installation of `ruby 2.0` or greater and `bundler` gem is required.
+to be done.
 
 The following setup should only need to be done once to setup the development environment:
 
 1. Import the official _RightLink 10.X.X Linux Base_ or _RightLink 10.X.X Windows Base_ ServerTemplate into
    your account. This will also import the RightScripts.
-1. Fork the repo on github and clone the fork to your workstation
-1. Create a branch (or use master, your choice)
-1. Run `bundle install` to install the `rightscript_sync` gem used to update RightScripts
-1. From the RightScale Dashboard, go to `Settings -> API Credentials` and obtain the `Refresh Token`
-   and `Token Endpoint`
-1. Create a directory and file `~/.right_api_client/login.yml` consisting of:
-
-   ```yml
-   :refresh_token: <Refresh Token>
-   :api_url: <Protocol and hostname of Token Endpoint only, ie https://us-3.rightscale.com>
-   ```
+2. Fork the repo on github and clone the fork to your workstation
+3. Create a branch (or use master, your choice)
+4. Install and configure [right_st](https://github.com/rightscale/right_st) for your platform somewhere that is in your
+   `PATH`.
 
 These next steps are the suggested workflow:
 
 1. Make a change, `git commit` the change
-1. Run `bundle exec rightscript_sync upload path/to/script` to update the HEAD revision of the RightScript.
-   Remember, the name of the RightScript to update should be provided under `RightScript Name` in the YAML
-   formatted header.
-   * example: `bundle exec rightscript_sync upload rll/enable-monitoring.sh`
-1. Verify the HEAD revision of the script has been synced with your git commit and is identical.
-1. Review the inputs detected in the script after the sync. The RightScale platform does not currently handle
+2. Run `right_st rightscript upload path/to/script` to update the HEAD revision of the RightScript. Remember, the name
+   of the RightScript to update should be provided under `RightScript Name` in the YAML formatted header.
+   * example: `right_st rightscript upload rll/enable-monitoring.sh`
+3. Verify the HEAD revision of the script has been synced with your git commit and is identical.
+4. Review the inputs detected in the script after the sync. The RightScale platform does not currently handle
    the input updates so you will need to verify and update any descriptions and default values.  Check the disable
    checkbox for any variables which which may have been incorrectly detected as inputs, (for example: `$2`
    incorrectly detected as `input 2`).
@@ -133,7 +125,7 @@ curl -X PUT -g http://localhost:$RS_RLL_PORT/rll/debug/cookbook \
 ./rs_run rll::my_script
 ```
 - When done, you can `git commit` your changes and push them using the `./rs_push` script, which
-  will ensure that the RS platform refetches the respository.
+  will ensure that the RS platform refetches the repository.
 - Note that if you need to clone multiple repos onto your server you cannot tell RL10 to search
   more than one repo for scripts. A work-around is to create a separate directory for RL10 that
   contains symlinks to all the cookbook directories you want RL10 to search.
@@ -145,12 +137,14 @@ RightScale Release Process
 The release steps for the Linux and Windows Base ServerTemplate at RightScale are as follows:
 
 1. Check out the rightlink_scripts repo
-1. Create release branch: `git checkout -b 10.2.0` (use appropriate branch name to match release)
-1. Run `bundle exec rightscript_sync upload path/to/script` for each script to be released with the ServerTemplate and commit any of these updated RightScripts.
-1. In the RightScale Dashboard, update the ServerTemplates with a new revisions created from committing of the RightScripts.
-1. Check the MCIs on the HEAD revision of the ServerTemplates for the correct tags of the current RightLink release.
-1. Rename the ServerTemplate and edit the description to match the name of the RightLink release.
-1. Commit and publish ST
+2. Create release branch: `git checkout -b 10.2.0` (use appropriate branch name to match release)
+3. Run `right_st rightscript upload path/to/script` for each script to be released with the ServerTemplate and commit
+   any of these updated RightScripts.
+4. In the RightScale Dashboard, update the ServerTemplates with a new revisions created from committing of the
+   RightScripts.
+5. Check the MCIs on the HEAD revision of the ServerTemplates for the correct tags of the current RightLink release.
+6. Rename the ServerTemplate and edit the description to match the name of the RightLink release.
+7. Commit and publish ST
 
 License
 -------

@@ -16,7 +16,7 @@
 #     Input Type: single
 #     Category: RightScale
 #     Description: Microsoft KB Article to download and install.
-#     Default: text:
+#     Default: blank
 #     Required: false
 #     Advanced: true
 # ...
