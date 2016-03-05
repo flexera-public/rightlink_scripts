@@ -258,7 +258,7 @@ else
   
   # Install platform specific collectd packages
   if [[ -d /etc/apt ]]; then
-    # Rsync the package index with sources
+    # Resync the package index with sources
     retry_command sudo apt-get update -y
     retry_command sudo apt-get install -y curl collectd-core
   elif [[ -d /etc/yum.repos.d ]]; then
