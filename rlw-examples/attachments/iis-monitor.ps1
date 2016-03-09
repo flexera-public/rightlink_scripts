@@ -29,13 +29,13 @@ while ($True) {
   # see: https://msdn.microsoft.com/en-us/library/aa394345(v=vs.85).aspx
   $res =  Get-WmiObject -Query "Select * from Win32_PerfRawData_W3SVC_WebService where Name='_Total'"
   if ($res) {
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/iis_bytes-per-sec interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.BytesReceivedPerSec):$($res.BytesSentPerSec)"
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/requests-sec interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalMethodRequests)"
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/anonymous-users interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalAnonymousUsers)"
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/non-anonymous-users interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalNonAnonymousUsers)"
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/connection-attempts interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalConnectionAttemptsallinstances)"
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/not-found-errors interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalNotFoundErrors)"
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/logon-attempts interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalLogonAttempts)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-iis_bytes-per-sec interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.BytesReceivedPerSec):$($res.BytesSentPerSec)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-requests-sec interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalMethodRequests)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-anonymous-users interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalAnonymousUsers)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-non-anonymous-users interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalNonAnonymousUsers)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-connection-attempts interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalConnectionAttemptsallinstances)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-not-found-errors interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalNotFoundErrors)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-logon-attempts interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.TotalLogonAttempts)"
   }
 
 
@@ -45,8 +45,8 @@ while ($True) {
   # see: https://msdn.microsoft.com/en-us/library/aa394323(v=vs.85).aspx and https://technet.microsoft.com/en-us/library/cc735084(v=ws.10).aspx
   $res = Get-WmiObject -Query "Select PercentProcessorTime, ThreadCount from Win32_PerfRawData_PerfProc_Process where name='w3wp'"
   if ($res) {
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/w3wp-percent-processor-time interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.PercentProcessorTime)"
-    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/w3wp-thread-count interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.ThreadCount)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/counter-w3wp-percent-processor-time interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.PercentProcessorTime)"
+    Write-Host "PUTVAL $Env:COLLECTD_HOSTNAME/IIS/gauge-w3wp-thread-count interval=$Env:COLLECTD_INTERVAL ${nowT}:$($res.ThreadCount)"
   }
   Sleep $Env:COLLECTD_INTERVAL
 }
