@@ -12,4 +12,4 @@ if (!$attachDir) {
   $attachDir = [System.IO.Path]::GetFullPath(".\attachments")
 }
 
-rsc rl10 create /rll/tss/exec/mssql_monitor executable=[io.path]::combine($attachDir, "iis-monitor.ps1")
+rsc rl10 create /rll/tss/exec/mssql_monitor executable=$([io.path]::combine($attachDir, "iis-monitor.ps1"))
