@@ -1,9 +1,9 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # ---
-# RightScript Name: RL10 Linux Enable Docker
+# RightScript Name: RL10 Linux Enable Docker Support BETA
 # Description: |
-#   Install Docker and enable RightLink Docker features.
+#   Enable RightLink Docker features if docker is installed
 # Inputs:
 #   RIGHTLINK_DOCKER:
 #     Input Type: single
@@ -18,20 +18,17 @@
 #       - text:tags
 #       - text:none
 # ...
-#
 
-# Install docker
-curl -sSL https://get.docker.com/ | sh
+set -e
 
-# Add users to docker group, allowing access to docker.sock and docker daemon
-sudo usermod -aG docker rightscale
-sudo usermod -aG docker rightlink
-# Unfortunatly, since we started rightlink _before_ installing docker, the running rightlink process
-# is not aware of the new group it belongs to, so workaround is to change group of docker.sock
-sudo chgrp rightlink /var/run/docker.sock
+command_exists() {
+  command -v "$@" > /dev/null 2>&1
+}
 
-# Current process must know that user is now in docker group
-newgrp docker
+if ! command_exists docker; then
+  echo "Docker is not installed - skipping enabling of docker support"
+  exit
+fi
 
 # Obtain local auth info
 . <(sudo cat /var/run/rightlink/secret)
