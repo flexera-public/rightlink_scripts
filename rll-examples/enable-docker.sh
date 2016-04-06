@@ -21,7 +21,7 @@
 #
 
 # Install docker
-wget -qO- https://get.docker.com/ | sh
+curl -sSL https://get.docker.com/ | sh
 
 # Add users to docker group, allowing access to docker.sock and docker daemon
 sudo usermod -aG docker rightscale
