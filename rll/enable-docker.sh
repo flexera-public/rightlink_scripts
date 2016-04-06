@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ---
-# RightScript Name: RL10 Linux Enable Docker Support BETA
+# RightScript Name: RL10 Linux Enable Docker Support (Beta)
 # Description: |
 #   Enable RightLink Docker features if docker is installed
 # Inputs:
