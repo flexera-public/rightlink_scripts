@@ -30,8 +30,5 @@ if ! command_exists docker; then
   exit
 fi
 
-# Obtain local auth info
-. <(sudo cat /var/run/rightlink/secret)
-
 # Enable docker support
-curl -sS -H "X-Rll-Secret: $RS_RLL_SECRET" -X PUT "http://localhost:${RS_RLL_PORT}/rll/docker/control?enable_docker=$RIGHTLINK_DOCKER"
+rsc rl10 /rll/docker/control "enable_docker=$RIGHTLINK_DOCKER"
