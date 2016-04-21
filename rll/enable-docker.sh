@@ -30,5 +30,8 @@ if ! command_exists docker; then
   exit
 fi
 
+# Determine location of rsc
+[[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
+
 # Enable docker support
-rsc rl10 update /rll/docker/control "enable_docker=$RIGHTLINK_DOCKER"
+$rsc rl10 update /rll/docker/control "enable_docker=$RIGHTLINK_DOCKER"
