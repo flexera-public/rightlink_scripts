@@ -31,4 +31,4 @@ if ! command_exists docker; then
 fi
 
 # Enable docker support
-rsc rl10 /rll/docker/control "enable_docker=$RIGHTLINK_DOCKER"
+rsc rl10 update /rll/docker/control "enable_docker=$RIGHTLINK_DOCKER"
