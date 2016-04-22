@@ -30,6 +30,16 @@ if ! command_exists docker; then
   exit
 fi
 
+# Check for group of socker
+socket=/var/run/docker.sock
+docker_group=`stat --format=%G $socket`
+
+# Add rightlink user to docker_group
+if [ $(id --groups --name rightlink | grep "${docker_group}" -c) -eq 0 ]; then
+  echo "Adding rightlink to '${docker_group}' group"
+  sudo usermod -aG ${docker_group} rightlink
+fi
+
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
