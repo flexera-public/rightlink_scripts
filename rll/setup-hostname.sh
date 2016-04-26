@@ -60,7 +60,7 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
     hostname="$sname-$numeric_suffix$dname"
   fi
 
-  # Set the hostname and make it presist across reboots, etc.
+  # Set the hostname and make it persist across reboots, etc.
   # If we are on a system with hostnamectl, it will take care of all that, but if not there are several ways that the
   # hostname may be stored.
   if type -P hostnamectl >/dev/null; then
