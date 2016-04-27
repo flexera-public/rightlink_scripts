@@ -37,7 +37,7 @@ docker_group=`stat --format=%G $socket`
 # Add rightlink user to docker_group
 if ! id --groups --name rightlink | grep --quiet "${docker_group}"; then
   echo "Adding rightlink to '${docker_group}' group"
-  sudo usermod -aG ${docker_group} rightlink
+  sudo usermod --append --groups ${docker_group} rightlink
 fi
 
 # Determine location of rsc
