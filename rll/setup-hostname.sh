@@ -69,7 +69,7 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
   else
     if [[ -f /etc/sysconfig/network ]]; then
       # CentOS 6 (and probably RHEL 6 as well) uses the /etc/sysconfig/network file to store the hostname
-      if grep -q '^HOSTNAME=' /etc/sysconfig/network; then
+      if grep --quiet '^HOSTNAME=' /etc/sysconfig/network; then
         sudo sed --expression="s/^HOSTNAME=.*$/HOSTNAME=$hostname/" --in-place /etc/sysconfig/network
       else
         echo "HOSTNAME=$hostname" | sudo tee -a /etc/sysconfig/network
@@ -79,6 +79,15 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
       echo "$hostname" | sudo tee /etc/hostname
     fi
     sudo hostname "$hostname"
+  fi
+
+  # At least on CentOS 7, cloud-init can sometimes also try to manage the hostname, so configure cloud-init to not
+  # change the hostname
+  preserve_hostname='preserve_hostname: true'
+  if [[ -d /etc/cloud/cloud.cfg.d ]]; then
+    echo "$preserve_hostname" | sudo tee /etc/cloud/cloud.cfg.d/99_preserve_hostname.cfg
+  elif [[ -f /etc/cloud/cloud.cfg ]] && ! grep --quiet "$preserve_hostname" /etc/cloud/cloud.cfg; then
+    echo "$preserve_hostname" | sudo tee -a /etc/cloud/cloud.cfg
   fi
 fi
 
