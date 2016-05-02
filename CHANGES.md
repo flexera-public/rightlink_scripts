@@ -1,6 +1,13 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.4.0
+------
+- Have hostname persist on reboot as it may reset based on OS
+- Update and add counter- and gauge- instance names for the example Windows monitoring scripts
+- Use the lastest EPEL repository for RHEL/CentOS 6 and 7 when installing collectd
+- Creation of enable-docker.sh (RL10 Linux Enable Docker Support (Beta)) RightScript
+
 10.3.1
 ------
 - Documented the use of the Go based `right_st` tool instead of the `rightscript_sync` Ruby tool
