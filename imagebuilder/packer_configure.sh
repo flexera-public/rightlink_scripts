@@ -14,7 +14,7 @@
 #   - rightlink.ps1
 #   - rightlink.sh
 #   - rs-cloudinit.sh
-#   - scriptpolicy.sh
+#   - scriptpolicy.ps1
 #   - softlayer.json
 # Inputs:
 #   CLOUD:
@@ -29,6 +29,34 @@
 #       - text:google
 #       - text:azure
 #       - text:softlayer
+#   DATACENTER:
+#     Input Type: single
+#     Category: CLOUD
+#     Description: |
+#      Enter the Cloud Datacenter or availablity zone where you want to build the image
+#     Required: true
+#     Advanced: false
+#   IMAGE_NAME:
+#     Input Type: single
+#     Category: CLOUD
+#     Description: |
+#      Enter the name of the new image to be created.
+#     Required: true
+#     Advanced: false
+#   SOURCE_IMAGE:
+#     Input Type: single
+#     Category: CLOUD
+#     Description: |
+#      Enter the Name or Resource ID of the base image to use.
+#     Required: true
+#     Advanced: false
+#   AZURE_PUBLISHSETTINGS:
+#     Input Type: single
+#     Category: CLOUD
+#     Description: |
+#      The Azure Publishing settings
+#     Required: true
+#     Advanced: false
 # ...
 
 PACKER_DIR=/tmp/packer

@@ -1,12 +1,11 @@
 #! /bin/bash
 
-# Inputs:
-#
-# $AZURE_STORAGE_ACCOUNT
-#   Account name for source container
-#
-# $AZURE_STORAGE_ACCESS_KEY
-#   Access key for source container
+# ---
+# RightScript Name: Azure copy blob
+# Description: |
+#   Copy Blob
+# Inputs: {}
+# ...
 
 # Original image name to copy
 orig_image=`sudo grep -o "\".*\"" /root/rightimage_id_list | sed 's/"//g'`
@@ -62,7 +61,7 @@ else
   else
     os_type="Linux"
   fi
-  
+
   azure vm image create $IMAGE_NAME --os ${os_type} --location "West US" --blob-url https://$AZURE_STORAGE_ACCOUNT_DEST.blob.core.windows.net/$AZURE_STORAGE_ACCOUNT_CONTAINER_DEST/${vhd_uri_base}
   # Rewrite image id list with final image name
   echo "{\"$IMAGE_NAME\": {}}" | sudo tee /root/rightimage_id_list >/dev/null

@@ -1,5 +1,13 @@
 #! /usr/bin/sudo /bin/bash
 
+# ---
+# RightScript Name: Packer Install Azure Tools
+# Description: |
+#   Install Azure tools for Packer
+# Inputs: {}
+#
+# ...
+
 set -ex
 
 apt-get -y update

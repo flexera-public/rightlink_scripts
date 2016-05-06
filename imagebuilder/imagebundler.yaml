@@ -1,0 +1,16 @@
+Name: Image Bundler
+Description: This ServerTemplate uses Packer to copy cloud images, and if needed add
+  RightLink 10 to the Image.
+RightScripts:
+  Boot:
+  - packer_install.sh
+  - packer_install_plugins.sh
+  - packer_configure.sh
+  - packer_build.sh
+  Operational:
+  - azure_install_tools.sh
+  - azure_copy_blob.sh
+MultiCloudImages:
+- Name: Ubuntu_14.04_x64
+  Revision: 34
+Alerts: []
