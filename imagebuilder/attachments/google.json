@@ -1,0 +1,27 @@
+{
+  "builders": [{
+    "type": "googlecompute",
+    "communicator": "%%COMMUNICATOR%%",
+    "account_file": "%%ACCOUNT_FILE%%",
+    "project_id": "%%PROJECT%%",
+    "source_image": "%%SOURCE_IMAGE%%",
+    "image_name": "%%IMAGE_NAME%%",
+    "machine_type": "%%INSTANCE_TYPE%%",
+    "zone": "%%DATACENTER%%",
+    "ssh_username": "%%SSH_USERNAME%%",
+    "disk_size": "%%DISK_SIZE%%",
+    "ssh_pty": true,
+    "winrm_username": "Administrator",
+    "winrm_password": "%%IMAGE_PASSWORD%%",
+    "winrm_port": 5986,
+    "winrm_use_ssl": true,
+    "winrm_insecure": true,
+    "metadata": {
+      "sysprep-specialize-script-ps1": "(New-Object System.Net.WebClient).DownloadFile('https://s3.amazonaws.com/rightscale-rightimage/windows_userdata.ps1','userdata.ps1')\n.\\userdata.ps1\nSet-Item WSMAN:\\LocalHost\\Service\\Auth\\Basic -Value $true",
+      "windows-startup-script-ps1": "Get-ExecutionPolicy -Scope LocalMachine | Out-File c:\\windows\\temp\\script.txt\nSet-ExecutionPolicy -Scope LocalMachine RemoteSigned\nNET USER Administrator /active:yes\nNET USER Administrator '%%IMAGE_PASSWORD%%'"
+    }
+  }],
+  "provisioners":[{
+      %%PROVISIONER%%
+  }]
+}

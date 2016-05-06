@@ -1,0 +1,26 @@
+{
+  "builders": [{
+    "type": "softlayer",
+    "datacenter_name": "%%DATACENTER%%",
+    "base_os_code": "%%SOURCE_IMAGE%%",
+    "image_name": "%%IMAGE_NAME%%",
+    "image_type": "standard",
+    "instance_domain": "provisioning.com",
+    "instance_cpu": 1,
+    "instance_memory": 1024,
+    "instance_network_speed": 10,
+    "instance_disk_capacity": 25,
+    "ssh_port": 22,
+    "ssh_timeout": "15m",
+    "ssh_pty": true,
+    "instance_state_timeout": "25m"
+  }],
+  "provisioners":[{
+      "type": "shell",
+      "scripts": [
+        "rs-cloudinit.sh",
+        "rightlink.sh",
+        "cleanup.sh"
+      ]
+  }]
+}
