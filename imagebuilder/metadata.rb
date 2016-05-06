@@ -14,27 +14,27 @@ recipe      "imagebuilder::azure_copy_blob", "Azure Copy Blob"
 attribute   "CLOUD",
   :display_name => "CLOUD",
   :required => "recommended",
-  :description => "Select the cloud you are launching in",
+  :description => "Select the cloud where you are building the image",
   :type => "string",
-  :default => "env:RS_ISLAND",
+  :choice => ["azure","ec2","google","software"],
   :recipes => [
     "imagebuilder::packer_install",
     "imagebuilder::packer_configure",
     "imagebuilder::packer_install_plugins"
   ]
 
-attribute   "FREEZE_DATE",
-  :display_name => "OS repository freeze date",
-  :required => "recommended",
+attribute   "AWS_SECRET_KEY",
+  :display_name => "The AWS Secret Key",
+  :required => "optional",
   :type => "string",
-  :description => "Day from which to set RightScale-hosted OS repository mirror. Can be an empty string to disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a particular day",
-  :default => "",
-  :recipes => ["rll-examples::rightscale-mirrors"]
+  :description => "The AWS Secret key",
+  :default => "cred:AWS_SECRET_KEY",
+  :recipes => ["imagebuilder::packer_build"]
 
-attribute   "RUBYGEMS_FREEZE_DATE",
-  :display_name => "Rubygems freeze date",
-  :required => "recommended",
-  :type => "string",
-  :description => "Day from which to set RightScale-hosted Rubygems mirror. Can be an empty string to disable this feature, 'latest' to always pull today's mirrors, or a day in format YYYY-MM-DD to pull from a particular day",
-  :default => "",
-  :recipes => ["rll-examples::rightscale-mirrors"]
+  attribute   "AWS_ACCESS_KEY",
+    :display_name => "The AWS Access Key",
+    :required => "optional",
+    :type => "string",
+    :description => "The AWS Access key",
+    :default => "cred:AWS_ACCESS_KEY",
+    :recipes => ["imagebuilder::packer_build"]
