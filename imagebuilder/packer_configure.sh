@@ -19,7 +19,7 @@
 # Inputs:
 #   CLOUD:
 #     Input Type: single
-#     Category: CLOUD
+#     Category: Cloud
 #     Description: |
 #      Select the cloud you are launching in
 #     Required: true
@@ -31,32 +31,121 @@
 #       - text:softlayer
 #   DATACENTER:
 #     Input Type: single
-#     Category: CLOUD
+#     Category: Cloud
 #     Description: |
 #      Enter the Cloud Datacenter or availablity zone where you want to build the image
 #     Required: true
 #     Advanced: false
 #   IMAGE_NAME:
 #     Input Type: single
-#     Category: CLOUD
+#     Category: Cloud
 #     Description: |
 #      Enter the name of the new image to be created.
 #     Required: true
 #     Advanced: false
 #   SOURCE_IMAGE:
 #     Input Type: single
-#     Category: CLOUD
+#     Category: Cloud
 #     Description: |
 #      Enter the Name or Resource ID of the base image to use.
 #     Required: true
 #     Advanced: false
 #   AZURE_PUBLISHSETTINGS:
 #     Input Type: single
-#     Category: CLOUD
+#     Category: Azure
 #     Description: |
 #      The Azure Publishing settings
+#     Required: false
+#     Advanced: true
+#   GOOGLE_ACCOUNT:
+#     Input Type: single
+#     Category: Google
+#     Description: |
+#      The Google Service Account JSON file.  This is best placed in a Credential
+#     Required: false
+#     Advanced: true
+#   INSTANCE_TYPE:
+#     Input Type: single
+#     Category: Cloud
+#     Description: |
+#      The cloud instance type to use to build the image
 #     Required: true
 #     Advanced: false
+#   GOOGLE_PROJECT:
+#     Input Type: single
+#     Category: Google
+#     Description: |
+#      The Google project where to build the image.
+#     Required: false
+#     Advanced: true
+#   GOOGLE_NETWORK:
+#     Input Type: single
+#     Category: Google
+#     Description: |
+#     The Google Compute network to use for the launched instance. Defaults to "default".
+#     Default: default
+#     Required: false
+#     Advanced: true
+#   GOOGLE_SUBNETWORK:
+#     Input Type: single
+#     Category: Google
+#     Description: |
+#     The Google Compute subnetwork to use for the launced instance. Only required if the network has been created with custom subnetting. Note, the region of the subnetwork must match the region or zone in which the VM is launched.
+#     Default: default
+#     Required: false
+#     Advanced: true
+#   RIGHTLINK_VERSION:
+#     Input Type: single
+#     Category: Google
+#     Description: |
+#      RightLink version number or branch name to install.  Leave blank to NOT bundle RightLink in the image
+#     Required: false
+#     Advanced: true
+#   AZURE_STORAGE_ACCOUNT:
+#     Input Type: single
+#     Category: Azure
+#     Description: |
+#      Azure storage account used for images
+#     Required: false
+#     Advanced: true
+#   AZURE_STORAGE_ACCOUNT_CONTAINER:
+#     Input Type: single
+#     Category: Azure
+#     Description: |
+#      Azure storage account container used for images
+#     Required: false
+#     Advanced: true
+#   SSH_USERNAME:
+#     Input Type: single
+#     Category: Cloud
+#     Description: |
+#      The user packer will use to SSH into the instance.  Examples: ubuntu, centos, ec2-user, root
+#     Default: ubuntu
+#     Required: true
+#     Advanced: true
+#   AWS_SUBNET_ID:
+#     Input Type: single
+#     Category: AWS
+#     Description: |
+#      The vpc subnet resource id to build image in.Enter a value if use a AWS VPC vs EC2-Classic
+#     Default: default
+#     Required: false
+#     Advanced: true
+#   AWS_VPC_ID:
+#     Input Type: single
+#     Category: AWS
+#     Description: |
+#      The vpc resource id to build image in.  Enter a value if use a AWS VPC vs EC2-Classic
+#     Default: default
+#     Required: false
+#     Advanced: true
+#   IMAGE_PASSWORD:
+#     Input Type: single
+#     Category: AWS
+#     Description: |
+#      Enter  a password on the image
+#     Required: false
+#     Advanced: true
 # ...
 
 PACKER_DIR=/tmp/packer
@@ -142,6 +231,8 @@ case "$CLOUD" in
   sed -i "s#%%COMMUNICATOR%%#$communicator#g" ${PACKER_CONF}
   sed -i "s#%%PROVISIONER%%#$provisioner#g" ${PACKER_CONF}
   sed -i "s#%%IMAGE_PASSWORD%%#$IMAGE_PASSWORD#g" ${PACKER_CONF}
+  sed -i "s#%%GOOGLE_NETWORK%%#$GOOGLE_NETWORK#g" ${PACKER_CONF}
+  sed -i "s#%%GOOGLE_SUBNETWORK%%#$GOOGLE_SUBNETWORK#g" ${PACKER_CONF}
 
   SOURCE_IMAGE=`echo $SOURCE_IMAGE | rev | cut -d'/' -f1 | rev`
   ;;
