@@ -7,7 +7,7 @@
 # Inputs:
 #   CLOUD:
 #     Input Type: single
-#     Category: CLOUD
+#     Category: Cloud
 #     Description: |
 #      Select the cloud you are launching in
 #     Required: true
