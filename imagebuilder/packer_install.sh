@@ -7,7 +7,7 @@
 # Inputs:
 #   CLOUD:
 #     Input Type: single
-#     Category: CLOUD
+#     Category: Cloud
 #     Description: |
 #      Select the cloud you are launching in
 #     Required: true
@@ -21,8 +21,6 @@
 
 PACKER_DIR=/tmp/packer
 PACKER_VERSION=0.9.0
-
-instance
 
 mkdir -p ${PACKER_DIR}
 
