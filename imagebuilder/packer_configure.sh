@@ -96,7 +96,7 @@
 #     Advanced: true
 #   RIGHTLINK_VERSION:
 #     Input Type: single
-#     Category: Google
+#     Category: RightLink
 #     Description: |
 #       RightLink version number or branch name to install.  Leave blank to NOT bundle RightLink in the image
 #     Required: false
