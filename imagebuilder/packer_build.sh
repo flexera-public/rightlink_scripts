@@ -12,7 +12,7 @@
 #       AWS Secret Key
 #     Required: false
 #     Advanced: true
-#     Default: cred:AWS_SECRET_KEY
+#     Default: cred:AWS_SECRET_ACCESS_KEY
 #   AWS_ACCESS_KEY:
 #     Input Type: single
 #     Category: AWS
@@ -20,7 +20,7 @@
 #       AWS Access Key
 #     Required: false
 #     Advanced: true
-#     Default: cred:AWS_ACCESS_KEY
+#     Default: cred:AWS_ACCESS_KEY_ID
 #   GOOGLE_PROJECT:
 #     Input Type: single
 #     Category: Google
@@ -35,7 +35,6 @@
 #       The credential for the SOFTLAYER_API_KEY for your cloud account rightscale is using
 #     Required: false
 #     Advanced: true
-#     Default: cred:SOFTLAYER_API_KEY
 #   SOFTLAYER_USER_NAME:
 #     Input Type: single
 #     Category: Softlayer
@@ -43,7 +42,6 @@
 #       The credential for the SOFTLAYER_USER_NAME for your cloud account rightscale is using
 #     Required: false
 #     Advanced: true
-#     Default: cred:SOFTLAYER_USER_NAME
 # ...
 
 PACKER_DIR=/tmp/packer
