@@ -83,7 +83,6 @@
 #     Category: Google
 #     Description: |
 #       The Google Compute network to use for the launched instance. Defaults to "default".
-#     Default: "text:default"
 #     Required: false
 #     Advanced: true
 #   GOOGLE_SUBNETWORK:
@@ -91,7 +90,6 @@
 #     Category: Google
 #     Description: |
 #       The Google Compute subnetwork to use for the launced instance. Only required if the network has been created with custom subnetting. Note, the region of the subnetwork must match the region or zone in which the VM is launched.
-#     Default: "text:default"
 #     Required: false
 #     Advanced: true
 #   RIGHTLINK_VERSION:
@@ -120,7 +118,6 @@
 #     Category: Misc
 #     Description: |
 #      The user packer will use to SSH into the instance.  Examples: ubuntu, centos, ec2-user, root
-#     Default: "text:ubuntu"
 #     Required: true
 #     Advanced: true
 #   AWS_SUBNET_ID:
@@ -128,7 +125,6 @@
 #     Category: AWS
 #     Description: |
 #      The vpc subnet resource id to build image in.Enter a value if use a AWS VPC vs EC2-Classic
-#     Default: "text:default"
 #     Required: false
 #     Advanced: true
 #   AWS_VPC_ID:
@@ -136,7 +132,6 @@
 #     Category: AWS
 #     Description: |
 #      The vpc resource id to build image in.  Enter a value if use a AWS VPC vs EC2-Classic
-#     Default: "text:default"
 #     Required: false
 #     Advanced: true
 #   IMAGE_PASSWORD:
