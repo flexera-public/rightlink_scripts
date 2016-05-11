@@ -1,0 +1,18 @@
+{
+  "builders": [{
+      "type": "azure",
+      "publish_settings_path": "%%ACCOUNT_FILE%%",
+      "subscription_name": "Azure",
+      "storage_account": "%%STORAGE_ACCOUNT%%",
+      "storage_account_container": "%%STORAGE_ACCOUNT_CONTAINER%%",
+      "os_type": "%%OS_TYPE%%",
+      "os_image_label": "%%SOURCE_IMAGE%%",
+      "location": "%%DATACENTER%%",
+      "instance_size": "%%INSTANCE_TYPE%%",
+      "ssh_pty": true,
+      "user_image_label": "%%IMAGE_NAME%%"
+  }],
+  "provisioners":[{
+      %%PROVISIONER%%
+  }]
+}

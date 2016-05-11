@@ -1,0 +1,29 @@
+{
+  "variables": {
+    "ec2_access_key": "{{env `AWS_ACCESS_KEY`}}",
+    "ec2_secret_key": "{{env `AWS_SECRET_KEY`}}"
+  },
+  "builders": [{
+    "type": "%%BUILDER_TYPE%%",
+    "access_key": "{{user `ec2_access_key`}}",
+    "secret_key": "{{user `ec2_secret_key`}}",
+    "region": "%%DATACENTER%%",
+    "source_ami": "%%SOURCE_IMAGE%%",
+    "ssh_pty": true,
+    "instance_type": "%%INSTANCE_TYPE%%",
+    "vpc_id": "%%VPC_ID%%",
+    "subnet_id": "%%SUBNET_ID%%",
+    "associate_public_ip_address": true,
+    "ssh_private_ip": false,
+    "ssh_username": "%%SSH_USERNAME%%",
+    "ami_name": "%%IMAGE_NAME%%"
+  }],
+  "provisioners":[{
+      "type": "shell",
+      "scripts": [
+        "cloudinit.sh",
+        "rightlink.sh",
+        "cleanup.sh"
+      ]
+  }]
+}

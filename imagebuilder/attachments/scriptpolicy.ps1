@@ -1,0 +1,1 @@
+Get-Content C:\Windows\Temp\script.txt | Set-ExecutionPolicy -Force -Scope LocalMachine
