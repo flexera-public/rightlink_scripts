@@ -68,7 +68,7 @@ if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
 else
   lib_dir="/usr/local/lib"
 fi
-sudo tar xzvf ${attachments}/libnss_rightscale.tgz -C ${lib_dir}
+sudo tar --no-same-owner -xzvf ${attachments}/libnss_rightscale.tgz -C ${lib_dir}
 sudo bash -c "echo ${lib_dir} > /etc/ld.so.conf.d/rightscale.conf"
 sudo ldconfig
 
