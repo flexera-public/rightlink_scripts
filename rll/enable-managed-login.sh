@@ -16,25 +16,16 @@
 #     Possible Values:
 #       - text:enable
 #       - text:disable
-# Attachments: []
+# Attachments:
+#   - rs-ssh-keys
 # ...
 
 set -e
 
 # Install /usr/local/bin/rs-ssh-keys
 echo "Installing /usr/local/bin/rs-ssh-keys"
-rs-ssh-key-exec=$(cat <<"EOF"
-#!/bin/bash
-set -e
-user=$1
-line=`grep -E "^$user:|^[0-9a-z_\-]*:$user:" /tmp/login_policy` || true
-[[ "$line" == "" ]] && exit 0
-read preferred_name unique_name <<< $(echo $line | cut -d: -f1,2 --output-delimiter=' ')
-# $preferred_name and $unique_name can be used for logging
-echo $line | cut -d: -f7- | tr : "\n"
-EOF
-)
-sudo bash -c "echo ${rs-ssh-key-exec} > /usr/local/bin/rs-ssh-keys"
+attachments=${RS_ATTACH_DIR:-attachments}
+sudo cp $attachments/rs-ssh-keys /usr/local/bin/
 sudo chmod 0755 /usr/local/bin/rs-ssh-keys
 
 # Update /etc/ssh/sshd_config with command to obtain user keys
