@@ -18,6 +18,7 @@
 #       - text:disable
 # Attachments:
 #   - rs-ssh-keys
+#   - libnss_rightscale.tgz
 # ...
 
 set -e
@@ -25,7 +26,7 @@ set -e
 # Install /usr/local/bin/rs-ssh-keys
 echo "Installing /usr/local/bin/rs-ssh-keys"
 attachments=${RS_ATTACH_DIR:-attachments}
-sudo cp $attachments/rs-ssh-keys /usr/local/bin/
+sudo cp ${attachments}/rs-ssh-keys /usr/local/bin/
 sudo chmod 0755 /usr/local/bin/rs-ssh-keys
 
 # Update /etc/ssh/sshd_config with command to obtain user keys
@@ -44,7 +45,7 @@ fi
 if [ -e /etc/pam.d/sshd ]; then
   if ! grep pam_mkhomedir /etc/pam.d/sshd; then
     echo "Adding pam_mkhomedir to /etc/pam.d/sshd"
-    sudo bash -c "echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" >> /etc/pam.d/sshd"
+    sudo bash -c "echo 'session required pam_mkhomedir.so skel=/etc/skel/ umask=0022' >> /etc/pam.d/sshd"
   else
     echo "PAM config /etc/pam.d/sshd already contains pam_mkhomedir"
   fi
@@ -61,9 +62,15 @@ else
   echo "/etc/nsswitch.conf already configured"
 fi
 
-# TODO: Install NSS plugin
-# If cannot write to /usr/local/lib, place it in /opt/lib
-
+# Install NSS plugin libraries
+if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+  lib_dir="/opt/lib"
+else
+  lib_dir="/usr/local/lib"
+fi
+sudo tar xzvf ${attachments}/libnss_rightscale.tgz -C ${lib_dir}
+sudo bash -c "echo ${lib_dir} > /etc/ld.so.conf.d/rightscale.conf"
+sudo ldconfig
 
 # Adding rs_login:state=user tag
 rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
