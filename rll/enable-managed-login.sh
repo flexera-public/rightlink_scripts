@@ -38,13 +38,22 @@ if ! grep --quiet rs-ssh-keys.sh /etc/ssh/sshd_config; then
 
   # OpenSSH version 6.2 and higher uses and requires AuthorizedKeysCommandUser
   # sshd does not have a version flag, but it does give a version on its error message for invalid flag
-  sshd_version=`sshd --bogus-flag 2>&1 | grep --regexp="^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
+  sshd_version=`sshd --bogus-flag 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
   if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
     sudo bash -c "echo 'AuthorizedKeysCommandUser nobody' >> /etc/ssh/sshd_config"
   else
     echo "ssh version too old to use AuthorizedKeysCommandUser config"
   fi
-  sudo service ssh restart
+
+  # Determine if service name is ssh or sshd
+  ssh_service_status=`sudo service ssh status 2>/dev/null` || true
+  if [[ "$ssh_service_status" == "" ]]; then
+    ssh_service_name='sshd'
+  else
+    ssh_service_name='ssh'
+  fi
+
+  sudo service ${ssh_service_name} restart
 else
   echo "AuthorizedKeysCommand already setup"
 fi
