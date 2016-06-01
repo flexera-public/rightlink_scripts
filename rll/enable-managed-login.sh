@@ -17,24 +17,24 @@
 #       - text:enable
 #       - text:disable
 # Attachments:
-#   - rs-ssh-keys
+#   - rs-ssh-keys.sh
 #   - libnss_rightscale.tgz
 # ...
 
 set -e
 
-# Install /usr/local/bin/rs-ssh-keys
-echo "Installing /usr/local/bin/rs-ssh-keys"
+# Install /usr/local/bin/rs-ssh-keys.sh
+echo "Installing /usr/local/bin/rs-ssh-keys.sh"
 attachments=${RS_ATTACH_DIR:-attachments}
-sudo cp ${attachments}/rs-ssh-keys /usr/local/bin/
-sudo chmod 0755 /usr/local/bin/rs-ssh-keys
+sudo cp ${attachments}/rs-ssh-keys.sh /usr/local/bin/
+sudo chmod 0755 /usr/local/bin/rs-ssh-keys.sh
 
 # Update /etc/ssh/sshd_config with command to obtain user keys
-if ! grep --quiet rs-ssh-keys /etc/ssh/sshd_config; then
+if ! grep --quiet rs-ssh-keys.sh /etc/ssh/sshd_config; then
   # Remove any current AuthorizedKeysCommand and AuthorizedKeysCommandUser entries
   sudo sed -i -e '/AuthorizedKeysCommand\|AuthorizedKeysCommandUser/d' /etc/ssh/sshd_config
-  echo "Adding AuthorizedKeysCommand /usr/local/bin/rs-ssh-keys to /etc/ssh/sshd_config"
-  sudo bash -c "echo 'AuthorizedKeysCommand /usr/local/bin/rs-ssh-keys' >> /etc/ssh/sshd_config"
+  echo "Adding AuthorizedKeysCommand /usr/local/bin/rs-ssh-keys.sh to /etc/ssh/sshd_config"
+  sudo bash -c "echo 'AuthorizedKeysCommand /usr/local/bin/rs-ssh-keys.sh' >> /etc/ssh/sshd_config"
   sudo bash -c "echo 'AuthorizedKeysCommandUser nobody' >> /etc/ssh/sshd_config"
   sudo service ssh restart
 else
