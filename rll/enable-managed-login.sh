@@ -89,5 +89,8 @@ sudo tar --no-same-owner -xzvf ${attachments}/libnss_rightscale.tgz -C ${lib_dir
 sudo bash -c "echo ${lib_dir} > /etc/ld.so.conf.d/rightscale.conf"
 sudo ldconfig
 
+# Determine location of rsc
+[[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
+
 # Adding rs_login:state=user tag
-rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
+$rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
