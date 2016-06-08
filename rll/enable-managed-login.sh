@@ -23,8 +23,11 @@
 
 set -e
 
+# Entry for sshd_config
+ssh_config_entry="AuthorizedKeysCommand /usr/local/bin/rs-ssh-keys.sh"
+
 # Verify prerequisites before making changes
-if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet AuthorizedKeysCommand; then
+if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet AuthorizedKeysCommand; then
   echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
   exit 1
 fi
@@ -40,7 +43,6 @@ sudo cp ${attachments}/rs-ssh-keys.sh /usr/local/bin/
 sudo chmod 0755 /usr/local/bin/rs-ssh-keys.sh
 
 # Update /etc/ssh/sshd_config with command to obtain user keys
-ssh_config_entry="AuthorizedKeysCommand /usr/local/bin/rs-ssh-keys.sh"
 if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
   echo "AuthorizedKeysCommand already setup"
 else
