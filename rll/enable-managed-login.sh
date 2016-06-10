@@ -74,7 +74,7 @@ if cut --delimiter=# --fields=1 /etc/pam.d/sshd | grep --quiet pam_mkhomedir; th
   echo "PAM config /etc/pam.d/sshd already contains pam_mkhomedir"
 else
   echo "Adding pam_mkhomedir to /etc/pam.d/sshd"
-  sudo bash -c "echo 'session required pam_mkhomedir.so skel=/etc/skel/ umask=0022' >> /etc/pam.d/sshd"
+  sudo bash -c "printf '# Added by RightScale Managed Login script\nsession required pam_mkhomedir.so skel=/etc/skel/ umask=0022\n' >> /etc/pam.d/sshd"
 fi
 
 # Update nsswitch.conf
