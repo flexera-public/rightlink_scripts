@@ -69,6 +69,15 @@ else
   sudo service ${ssh_service_name} restart
 fi
 
+# Create /etc/sudoers.d/90-rightscale-sudo-users
+if [ -e /etc/sudoers.d/90-rightscale-sudo-users ]; then
+  echo "Sudoers file already exists"
+else
+  echo "Creating sudoers file"
+  sudo bash -c "printf '# Members of the rightscale_sudo group may gain root privileges\n%%rightscale_sudo ALL=(ALL) SETENV:NOPASSWD:ALL\n' > /etc/sudoers.d/90-rightscale-sudo-users"
+  sudo chmod 0440 /etc/sudoers.d/90-rightscale-sudo-users
+fi
+
 # Update pam config to create homedir on login
 if cut --delimiter=# --fields=1 /etc/pam.d/sshd | grep --quiet pam_mkhomedir; then
   echo "PAM config /etc/pam.d/sshd already contains pam_mkhomedir"
