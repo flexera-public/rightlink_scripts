@@ -27,7 +27,7 @@ set -e
 ssh_config_entry="AuthorizedKeysCommand /usr/local/bin/rs-ssh-keys.sh"
 
 # Verify prerequisites before making changes
-if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet AuthorizedKeysCommand; then
+if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
   echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
   exit 1
 fi
