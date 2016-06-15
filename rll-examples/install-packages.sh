@@ -5,61 +5,51 @@
 #   Installs packages required by RightScripts.
 #   To handle naming variations, prefix package names with "yum:" or "apt:".
 # Inputs:
-#   PACKAGES_INSTALL:
-#     Input Type: single
-#     Category: System
-#     Description: |
-#       Set to "false" in order to skip combined package installation of RS_PACKAGES.
-#     Required: true
-#     Advanced: true
-#     Default: text:true
-#     Possible Values:
-#       - text:true
-#       - text:false
 # ...
 
-[ "$PACKAGES_INSTALL" == "false" ] && exit 0
+if [ -z "$RS_PACKAGES" ]; then
+  echo "No packages to install"
+  exit 0
+fi
 
-if which apt-get > /dev/null 2>&1
-then
+if which apt-get > /dev/null 2>&1; then
   pkgman=apt
-elif which yum > /dev/null 2>&1
-then
+elif which yum > /dev/null 2>&1; then
   pkgman=yum
 fi
 
-if [ -z "$pkgman" -a -n "$RS_PACKAGES" ]
-then
+if [ -z "$pkgman" ]; then
   echo "ERROR: Unrecognized package manager, but we have packages to install"
-  echo "To disregard this error, set PACKAGES_INSTALL to false"
   exit 1
 else
   echo "Detected package manager: $pkgman"
 fi
 
-# Determine which packages are suitable for install on this system
+# Determine which packages are suitable for install on this system.
 declare -a list
 sz=0
-for pkg in $RS_PACKAGES
-do
-  echo $pkg | grep -Eq '^[a-z0-9_]+:'
+for pkg in $RS_PACKAGES; do
+  echo $pkg | grep --extended-regexp --quiet '^[a-z0-9_]+:'
   selective=$?
-  echo $pkg | grep -Eq "^$pkgman:"
+  echo $pkg | grep --extended-regexp --quiet "^$pkgman:"
   matching=$?
   pkg=`echo $pkg | sed -e s/^$pkgman://`
   if [ $selective == 0 -a $matching == 0 ]
   then
+    # Package is selective (begins with pkgman:) AND the pkgman matches ours;
+    # it is a candidate for install.
     list[$sz]=$pkg
     let sz=$sz+1
   elif [ $selective != 0 ]
   then
+    # Package is not selective (it has the same name for every pkgman). It is
+    # a candidate for install.
     list[$sz]=$pkg
     let sz=$sz+1
   fi
 done
 
-if [ -n "$list" ]
-then
+if [ -n "$list" ]; then
   echo "Packages required: $list"
 else
   echo "No required packages for this system."
@@ -92,8 +82,7 @@ apt)
   ;;
 esac
 
-if [ -z "$needed" ]
-then
+if [ -z "$needed" ]; then
   echo "Packages are already installed; nothing to do"
   exit 0
 fi
