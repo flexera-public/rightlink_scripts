@@ -50,50 +50,19 @@ for pkg in $RS_PACKAGES; do
 done
 
 if [ -n "$list" ]; then
-  echo "Packages required: $list"
+  echo "Packages required on this system: $list"
 else
-  echo "No required packages for this system."
-  exit 0
-fi
-
-# Determine which packages are already installed
-declare -a needed
-sz=0
-case $pkgman in
-yum)
-  # yum needs us to check each package individually
-  for pkg in $list
-  do
-    yum list installed $pkg > /dev/null 2>&1
-    if [ $? != 0 ]
-    then
-      needed[$sz]=$pkg
-      let sz=$sz+1
-    fi
-  done
-  ;;
-apt)
-  # apt lets us check everything at once
-  dpkg -l $list > /dev/null 2>&1
-  if [ $? != 0 ]
-  then
-    needed=($list)
-  fi
-  ;;
-esac
-
-if [ -z "$needed" ]; then
-  echo "Packages are already installed; nothing to do"
+  echo "No required packages on this system."
   exit 0
 fi
 
 set -e
 case $pkgman in
   yum)
-    sudo yum install -y $needed
+    sudo yum install -y $list
     ;;
   apt)
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $needed
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $list
     ;;
   *)
     echo "INTERNAL ERROR in RightScript (unrecognized pkgman $pkgman)"
