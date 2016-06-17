@@ -36,6 +36,15 @@ if [ ! -e /etc/pam.d/sshd ]; then
   exit 1
 fi
 
+# Verify /var/lib/rightlink directory was created during install of RL10. Create if missing.
+# It may be missing due to upgrade.
+if [ ! -d /var/lib/rightlink ]; then
+  echo "Expected /var/lib/rightlink directory - creating"
+  sudo mkdir -p /var/lib/rightlink
+  sudo chown -R rightlink:rightlink /var/lib/rightlink
+  sudo chmod 755 /var/lib/rightlink
+fi
+
 # Install /usr/local/bin/rs-ssh-keys.sh
 echo "Installing /usr/local/bin/rs-ssh-keys.sh"
 attachments=${RS_ATTACH_DIR:-attachments}
