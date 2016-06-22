@@ -97,8 +97,7 @@ enable)
     echo "Sudoers file already exists"
   else
     echo "Creating sudoers file"
-    sudo bash -c "printf '# Members of the rightscale_sudo group may gain root privileges\n%%rightscale_sudo ALL=(ALL) SETENV:NOPASSWD:ALL\n' > /etc/sudoers.d/90-rightscale-sudo-users"
-    sudo chmod 0440 /etc/sudoers.d/90-rightscale-sudo-users
+    sudo bash -c "umask 0337 && printf '# Members of the rightscale_sudo group may gain root privileges\n%%rightscale_sudo ALL=(ALL) SETENV:NOPASSWD:ALL\n' > /etc/sudoers.d/90-rightscale-sudo-users"
   fi
 
   # Update pam config to create homedir on login
