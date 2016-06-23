@@ -96,7 +96,7 @@ enable)
     echo "AuthorizedKeysCommand already setup"
   else
     echo "Adding AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh to /etc/ssh/sshd_config"
-    sudo bash -c "echo '${ssh_config_entry}' >> /etc/ssh/sshd_config"
+    sudo bash -c "echo -e '\n${ssh_config_entry}' >> /etc/ssh/sshd_config"
 
     # OpenSSH version 6.2 and higher uses and requires AuthorizedKeysCommandUser
     # sshd does not have a version flag, but it does give a version on its error message for invalid flag
@@ -108,11 +108,10 @@ enable)
     fi
 
     # Determine if service name is ssh or sshd
-    ssh_service_status=`sudo service ssh status 2>/dev/null` || true
-    if [[ "$ssh_service_status" == "" ]]; then
-      ssh_service_name='sshd'
-    else
+    if grep --quiet --no-messages '^DISTRIB_ID=Ubuntu$' /etc/lsb-release; then
       ssh_service_name='ssh'
+    else
+      ssh_service_name='sshd'
     fi
 
     sudo service ${ssh_service_name} restart
