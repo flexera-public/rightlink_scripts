@@ -10,10 +10,11 @@
 #     Input Type: single
 #     Category: RightScale
 #     Description: To enable or disable managed login.  Default is 'enable'.
-#     Required: false
+#     Required: true
 #     Advanced: true
-#     Default: text:enable
+#     Default: text:auto
 #     Possible Values:
+#       - text:auto
 #       - text:enable
 #       - text:disable
 # Attachments:
@@ -28,18 +29,43 @@ set -e
 
 # Determine lib_dir and bin_dir location
 if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+  on_coreos="1"
   lib_dir="/opt/lib"
   bin_dir="/opt/bin"
 else
+  on_coreos=""
   lib_dir="/usr/local/lib"
   bin_dir="/usr/local/bin"
+fi
+
+if ! $rsc rl10 actions | grep -iq /rll/login/control >/dev/null 2>&1; then
+  echo "This script must be run on a RightLink 10.5 or newer instance"
+  exit 1
+fi
+
+if [[ "$MANAGED_LOGIN" == "auto" ]]; then
+  if [[ "$on_coreos" == "1" ]]; then
+    echo "Managed login is not supported on CoreOS. Not setting up managed login."
+    managed_login="disable"
+  else
+    managed_login="enable"
+  fi
+else
+  managed_login=$MANAGED_LOGIN
 fi
 
 # Entry for sshd_config
 ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
 
-case "$MANAGED_LOGIN" in
+case "$managed_login" in
 enable)
+  if [[ "$on_coreos" == "1" ]]; then
+    echo "Managed login is not supported on CoreOS. MANAGED_LOGIN must be set to 'disabled' or 'auto'."
+    exit 1
+  fi
+
+  echo "Enabling managed login"
+
   # Verify prerequisites for enabling before making changes
   if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
     echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
@@ -118,6 +144,7 @@ enable)
   fi
 
   # Install NSS plugin library. This has been designed to overwrite existing library.
+  sudo mkdir -p /etc/ld.so.conf.d ${lib_dir}
   sudo tar --no-same-owner -xzf ${attachments}/libnss_rightscale.tgz -C ${lib_dir}
   sudo bash -c "echo ${lib_dir} > /etc/ld.so.conf.d/rightscale.conf"
   sudo ldconfig
@@ -129,6 +156,12 @@ enable)
   $rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
   ;;
 disable)
+  if [[ "$on_coreos" == "1" ]]; then
+    exit 0
+  fi
+
+  echo "Disabling managed login"
+
   # Remove rs_login:state=user tag
   $rsc --rl10 cm15 multi_delete /api/tags/multi_delete resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
 
@@ -160,7 +193,7 @@ disable)
   sudo rm -frv /var/lib/rightlink/
   ;;
 *)
-  echo "Unknown action: $MANAGED_LOGIN"
+  echo "Unknown action: $managed_login"
   exit 1
   ;;
 esac

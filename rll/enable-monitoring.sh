@@ -19,7 +19,7 @@
 #     Description: |
 #       Determine the method of monitoring to use, either RightLink monitoring or collectd. Setting to
 #       'auto' will use code to select method. 
-#     Required: false
+#     Required: true
 #     Advanced: true
 #     Default: text:auto
 #     Possible Values:
@@ -31,14 +31,14 @@
 #     Category: RightScale
 #     Default: env:RS_INSTANCE_UUID
 #     Description: If using collectd, the monitoring ID for this server.
-#     Required: false
+#     Required: true
 #     Advanced: true
 #   COLLECTD_SERVER:
 #     Input Type: single
 #     Category: RightScale
 #     Default: env:RS_TSS
 #     Description: If using collectd, the FQDN or IP address of the remote collectd server.
-#     Required: false
+#     Required: true
 #     Advanced: true
 # ...
 #
