@@ -9,7 +9,7 @@
 #     Category: RightScale
 #     Description: External location of 'upgrades' file
 #     Default: text:https://rightlink.rightscale.com/rightlink/upgrades
-#     Required: false
+#     Required: true
 #     Advanced: true
 # ...
 #

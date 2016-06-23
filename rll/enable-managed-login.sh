@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ---
-# RightScript Name: RL10 Linux Enable Managed Login
+# RightScript Name: PETE RL10 Linux Enable Managed Login
 # Description: |
 #   Enable does install of RightScale NSS plugin, and update of PAM and SSH configuration to
 #   allow SSH connectivity to RightScale accounts. Disable undoes enablement.
@@ -10,12 +10,13 @@
 #     Input Type: single
 #     Category: RightScale
 #     Description: To enable or disable managed login.  Default is 'enable'.
-#     Required: false
+#     Required: true
 #     Advanced: true
-#     Default: text:enable
+#     Default: text:auto
 #     Possible Values:
 #       - text:enable
 #       - text:disable
+#       - text:auto
 # Attachments:
 #   - rs-ssh-keys.sh
 #   - libnss_rightscale.tgz
@@ -23,11 +24,40 @@
 
 set -e
 
+function de_symlink () {
+  local f=$1
+  if [[ -h "$f" ]]; then
+    echo "Replacing symlink $f with real file"
+    sudo cp -p $f /tmp/$(basename $f).$$
+    sudo mv /tmp/$(basename $f).$$ $f
+  fi
+}
+
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
+if ! $rsc rl10 actions | grep -iq /rll/login/control >/dev/null 2>&1; then
+  echo "This script must be run on a RightLink 10.5 or newer instance"
+  exit 1
+fi
+
+if [[ "$MANAGED_LOGIN" == "auto" ]] || [[ "$MANAGED_LOGIN" == "" ]]; then
+  if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+    managed_login="enable"
+  else
+    managed_login="disable"
+  fi
+else
+  managed_login=$MANAGED_LOGIN
+fi
+
 # Determine lib_dir and bin_dir location
 if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+  major_version=$(cat /etc/os-release  | grep VERSION= | cut -d'=' -f2 | sed -s 's/"//' | cut -d'.' -f1)
+  if [[ "$major_version" -lt 1068 ]] && [[ "$managed_login" == "enable" ]]; then 
+    echo "For coreos, version must be at >= 1068 to support enhanced managed login."
+  fi
+
   lib_dir="/opt/lib"
   bin_dir="/opt/bin"
 else
@@ -38,14 +68,21 @@ fi
 # Entry for sshd_config
 ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
 
-case "$MANAGED_LOGIN" in
+case "$managed_login" in
 enable)
   # Verify prerequisites for enabling before making changes
   if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
     echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
     exit 1
   fi
-  if [ ! -e /etc/pam.d/sshd ]; then
+  if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+    if [ ! -e /usr/lib64/pam.d/sshd ]; then
+      echo "Unable to determine location of required PAM sshd configuration - exiting without configuring managed login"
+      exit 1
+    fi
+    echo "Copying /usr/lib64/pam.d/sshd to /etc/pam.d/sshd"
+    sudo cp -p /usr/lib64/pam.d/sshd /etc/pam.d/sshd
+  elif [ ! -e /etc/pam.d/sshd ]; then
     echo "Unable to determine location of required PAM sshd configuration - exiting without configuring managed login"
     exit 1
   fi
@@ -70,6 +107,7 @@ enable)
     echo "AuthorizedKeysCommand already setup"
   else
     echo "Adding AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh to /etc/ssh/sshd_config"
+    de_symlink /etc/ssh/sshd_config
     sudo bash -c "echo '${ssh_config_entry}' >> /etc/ssh/sshd_config"
 
     # OpenSSH version 6.2 and higher uses and requires AuthorizedKeysCommandUser
@@ -81,15 +119,19 @@ enable)
       echo "ssh version not current enought to use AuthorizedKeysCommandUser config"
     fi
 
-    # Determine if service name is ssh or sshd
-    ssh_service_status=`sudo service ssh status 2>/dev/null` || true
-    if [[ "$ssh_service_status" == "" ]]; then
-      ssh_service_name='sshd'
+    if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+      sudo systemctl restart sshd
     else
-      ssh_service_name='ssh'
+      # Determine if service name is ssh or sshd
+      ssh_service_status=`sudo service ssh status 2>/dev/null` || true
+      if [[ "$ssh_service_status" == "" ]]; then
+        ssh_service_name='sshd'
+      else
+        ssh_service_name='ssh'
+      fi
+      sudo service ${ssh_service_name} restart
     fi
 
-    sudo service ${ssh_service_name} restart
   fi
 
   # Create /etc/sudoers.d/90-rightscale-sudo-users
@@ -114,10 +156,12 @@ enable)
     echo "/etc/nsswitch.conf already configured"
   else
     echo "Configuring /etc/nsswitch.conf"
+    de_symlink /etc/nsswitch.conf
     sudo sed -i '/^\(passwd\|group\|shadow\)/ s/$/ rightscale/' /etc/nsswitch.conf
   fi
 
   # Install NSS plugin library. This has been designed to overwrite existing library.
+  sudo mkdir -p /etc/ld.so.conf.d ${lib_dir}
   sudo tar --no-same-owner -xzf ${attachments}/libnss_rightscale.tgz -C ${lib_dir}
   sudo bash -c "echo ${lib_dir} > /etc/ld.so.conf.d/rightscale.conf"
   sudo ldconfig
@@ -160,7 +204,7 @@ disable)
   sudo rm -frv /var/lib/rightlink/
   ;;
 *)
-  echo "Unknown action: $MANAGED_LOGIN"
+  echo "Unknown action: $managed_login"
   exit 1
   ;;
 esac
