@@ -10,7 +10,7 @@
 #     Category: RightLink
 #     Description: |
 #       Level of Docker integration for RightLink: monitoring + tagging; tagging; nothing.
-#     Required: false
+#     Required: true
 #     Advanced: true
 #     Default: text:all
 #     Possible Values:
