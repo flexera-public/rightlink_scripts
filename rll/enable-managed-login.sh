@@ -20,7 +20,7 @@
 # Attachments:
 #   - rs-ssh-keys.sh
 #   - libnss_rightscale.tgz
-#   - rightscale_login_policy.pp
+#   - rightscale_login_policy.te
 # ...
 
 set -e
