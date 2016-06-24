@@ -20,6 +20,7 @@
 # Attachments:
 #   - rs-ssh-keys.sh
 #   - libnss_rightscale.tgz
+#   - rightscale_login_policy.pp
 # ...
 
 set -e
@@ -147,6 +148,17 @@ enable)
   sudo bash -c "echo ${lib_dir} > /etc/ld.so.conf.d/rightscale.conf"
   sudo ldconfig
 
+  # Configure selinux to allow sshd and pam to read the login policy file at
+  # /var/lib/rightlink/login_policy. This policy adds the following rules:
+  # allow sshd_t var_lib_t:file ioctl open read getattr;
+  # allow chkpwd_t var_lib_t:file ioctl open read getattr;
+  if which sestatus >/dev/null 2>&1; then
+    if sudo sestatus | grep enabled >/dev/null 2>&1; then
+      echo "Installing selinux policy to support reading of login policy file"
+      sudo semodule -i ${attachments}/rightscale_login_policy.pp
+    fi
+  fi
+
   # Send enable action to RightLink
   $rsc rl10 update /rll/login/control "enable_login=true"
 
@@ -189,6 +201,15 @@ disable)
 
   # Remove /var/lib/rightlink folder
   sudo rm -frv /var/lib/rightlink/
+
+  # Remove rightscale managed login selinux policy
+  if which sestatus >/dev/null 2>&1; then
+    if sudo sestatus | grep enabled >/dev/null 2>&1; then
+      if sudo semodule -l | grep rightscale_login_policy >/dev/null 2>&1; then
+        sudo semodule -r rightscale_login_policy
+      fi
+    fi
+  fi
   ;;
 *)
   echo "Unknown action: $managed_login"
