@@ -156,7 +156,7 @@ enable)
       echo "Installing selinux policy to support reading of login policy file and creation of homedir"
       checkmodule -M -m -o rightscale_login_policy.mod ${attachments}/rightscale_login_policy.te
       semodule_package -m rightscale_login_policy.mod -o rightscale_login_policy.pp
-      semodule -i rightscale_login_policy.pp
+      sudo semodule -i rightscale_login_policy.pp
     fi
   fi
 
