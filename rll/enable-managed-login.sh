@@ -149,13 +149,14 @@ enable)
   sudo ldconfig
 
   # Configure selinux to allow sshd and pam to read the login policy file at
-  # /var/lib/rightlink/login_policy. This policy adds the following rules:
-  # allow sshd_t var_lib_t:file ioctl open read getattr;
-  # allow chkpwd_t var_lib_t:file ioctl open read getattr;
+  # /var/lib/rightlink/login_policy. This policy adds the following rules, as
+  # well as make the user's homedir on the fly.
   if which sestatus >/dev/null 2>&1; then
     if sudo sestatus | grep enabled >/dev/null 2>&1; then
-      echo "Installing selinux policy to support reading of login policy file"
-      sudo semodule -i ${attachments}/rightscale_login_policy.pp
+      echo "Installing selinux policy to support reading of login policy file and creation of homedir"
+      checkmodule -M -m -o rightscale_login_policy.mod ${attachments}/rightscale_login_policy.te
+      semodule_package -m rightscale_login_policy.mod -o rightscale_login_policy.pp
+      semodule -i rightscale_login_policy.pp
     fi
   fi
 
