@@ -55,9 +55,6 @@ else
   managed_login=$MANAGED_LOGIN
 fi
 
-# Entry for sshd_config
-ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
-
 case "$managed_login" in
 enable)
   if [[ "$on_coreos" == "1" ]]; then
@@ -67,11 +64,40 @@ enable)
 
   echo "Enabling managed login"
 
-  # Verify prerequisites for enabling before making changes
-  if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
-    echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
+  # sshd does not have a version flag, but it does give a version on its error message for an invalid POSIX flag
+  sshd_version=`sshd -V 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
+  # OpenSSH version 6.2 and higher uses AuthorizedKeysCommand and requires AuthorizedKeysCommandUser
+  if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
+    ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
+    rll_login_control="on"
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
+      echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
+      exit 1
+    fi
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
+      echo "AuthorizedKeysCommand already setup"
+    fi
+		# Add required line to variable after verifying AuthorizedKeysCommand is not used
+    ssh_config_entry+="\nAuthorizedKeysCommandUser nobody"
+  else
+    ssh_config_entry="AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /var/lib/rightlink_keys/%u"
+    rll_login_control="compat"
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
+      echo "AuthorizedKeysFile already in use. This is required to continue - exiting without configuring managed login"
+      exit 1
+    fi
+	fi
+  # Generate SSH staging config and test that the config is valid. If valid, just copy the staging config later.
+  time=`date +%s`
+  sudo cp -a /etc/ssh/sshd_config /tmp/sshd_config.$time
+  sudo bash -c "echo -e '\n${ssh_config_entry}' >> /tmp/sshd_config.$time"
+  # Test staging sshd_config file
+  if ! `sshd -t -f /tmp/sshd_config.$time &> /dev/null`; then
+		echo "sshd_config changes are invalid - exiting without configuring managed login"
     exit 1
   fi
+
+  # Check that pam config for sshd exists
   if [ ! -e /etc/pam.d/sshd ]; then
     echo "Unable to determine location of required PAM sshd configuration - exiting without configuring managed login"
     exit 1
@@ -91,17 +117,14 @@ enable)
   attachments=${RS_ATTACH_DIR:-attachments}
   sudo cp ${attachments}/rs-ssh-keys.sh ${bin_dir}
   sudo chmod 0755 ${bin_dir}/rs-ssh-keys.sh
+HERE
 
-  # Update /etc/ssh/sshd_config with command to obtain user keys
   if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
     echo "AuthorizedKeysCommand already setup"
   else
     echo "Adding AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh to /etc/ssh/sshd_config"
-    sudo bash -c "echo -e '\n${ssh_config_entry}' >> /etc/ssh/sshd_config"
 
     # OpenSSH version 6.2 and higher uses and requires AuthorizedKeysCommandUser
-    # sshd does not have a version flag, but it does give a version on its error message for invalid flag
-    sshd_version=`sshd --bogus-flag 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
     if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
       sudo bash -c "echo 'AuthorizedKeysCommandUser nobody' >> /etc/ssh/sshd_config"
     else
@@ -161,7 +184,7 @@ enable)
   fi
 
   # Send enable action to RightLink
-  $rsc rl10 update /rll/login/control "enable_login=true"
+  $rsc rl10 update /rll/login/control "enable_login=${rll_login_control}"
 
   # Adding rs_login:state=user tag
   $rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
@@ -177,7 +200,7 @@ disable)
   $rsc --rl10 cm15 multi_delete /api/tags/multi_delete resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
 
   # Send disable action to RightLink
-  $rsc rl10 update /rll/login/control "enable_login=false"
+  $rsc rl10 update /rll/login/control "enable_login=off"
 
   # Remove NSS plugin library files
   sudo rm -frv $lib_dir/libnss_rightscale.*
