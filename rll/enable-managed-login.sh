@@ -115,16 +115,12 @@ enable)
   # It may be missing due to upgrade.
   if [ ! -d /var/lib/rightlink ]; then
     echo "Expected /var/lib/rightlink directory - creating"
-    sudo mkdir -p /var/lib/rightlink
-    sudo chown -R rightlink:rightlink /var/lib/rightlink
-    sudo chmod 755 /var/lib/rightlink
+    sudo install --directory --group=rightlink --owner=rightlink --mode=0755 /var/lib/rightlink
   fi
 
   # Create /var/lib/rightlink_keys directory created if set to 'compat'
   if [[ "$rll_login_control" == "compat" ]]; then
-    sudo mkdir -p /var/lib/rightlink_keys
-    sudo chown -R root:root /var/lib/rightlink_keys
-    sudo chmod 755 /var/lib/rightlink_keys
+    sudo install --directory --group=root --owner=root --mode=0755 /var/lib/rightlink_keys
   fi
 
   # Install $bin_dir/rs-ssh-keys.sh
