@@ -29,7 +29,7 @@ set -e
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
 # Determine lib_dir and bin_dir location
-if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+if grep --ignore-case --quiet "id=coreos" /etc/os-release 2> /dev/null; then
   on_coreos="1"
   lib_dir="/opt/lib"
   bin_dir="/opt/bin"
@@ -39,7 +39,7 @@ else
   bin_dir="/usr/local/bin"
 fi
 
-if ! $rsc rl10 actions | grep -iq /rll/login/control >/dev/null 2>&1; then
+if ! $rsc rl10 actions | grep --ignore-case --quiet /rll/login/control >/dev/null 2>&1; then
   echo "This script must be run on a RightLink 10.5 or newer instance"
   exit 1
 fi
@@ -65,10 +65,10 @@ enable)
   echo "Enabling managed login"
 
   # Ubuntu 12.04 has a version of OpenSSH that does not allow AuthorizedKeysCommand. Instead use AuthorizedKeysFile.
-  if `grep -qi 'version_id="12.04"' /etc/os-release >& /dev/null` && `grep -qi "id=ubuntu" /etc/os-release >& /dev/null`; then
+  if `grep --ignore-case --quiet 'version_id="12.04"' /etc/os-release >& /dev/null` && `grep --ignore-case --quiet "id=ubuntu" /etc/os-release >& /dev/null`; then
     ssh_config_entry="AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /var/lib/rightlink_keys/%u"
     rll_login_control="compat"
-    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
       echo "AuthorizedKeysFile already in use. This is required to continue - exiting without configuring managed login"
       exit 1
     fi
@@ -81,7 +81,7 @@ enable)
     sshd_version=`sshd -V 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
     ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
     rll_login_control="on"
-    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
       echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
       exit 1
     fi
