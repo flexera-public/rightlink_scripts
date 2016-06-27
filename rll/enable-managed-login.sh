@@ -76,8 +76,9 @@ enable)
     fi
     if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
       echo "AuthorizedKeysCommand already setup"
+      ssh_previously_configured="true"
     fi
-		# Add required line to variable after verifying AuthorizedKeysCommand is not used
+    # Add required line to variable after verifying AuthorizedKeysCommand is not used
     ssh_config_entry+="\nAuthorizedKeysCommandUser nobody"
   else
     ssh_config_entry="AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /var/lib/rightlink_keys/%u"
@@ -86,15 +87,21 @@ enable)
       echo "AuthorizedKeysFile already in use. This is required to continue - exiting without configuring managed login"
       exit 1
     fi
-	fi
-  # Generate SSH staging config and test that the config is valid. If valid, just copy the staging config later.
-  time=`date +%s`
-  sudo cp -a /etc/ssh/sshd_config /tmp/sshd_config.$time
-  sudo bash -c "echo -e '\n${ssh_config_entry}' >> /tmp/sshd_config.$time"
-  # Test staging sshd_config file
-  if ! `sshd -t -f /tmp/sshd_config.$time &> /dev/null`; then
-		echo "sshd_config changes are invalid - exiting without configuring managed login"
-    exit 1
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
+      echo "AuthorizedKeysFile already setup"
+      ssh_previously_configured="true"
+    fi
+  fi
+  if [[ "$ssh_previously_configured" != "true" ]]; then
+    # Generate SSH staging config and test that the config is valid. If valid, just copy the staging config later.
+    time=`date +%s`
+    sudo cp -a /etc/ssh/sshd_config /tmp/sshd_config.$time
+    sudo bash -c "echo -e '\n${ssh_config_entry}' >> /tmp/sshd_config.$time"
+    # Test staging sshd_config file
+    if ! `sshd -t -f /tmp/sshd_config.$time &> /dev/null`; then
+      echo "sshd_config changes are invalid - exiting without configuring managed login"
+      exit 1
+    fi
   fi
 
   # Check that pam config for sshd exists
@@ -112,32 +119,28 @@ enable)
     sudo chmod 755 /var/lib/rightlink
   fi
 
+  # Create /var/lib/rightlink_keys directory created if set to 'compat'
+  if [[ "$rll_login_control" == "compat" ]]; then
+    sudo mkdir -p /var/lib/rightlink_keys
+    sudo chown -R root:root /var/lib/rightlink_keys
+    sudo chmod 755 /var/lib/rightlink_keys
+  fi
+
   # Install $bin_dir/rs-ssh-keys.sh
   echo "Installing ${bin_dir}/rs-ssh-keys.sh"
   attachments=${RS_ATTACH_DIR:-attachments}
   sudo cp ${attachments}/rs-ssh-keys.sh ${bin_dir}
   sudo chmod 0755 ${bin_dir}/rs-ssh-keys.sh
-HERE
 
-  if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
-    echo "AuthorizedKeysCommand already setup"
-  else
-    echo "Adding AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh to /etc/ssh/sshd_config"
-
-    # OpenSSH version 6.2 and higher uses and requires AuthorizedKeysCommandUser
-    if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
-      sudo bash -c "echo 'AuthorizedKeysCommandUser nobody' >> /etc/ssh/sshd_config"
-    else
-      echo "ssh version not current enought to use AuthorizedKeysCommandUser config"
-    fi
-
+  # Copy staging sshd_config file
+  if [[ "$ssh_previously_configured" != "true" ]]; then
+    sudo mv /tmp/sshd_config.$time /etc/ssh/sshd_config
     # Determine if service name is ssh or sshd
     if grep --quiet --no-messages '^DISTRIB_ID=Ubuntu$' /etc/lsb-release; then
       ssh_service_name='ssh'
     else
       ssh_service_name='sshd'
     fi
-
     sudo service ${ssh_service_name} restart
   fi
 
@@ -219,12 +222,16 @@ disable)
   # Remove AuthorizedKeysCommand and AuthorizedKeysCommandUser from sshd_config
   sudo sed -i '/^AuthorizedKeysCommand \/usr\/local\/bin\/rs-ssh-keys.sh$/d' /etc/ssh/sshd_config
   sudo sed -i '/^AuthorizedKeysCommandUser nobody$/d' /etc/ssh/sshd_config
+  sudo sed -i '/^AuthorizedKeysFile .ssh\/authorized_keys .ssh\/authorized_keys2 \/var\/lib\/rightlink_keys\/%u$/d' /etc/ssh/sshd_config
 
   # Remove rs-ssh-keys.sh
   sudo rm -frv $bin_dir/rs-ssh-keys.sh
 
   # Remove /var/lib/rightlink folder
   sudo rm -frv /var/lib/rightlink/
+
+  # Remove /var/lib/rightlink_keys folder
+  sudo rm -frv /var/lib/rightlink_keys/
 
   # Remove rightscale managed login selinux policy
   if which sestatus >/dev/null 2>&1; then
