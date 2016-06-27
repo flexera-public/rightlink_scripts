@@ -64,23 +64,8 @@ enable)
 
   echo "Enabling managed login"
 
-  # sshd does not have a version flag, but it does give a version on its error message for an invalid POSIX flag
-  sshd_version=`sshd -V 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
-  # OpenSSH version 6.2 and higher uses AuthorizedKeysCommand and requires AuthorizedKeysCommandUser
-  if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
-    ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
-    rll_login_control="on"
-    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
-      echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
-      exit 1
-    fi
-    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
-      echo "AuthorizedKeysCommand already setup"
-      ssh_previously_configured="true"
-    fi
-    # Add required line to variable after verifying AuthorizedKeysCommand is not used
-    ssh_config_entry+="\nAuthorizedKeysCommandUser nobody"
-  else
+  # Ubuntu 12.04 has a version of OpenSSH that does not allow AuthorizedKeysCommand. Instead use AuthorizedKeysFile.
+  if `grep -qi 'version_id="12.04"' /etc/os-release >& /dev/null` && `grep -qi "id=ubuntu" /etc/os-release >& /dev/null`; then
     ssh_config_entry="AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /var/lib/rightlink_keys/%u"
     rll_login_control="compat"
     if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
@@ -91,7 +76,26 @@ enable)
       echo "AuthorizedKeysFile already setup"
       ssh_previously_configured="true"
     fi
+  else
+    # sshd does not have a version flag, but it does give a version on its error message for an invalid POSIX flag
+    sshd_version=`sshd -V 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
+    ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
+    rll_login_control="on"
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
+      echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
+      exit 1
+    fi
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
+      echo "AuthorizedKeysCommand already setup"
+      ssh_previously_configured="true"
+    fi
+    # OpenSSH version 6.2 and higher uses AuthorizedKeysCommand and requires AuthorizedKeysCommandUser
+    if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
+      # Add required line to variable after verifying AuthorizedKeysCommand is not used
+      ssh_config_entry+="\nAuthorizedKeysCommandUser nobody"
+    fi
   fi
+
   if [[ "$ssh_previously_configured" != "true" ]]; then
     # Generate SSH staging config and test that the config is valid. If valid, just copy the staging config later.
     time=`date +%s`
