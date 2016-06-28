@@ -68,10 +68,10 @@ enable)
   if `grep --ignore-case --quiet 'version_id="12.04"' /etc/os-release >& /dev/null` && `grep --ignore-case --quiet "id=ubuntu" /etc/os-release >& /dev/null`; then
     ssh_config_entry="AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /var/lib/rightlink_keys/%u"
     rll_login_control="compat"
-    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
+    if sudo cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
       echo "AuthorizedKeysFile already in use. This is required to continue - exiting without configuring managed login"
       exit 1
-    elif cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
+    elif sudo cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
       echo "AuthorizedKeysFile already setup"
       ssh_previously_configured="true"
     fi
@@ -80,10 +80,10 @@ enable)
     sshd_version=`sshd -V 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
     ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
     rll_login_control="on"
-    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
+    if sudo cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
       echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
       exit 1
-    elif cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
+    elif sudo cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
       echo "AuthorizedKeysCommand already setup"
       ssh_previously_configured="true"
     fi
