@@ -95,11 +95,11 @@ enable)
 
   if [[ "$ssh_previously_configured" != "true" ]]; then
     # Generate SSH staging config and test that the config is valid. If valid, just copy the staging config later.
-    time=`date +%s`
-    sudo cp -a /etc/ssh/sshd_config /tmp/sshd_config.$time
-    sudo bash -c "echo -e '\n${ssh_config_entry}' >> /tmp/sshd_config.$time"
+    sshd_staging_config=$(mktemp /tmp/sshd_config.XXXXXXXXXX)
+    sudo cp -a /etc/ssh/sshd_config $sshd_staging_config
+    sudo bash -c "echo -e '\n${ssh_config_entry}' >> $sshd_staging_config"
     # Test staging sshd_config file
-    if ! `sshd -t -f /tmp/sshd_config.$time &> /dev/null`; then
+    if ! `sshd -t -f $sshd_staging_config &> /dev/null`; then
       echo "sshd_config changes are invalid - exiting without configuring managed login"
       exit 1
     fi
@@ -131,7 +131,7 @@ enable)
 
   # Copy staging sshd_config file
   if [[ "$ssh_previously_configured" != "true" ]]; then
-    sudo mv /tmp/sshd_config.$time /etc/ssh/sshd_config
+    sudo mv $sshd_staging_config /etc/ssh/sshd_config
     # Determine if service name is ssh or sshd
     if grep --ignore-case --quiet --no-messages "id=ubuntu" /etc/os-release; then
       ssh_service_name='ssh'
