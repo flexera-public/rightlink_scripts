@@ -99,7 +99,7 @@ enable)
     sudo cp -a /etc/ssh/sshd_config $sshd_staging_config
     sudo bash -c "echo -e '\n${ssh_config_entry}' >> $sshd_staging_config"
     # Test staging sshd_config file
-    if ! `sshd -t -f $sshd_staging_config &> /dev/null`; then
+    if ! `sudo sshd -t -f $sshd_staging_config`; then
       echo "sshd_config changes are invalid - exiting without configuring managed login"
       exit 1
     fi
