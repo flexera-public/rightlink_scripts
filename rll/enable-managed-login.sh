@@ -133,7 +133,7 @@ enable)
   if [[ "$ssh_previously_configured" != "true" ]]; then
     sudo mv /tmp/sshd_config.$time /etc/ssh/sshd_config
     # Determine if service name is ssh or sshd
-    if grep --quiet --no-messages '^DISTRIB_ID=Ubuntu$' /etc/lsb-release; then
+    if grep --ignore-case --quiet --no-messages "id=ubuntu" /etc/os-release; then
       ssh_service_name='ssh'
     else
       ssh_service_name='sshd'
