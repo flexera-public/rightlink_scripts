@@ -20,6 +20,7 @@
 # Attachments:
 #   - rs-ssh-keys.sh
 #   - libnss_rightscale.tgz
+#   - rightscale_login_policy.te
 # ...
 
 set -e
@@ -28,7 +29,7 @@ set -e
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
 # Determine lib_dir and bin_dir location
-if grep -iq "id=coreos" /etc/os-release 2> /dev/null; then
+if grep --ignore-case --quiet "id=coreos" /etc/os-release 2> /dev/null; then
   on_coreos="1"
   lib_dir="/opt/lib"
   bin_dir="/opt/bin"
@@ -38,7 +39,7 @@ else
   bin_dir="/usr/local/bin"
 fi
 
-if ! $rsc rl10 actions | grep -iq /rll/login/control >/dev/null 2>&1; then
+if ! $rsc rl10 actions | grep --ignore-case --quiet /rll/login/control >/dev/null 2>&1; then
   echo "This script must be run on a RightLink 10.5 or newer instance"
   exit 1
 fi
@@ -54,9 +55,6 @@ else
   managed_login=$MANAGED_LOGIN
 fi
 
-# Entry for sshd_config
-ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
-
 case "$managed_login" in
 enable)
   if [[ "$on_coreos" == "1" ]]; then
@@ -66,11 +64,48 @@ enable)
 
   echo "Enabling managed login"
 
-  # Verify prerequisites for enabling before making changes
-  if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep -v "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
-    echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
-    exit 1
+  # Ubuntu 12.04 has a version of OpenSSH that does not allow AuthorizedKeysCommand. Instead use AuthorizedKeysFile.
+  if `grep --ignore-case --quiet 'version_id="12.04"' /etc/os-release >& /dev/null` && `grep --ignore-case --quiet "id=ubuntu" /etc/os-release >& /dev/null`; then
+    ssh_config_entry="AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /var/lib/rightlink_keys/%u"
+    rll_login_control="compat"
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
+      echo "AuthorizedKeysFile already in use. This is required to continue - exiting without configuring managed login"
+      exit 1
+    elif cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
+      echo "AuthorizedKeysFile already setup"
+      ssh_previously_configured="true"
+    fi
+  else
+    # sshd does not have a version flag, but it does give a version on its error message for an invalid POSIX flag
+    sshd_version=`sshd -V 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
+    ssh_config_entry="AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh"
+    rll_login_control="on"
+    if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysCommand\b"; then
+      echo "AuthorizedKeysCommand already in use. This is required to continue - exiting without configuring managed login"
+      exit 1
+    elif cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
+      echo "AuthorizedKeysCommand already setup"
+      ssh_previously_configured="true"
+    fi
+    # OpenSSH version 6.2 and higher uses AuthorizedKeysCommand and requires AuthorizedKeysCommandUser
+    if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
+      ssh_config_entry+="\nAuthorizedKeysCommandUser nobody"
+    fi
   fi
+
+  if [[ "$ssh_previously_configured" != "true" ]]; then
+    # Generate SSH staging config and test that the config is valid. If valid, just copy the staging config later.
+    sshd_staging_config=$(mktemp /tmp/sshd_config.XXXXXXXXXX)
+    sudo cp -a /etc/ssh/sshd_config $sshd_staging_config
+    sudo bash -c "echo -e '\n${ssh_config_entry}' >> $sshd_staging_config"
+    # Test staging sshd_config file
+    if ! `sshd -t -f $sshd_staging_config &> /dev/null`; then
+      echo "sshd_config changes are invalid - exiting without configuring managed login"
+      exit 1
+    fi
+  fi
+
+  # Check that pam config for sshd exists
   if [ ! -e /etc/pam.d/sshd ]; then
     echo "Unable to determine location of required PAM sshd configuration - exiting without configuring managed login"
     exit 1
@@ -80,9 +115,12 @@ enable)
   # It may be missing due to upgrade.
   if [ ! -d /var/lib/rightlink ]; then
     echo "Expected /var/lib/rightlink directory - creating"
-    sudo mkdir -p /var/lib/rightlink
-    sudo chown -R rightlink:rightlink /var/lib/rightlink
-    sudo chmod 755 /var/lib/rightlink
+    sudo install --directory --group=rightlink --owner=rightlink --mode=0755 /var/lib/rightlink
+  fi
+
+  # Create /var/lib/rightlink_keys directory created if set to 'compat'
+  if [[ "$rll_login_control" == "compat" ]]; then
+    sudo install --directory --group=root --owner=root --mode=0755 /var/lib/rightlink_keys
   fi
 
   # Install $bin_dir/rs-ssh-keys.sh
@@ -91,30 +129,15 @@ enable)
   sudo cp ${attachments}/rs-ssh-keys.sh ${bin_dir}
   sudo chmod 0755 ${bin_dir}/rs-ssh-keys.sh
 
-  # Update /etc/ssh/sshd_config with command to obtain user keys
-  if cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --quiet "${ssh_config_entry}"; then
-    echo "AuthorizedKeysCommand already setup"
-  else
-    echo "Adding AuthorizedKeysCommand ${bin_dir}/rs-ssh-keys.sh to /etc/ssh/sshd_config"
-    sudo bash -c "echo '${ssh_config_entry}' >> /etc/ssh/sshd_config"
-
-    # OpenSSH version 6.2 and higher uses and requires AuthorizedKeysCommandUser
-    # sshd does not have a version flag, but it does give a version on its error message for invalid flag
-    sshd_version=`sshd --bogus-flag 2>&1 | grep "^OpenSSH" | cut --delimiter=' ' --fields=1 | cut --delimiter='_' --fields=2`
-    if [[ "$(printf "$sshd_version\n6.2" | sort --version-sort | tail --lines=1)" == "$sshd_version" ]]; then
-      sudo bash -c "echo 'AuthorizedKeysCommandUser nobody' >> /etc/ssh/sshd_config"
-    else
-      echo "ssh version not current enought to use AuthorizedKeysCommandUser config"
-    fi
-
+  # Copy staging sshd_config file
+  if [[ "$ssh_previously_configured" != "true" ]]; then
+    sudo mv $sshd_staging_config /etc/ssh/sshd_config
     # Determine if service name is ssh or sshd
-    ssh_service_status=`sudo service ssh status 2>/dev/null` || true
-    if [[ "$ssh_service_status" == "" ]]; then
-      ssh_service_name='sshd'
-    else
+    if grep --ignore-case --quiet --no-messages "id=ubuntu" /etc/os-release; then
       ssh_service_name='ssh'
+    else
+      ssh_service_name='sshd'
     fi
-
     sudo service ${ssh_service_name} restart
   fi
 
@@ -148,8 +171,20 @@ enable)
   sudo bash -c "echo ${lib_dir} > /etc/ld.so.conf.d/rightscale.conf"
   sudo ldconfig
 
+  # Configure selinux to allow sshd and pam to read the login policy file at
+  # /var/lib/rightlink/login_policy. This policy adds the following rules, as
+  # well as make the user's homedir on the fly.
+  if which sestatus >/dev/null 2>&1; then
+    if sudo sestatus | grep enabled >/dev/null 2>&1; then
+      echo "Installing selinux policy to support reading of login policy file and creation of homedir"
+      checkmodule -M -m -o rightscale_login_policy.mod ${attachments}/rightscale_login_policy.te
+      semodule_package -m rightscale_login_policy.mod -o rightscale_login_policy.pp
+      sudo semodule -i rightscale_login_policy.pp
+    fi
+  fi
+
   # Send enable action to RightLink
-  $rsc rl10 update /rll/login/control "enable_login=true"
+  $rsc rl10 update /rll/login/control "enable_login=${rll_login_control}"
 
   # Adding rs_login:state=user tag
   $rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
@@ -165,7 +200,7 @@ disable)
   $rsc --rl10 cm15 multi_delete /api/tags/multi_delete resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
 
   # Send disable action to RightLink
-  $rsc rl10 update /rll/login/control "enable_login=false"
+  $rsc rl10 update /rll/login/control "enable_login=off"
 
   # Remove NSS plugin library files
   sudo rm -frv $lib_dir/libnss_rightscale.*
@@ -184,12 +219,25 @@ disable)
   # Remove AuthorizedKeysCommand and AuthorizedKeysCommandUser from sshd_config
   sudo sed -i '/^AuthorizedKeysCommand \/usr\/local\/bin\/rs-ssh-keys.sh$/d' /etc/ssh/sshd_config
   sudo sed -i '/^AuthorizedKeysCommandUser nobody$/d' /etc/ssh/sshd_config
+  sudo sed -i '/^AuthorizedKeysFile .ssh\/authorized_keys .ssh\/authorized_keys2 \/var\/lib\/rightlink_keys\/%u$/d' /etc/ssh/sshd_config
 
   # Remove rs-ssh-keys.sh
   sudo rm -frv $bin_dir/rs-ssh-keys.sh
 
   # Remove /var/lib/rightlink folder
   sudo rm -frv /var/lib/rightlink/
+
+  # Remove /var/lib/rightlink_keys folder
+  sudo rm -frv /var/lib/rightlink_keys/
+
+  # Remove rightscale managed login selinux policy
+  if which sestatus >/dev/null 2>&1; then
+    if sudo sestatus | grep enabled >/dev/null 2>&1; then
+      if sudo semodule -l | grep rightscale_login_policy >/dev/null 2>&1; then
+        sudo semodule -r rightscale_login_policy
+      fi
+    fi
+  fi
   ;;
 *)
   echo "Unknown action: $managed_login"
