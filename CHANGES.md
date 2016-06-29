@@ -1,6 +1,12 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.5.0
+------
+- Added rll/enable-managed-login.sh (RL10 Linux Enable Managed Login) which installs the RightScale NSS plugin, and updates PAM and SSH configuration to allow SSH connectivity to RightScale accounts
+- Added rll-examples/install-packages.sh (SYS packages install) which installs packages required by RightScripts
+- Set inputs for 'RL10 Linux Enable Monitoring' and 'RL10 Linux Enable Docker Support (Beta)' to be required
+
 10.4.0
 ------
 - Have hostname persist on reboot as it may reset based on OS
