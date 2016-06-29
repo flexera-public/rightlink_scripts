@@ -227,7 +227,7 @@ enable)
           retry_command sudo apt-get install -y policycoreutils
           ;;
         centos|fedora|rhel)
-          retry_command sudo apt-get install -y policycoreutils-python
+          retry_command sudo yum install -y policycoreutils-python
           ;;
         esac
       fi
