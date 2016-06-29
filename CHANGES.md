@@ -1,6 +1,12 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.5.0
+------
+- Creation of rll-examples/install-packages.sh (SYS packages install)
+- Creation of rll/enable-managed-login.sh (RL10 Linux Enable Managed Login)
+- Set inputs for 'RL10 Linux Enable Monitoring' and 'RL10 Linux Enable Docker Support (Beta)' to be required
+
 10.4.0
 ------
 - Have hostname persist on reboot as it may reset based on OS
