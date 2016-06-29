@@ -209,7 +209,7 @@ enable)
       # install checkmodule if it is not installed
       if ! which checkmodule >/dev/null 2>&1; then
         source /etc/os-release
-        case "${ID,,}"
+        case "${ID,,}" in
         ubuntu|debian)
           retry_command sudo apt-get install -y checkpolicy
           ;;
@@ -222,7 +222,7 @@ enable)
       # install semodule_package if it is not installed
       if ! which semodule_package >/dev/null 2>&1; then
         source /etc/os-release
-        case "${ID,,}"
+        case "${ID,,}" in
         ubuntu|debian)
           retry_command sudo apt-get install -y policycoreutils
           ;;
