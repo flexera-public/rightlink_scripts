@@ -25,6 +25,36 @@
 
 set -e
 
+# Run passed-in command with retries if errors occur.
+#
+# $@: full line command
+#
+function retry_command() {
+  # Setting config variables for this function
+  retries=5
+  wait_time=10
+
+  while [ $retries -gt 0 ]; do
+    # Reset this variable before every iteration to be checked if changed
+    issue_running_command=false
+    $@ || { issue_running_command=true; }
+    if [ "$issue_running_command" = true ]; then
+      (( retries-- ))
+      echo "Error occurred - will retry shortly"
+      sleep $wait_time
+    else
+      # Break out of loop since command was successful.
+      break
+    fi
+  done
+
+  # Check if issue running command still existed after all retries
+  if [ "$issue_running_command" = true ]; then
+    echo "ERROR: Unable to run: '$@'"
+    return 1
+  fi
+}
+
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
@@ -176,6 +206,32 @@ enable)
   # well as make the user's homedir on the fly.
   if which sestatus >/dev/null 2>&1; then
     if sudo sestatus | grep enabled >/dev/null 2>&1; then
+      # install checkmodule if it is not installed
+      if ! which checkmodule >/dev/null 2>&1; then
+        source /etc/os-release
+        case "${ID,,}"
+        ubuntu|debian)
+          retry_command sudo apt-get install -y checkpolicy
+          ;;
+        centos|fedora|rhel)
+          retry_command sudo yum install -y checkpolicy
+          ;;
+        esac
+      fi
+
+      # install semodule_package if it is not installed
+      if ! which semodule_package >/dev/null 2>&1; then
+        source /etc/os-release
+        case "${ID,,}"
+        ubuntu|debian)
+          retry_command sudo apt-get install -y policycoreutils
+          ;;
+        centos|fedora|rhel)
+          retry_command sudo apt-get install -y policycoreutils-python
+          ;;
+        esac
+      fi
+
       echo "Installing selinux policy to support reading of login policy file and creation of homedir"
       checkmodule -M -m -o rightscale_login_policy.mod ${attachments}/rightscale_login_policy.te
       semodule_package -m rightscale_login_policy.mod -o rightscale_login_policy.pp
