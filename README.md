@@ -26,12 +26,10 @@ to be done.
 
 The following setup should only need to be done once to setup the development environment:
 
-1. Import the official _RightLink 10.X.X Linux Base_ or _RightLink 10.X.X Windows Base_ ServerTemplate into
-   your account. This will also import the RightScripts.
+1. Import the official [_RightLink 10.X.X Linux Base_](https://www.rightscale.com/library/server_templates/RightLink-10/lineage/53250) or [_RightLink 10.X.X Windows Base_](https://www.rightscale.com/library/server_templates/RightLink-10/lineage/55964) ServerTemplate into your account. This will also import the RightScripts.
 2. Fork the repo on github and clone the fork to your workstation
 3. Create a branch (or use master, your choice)
-4. Install and configure [right_st](https://github.com/rightscale/right_st) for your platform somewhere that is in your
-   `PATH`.
+4. Install and configure [right_st](https://github.com/rightscale/right_st#installation) for your platform somewhere that is in your `PATH`.
 
 These next steps are the suggested workflow:
 
@@ -42,7 +40,7 @@ These next steps are the suggested workflow:
 3. Verify the HEAD revision of the script has been synced with your git commit and is identical.
 4. Review the inputs detected in the script after the sync. The RightScale platform does not currently handle
    the input updates so you will need to verify and update any descriptions and default values.  Check the disable
-   checkbox for any variables which which may have been incorrectly detected as inputs, (for example: `$2`
+   checkbox for any variables which may have been incorrectly detected as inputs, (for example: `$2`
    incorrectly detected as `input 2`).
 
 RightScale Release Process
