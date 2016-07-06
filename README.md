@@ -39,10 +39,6 @@ These next steps are the suggested workflow:
    of the RightScript to update should be provided under `RightScript Name` in the YAML formatted header.
    * example: `right_st rightscript upload rll/enable-monitoring.sh`
 3. Verify the HEAD revision of the RightScript has been synced with your git commit and is identical.
-4. Review the inputs detected in the script after the sync. The RightScale platform does not currently handle
-   the input updates so you will need to verify and update any descriptions and default values.  Check the disable
-   checkbox for any variables which may have been incorrectly detected as inputs, (for example: `$2`
-   incorrectly detected as `input 2`).
 
 RightScale Release Process
 --------------------------
