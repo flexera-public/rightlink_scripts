@@ -43,12 +43,13 @@
 #     Default: env:RS_ISLAND
 #     Required: true
 #     Advanced: true
-# Attachments:
-#   - RPM-GPG-KEY-EPEL-5
-#   - RPM-GPG-KEY-EPEL-6
-#   - RPM-GPG-KEY-EPEL-7
 # ...
 #
+
+# Download keys that cannot be attached
+wget -P /tmp https://getfedora.org/static/217521F6.txt
+wget -P /tmp https://getfedora.org/static/0608B895.txt
+wget -P /tmp https://getfedora.org/static/352C64E5.txt
 
 # Mirrors are currently only supported for the following distros:
 #   Ubuntu 12.04/14.04, CentOS 6/7
@@ -291,7 +292,7 @@ if [[ -n "$FREEZE_DATE" ]]; then
   case $distro in
   redhat|centos)
     # Install the EPEL GPG key. RS_ATTACH_DIR covers RightScript case, attachments for git case.
-    attachments=${RS_ATTACH_DIR:-attachments}
+    attachments='/tmp'
     epel_file_location=/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-$distro_ver
     echo "Installing EPEL GPG key to $epel_file_location"
     sudo cp $attachments/RPM-GPG-KEY-EPEL-$distro_ver $epel_file_location

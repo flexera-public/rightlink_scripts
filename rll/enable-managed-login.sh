@@ -17,13 +17,14 @@
 #       - text:auto
 #       - text:enable
 #       - text:disable
-# Attachments:
-#   - rs-ssh-keys.sh
-#   - libnss_rightscale.tgz
-#   - rightscale_login_policy.te
 # ...
 
 set -e
+
+# Download files that cannot be attached
+wget -P /tmp https://raw.githubusercontent.com/rightscale/rightlink_scripts/master/rll/attachments/rs-ssh-keys.sh
+wget -P /tmp https://raw.githubusercontent.com/rightscale/rightlink_scripts/master/rll/attachments/rightscale_login_policy.te
+wget -P /tmp https://raw.githubusercontent.com/rightscale/rightlink_scripts/master/rll/attachments/libnss_rightscale.tgz
 
 # Run passed-in command with retries if errors occur.
 #
@@ -155,7 +156,7 @@ enable)
 
   # Install $bin_dir/rs-ssh-keys.sh
   echo "Installing ${bin_dir}/rs-ssh-keys.sh"
-  attachments=${RS_ATTACH_DIR:-attachments}
+  attachments='/tmp'
   sudo cp ${attachments}/rs-ssh-keys.sh ${bin_dir}
   sudo chmod 0755 ${bin_dir}/rs-ssh-keys.sh
 
