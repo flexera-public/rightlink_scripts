@@ -57,7 +57,7 @@ function retry_command() {
 
 # Read/source os-release to obtain variable values determining OS
 if ! [[ -e /etc/os-release ]] ; then
-  echo "ERROR: /etc/os-release does not exist"
+  echo "ERROR: /etc/os-release is required but does not exist"
   exit 1
 fi
 source /etc/os-release
@@ -161,8 +161,7 @@ enable)
   # Install $bin_dir/rs-ssh-keys.sh
   echo "Installing ${bin_dir}/rs-ssh-keys.sh"
   attachments=${RS_ATTACH_DIR:-attachments}
-  sudo cp ${attachments}/rs-ssh-keys.sh ${bin_dir}
-  sudo chmod 0755 ${bin_dir}/rs-ssh-keys.sh
+  sudo install --target-directory=${bin_dir} --group=root --owner=root --mode=0755 ${attachments}/rs-ssh-keys.sh
 
   # Copy staging sshd_config file
   if [[ "$ssh_previously_configured" != "true" ]]; then
