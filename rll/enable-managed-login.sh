@@ -56,11 +56,19 @@ function retry_command() {
 }
 
 # Read/source os-release to obtain variable values determining OS
-if ! [[ -e /etc/os-release ]] ; then
-  echo "ERROR: /etc/os-release is required but does not exist"
-  exit 1
+if [[ -e /etc/os-release ]]; then
+  source /etc/os-release
+else
+  # CentOS/RHEL 6 does not use os-release, so use redhat-release
+  if [[ -e /etc/redhat-release ]]; then
+    # Assumed format example: CentOS release 6.7 (Final)
+    ID=$(cut -d" " -f1 /etc/redhat-release)
+    VERSION_ID=$(cut -d" " -f3 /etc/redhat-release)
+  else
+    echo "ERROR: /etc/os-release or /etc/redhat-release is required but does not exist"
+    exit 1
+  fi
 fi
-source /etc/os-release
 
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
