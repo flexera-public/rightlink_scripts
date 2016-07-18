@@ -55,16 +55,29 @@ function retry_command() {
   fi
 }
 
+# Read/source os-release to obtain variable values determining OS
+if [[ -e /etc/os-release ]]; then
+  source /etc/os-release
+else
+  # CentOS/RHEL 6 does not use os-release, so use redhat-release
+  if [[ -e /etc/redhat-release ]]; then
+    # Assumed format example: CentOS release 6.7 (Final)
+    ID=$(cut -d" " -f1 /etc/redhat-release)
+    VERSION_ID=$(cut -d" " -f3 /etc/redhat-release)
+  else
+    echo "ERROR: /etc/os-release or /etc/redhat-release is required but does not exist"
+    exit 1
+  fi
+fi
+
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
 # Determine lib_dir and bin_dir location
-if grep --ignore-case --quiet "id=coreos" /etc/os-release 2> /dev/null; then
-  on_coreos="1"
+if [[ "$ID" == "coreos" ]]; then
   lib_dir="/opt/lib"
   bin_dir="/opt/bin"
 else
-  on_coreos=""
   lib_dir="/usr/local/lib"
   bin_dir="/usr/local/bin"
 fi
@@ -75,7 +88,7 @@ if ! $rsc rl10 actions | grep --ignore-case --quiet /rll/login/control >/dev/nul
 fi
 
 if [[ "$MANAGED_LOGIN" == "auto" ]]; then
-  if [[ "$on_coreos" == "1" ]]; then
+  if [[ "$ID" == "coreos" ]]; then
     echo "Managed login is not supported on CoreOS. Not setting up managed login."
     managed_login="disable"
   else
@@ -87,7 +100,7 @@ fi
 
 case "$managed_login" in
 enable)
-  if [[ "$on_coreos" == "1" ]]; then
+  if [[ "$ID" == "coreos" ]]; then
     echo "Managed login is not supported on CoreOS. MANAGED_LOGIN must be set to 'disabled' or 'auto'."
     exit 1
   fi
@@ -95,7 +108,7 @@ enable)
   echo "Enabling managed login"
 
   # Ubuntu 12.04 has a version of OpenSSH that does not allow AuthorizedKeysCommand. Instead use AuthorizedKeysFile.
-  if `grep --ignore-case --quiet 'version_id="12.04"' /etc/os-release >& /dev/null` && `grep --ignore-case --quiet "id=ubuntu" /etc/os-release >& /dev/null`; then
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "12.04" ]]; then
     ssh_config_entry="AuthorizedKeysFile .ssh/authorized_keys .ssh/authorized_keys2 /var/lib/rightlink_keys/%u"
     rll_login_control="compat"
     if sudo cut --delimiter=# --fields=1 /etc/ssh/sshd_config | grep --invert-match "${ssh_config_entry}" | grep --quiet "AuthorizedKeysFile\b"; then
@@ -156,14 +169,13 @@ enable)
   # Install $bin_dir/rs-ssh-keys.sh
   echo "Installing ${bin_dir}/rs-ssh-keys.sh"
   attachments=${RS_ATTACH_DIR:-attachments}
-  sudo cp ${attachments}/rs-ssh-keys.sh ${bin_dir}
-  sudo chmod 0755 ${bin_dir}/rs-ssh-keys.sh
+  sudo install --target-directory=${bin_dir} --group=root --owner=root --mode=0755 ${attachments}/rs-ssh-keys.sh
 
   # Copy staging sshd_config file
   if [[ "$ssh_previously_configured" != "true" ]]; then
     sudo mv $sshd_staging_config /etc/ssh/sshd_config
     # Determine if service name is ssh or sshd
-    if grep --ignore-case --quiet --no-messages "id=ubuntu" /etc/os-release; then
+    if [[ "$ID" == "ubuntu" ]]; then
       ssh_service_name='ssh'
     else
       ssh_service_name='sshd'
@@ -208,7 +220,6 @@ enable)
     if sudo sestatus | grep enabled >/dev/null 2>&1; then
       # install checkmodule if it is not installed
       if ! which checkmodule >/dev/null 2>&1; then
-        source /etc/os-release
         case "${ID,,}" in
         ubuntu|debian)
           retry_command sudo apt-get install -y checkpolicy
@@ -221,7 +232,6 @@ enable)
 
       # install semodule_package if it is not installed
       if ! which semodule_package >/dev/null 2>&1; then
-        source /etc/os-release
         case "${ID,,}" in
         ubuntu|debian)
           retry_command sudo apt-get install -y policycoreutils
@@ -246,7 +256,7 @@ enable)
   $rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
   ;;
 disable)
-  if [[ "$on_coreos" == "1" ]]; then
+  if [[ "$ID" == "coreos" ]]; then
     exit 0
   fi
 
