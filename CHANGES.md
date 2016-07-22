@@ -4,6 +4,7 @@ Changelog for the RightLink10 Base ServerTemplate
 10.5.1
 ------
 - Update README.md with development workflow using right_st and RightScripts
+- Improve rll/enable-managed-login.sh (RL10 Linux Enable Managed Login) to determine OS
 
 10.5.0
 ------
