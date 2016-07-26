@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.5.2
+------
+- Update attachment libnss_rightscale.tgz for rll/enable-managed-login.sh to work for users with very low rightscale ids (< 500)
+
 10.5.1
 ------
 - Update README.md with development workflow using right_st and RightScripts
