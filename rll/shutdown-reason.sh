@@ -39,9 +39,9 @@ echo "Decommissioning. Calculating reason for decommission: "
 
 rs_decom_reason="$($rsc rl10 show /rll/proc/shutdown_kind)"
 os_decom_reason=service_restart # Our default
-if [[ `/usr/bin/systemctl 2>/dev/null` =~ -\.mount ]] || [[ "$(readlink /sbin/init)" =~ systemd ]]; then
+if [[ `systemctl 2>/dev/null` =~ -\.mount ]] || [[ "$(readlink /sbin/init)" =~ systemd ]]; then
   # Systemd doesn't use runlevels, so we can't rely on that
-  jobs="$(/usr/bin/systemctl list-jobs)"
+  jobs="$(systemctl list-jobs)"
   echo "$jobs" | egrep -q 'reboot.target.*start'   && os_decom_reason=reboot
   echo "$jobs" | egrep -q 'halt.target.*start'     && os_decom_reason=shutdown
   echo "$jobs" | egrep -q 'poweroff.target.*start' && os_decom_reason=shutdown
