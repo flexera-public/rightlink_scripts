@@ -2,14 +2,29 @@
 # ---
 # RightScript Name: SYS packages install
 # Description: |
-#   Installs packages required by RightScripts.
+#   Installs packages required by RightScripts, or extra packages.
 #   To handle naming variations, prefix package names with "yum:" or "apt:".
 # Inputs:
+#   PACKAGES:
+#     Input Type: single
+#     Category: RightScale
+#     Description: Space-separated list of additional packages.
+#     Default: blank
+#     Required: false
+#     Advanced: true
 # ...
 
-if [ -z "$RS_PACKAGES" ]; then
+if [ -z "$RS_PACKAGES" -a -z "$PACKAGES" ]; then
   echo "No packages to install"
   exit 0
+fi
+
+if [ -n "$PACKAGES" -a -n "$RS_PACKAGES" ]; then
+  packages="$RS_PACKAGES $PACKAGES"
+elif [ -n "$PACKAGES" ]; then
+  packages=$PACKAGES
+else
+  packages=$RS_PACKAGES
 fi
 
 if which apt-get > /dev/null 2>&1; then
@@ -28,7 +43,7 @@ fi
 # Determine which packages are suitable for install on this system.
 declare -a list
 sz=0
-for pkg in $RS_PACKAGES; do
+for pkg in $packages; do
   echo $pkg | grep --extended-regexp --quiet '^[a-z0-9_]+:'
   selective=$?
   echo $pkg | grep --extended-regexp --quiet "^$pkgman:"
@@ -52,7 +67,7 @@ done
 if [ -n "$list" ]; then
   echo "Packages required on this system: $list"
 else
-  echo "No required packages on this system."
+  echo "No required packages on this system. Already installed: $packages"
   exit 0
 fi
 
