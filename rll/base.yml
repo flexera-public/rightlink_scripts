@@ -1,3 +1,4 @@
+# TODO: comments
 Name: RightLink 10.5.1 Linux Base
 Description: |
   Base ServerTemplate for RightLink10. RightLink10 is a new agent to connect
@@ -69,13 +70,13 @@ RightScripts:
     - shutdown-reason.sh
 MultiCloudImages:
   - Name: Ubuntu_14.04_x64
-    Revision: 50
+    Revision: 51
     Publisher: RightScale
   - Name: Ubuntu_14.04_x64_KVM
     Revision: 26
     Publisher: RightScale
   - Name: Ubuntu_12.04_x64
-    Revision: 48
+    Revision: 49
     Publisher: RightScale
   - Name: Ubuntu_12.04_x64_KVM
     Revision: 26
@@ -93,7 +94,7 @@ MultiCloudImages:
     Revision: 24
     Publisher: RightScale
   - Name: CoreOS_stable_x64
-    Revision: 29
+    Revision: 30
     Publisher: RightScale
   - Name: CoreOS_stable_x64_KVM
     Revision: 15
@@ -118,18 +119,18 @@ Alerts:
     Description: Raise an alert when the cpu idle time is too low.
     Clause: If cpu-0/cpu-idle.value < 3 for 5 minutes Then escalate critical
   - Name: rs cpu I/O wait
-    Description: Raise an alert disk io is too high.
+    Description: Raise an alert if disk io is too high.
     Clause: If cpu-0/cpu-wait.value > 40 for 15 minutes Then escalate warning
   - Name: rs low space in root partition
     Description: Raise an alert if the available space in the root partition is too
       low.
-    Clause: If df/df-root.free < 1073741824 for 5 minutes Then escalate critical
+    Clause: If df-root/df_complex-free.value < 1073741824 for 5 minutes Then escalate critical
   - Name: rs high network tx activity
     Description: Raise an alert if the amount of network data transmitted is too high.
-    Clause: If interface/if_octets-eth0.tx > 10000000 for 10 minutes Then escalate critical
+    Clause: If interface-eth0/if_octets.tx > 10000000 for 10 minutes Then escalate critical
   - Name: rs high network rx activity
     Description: Raise an alert if the amount of network data received is too high.
-    Clause: If interface/if_octets-eth0.rx > 50000000 for 30 minutes Then escalate critical
+    Clause: If interface-eth0/if_octets.rx > 50000000 for 30 minutes Then escalate critical
   - Name: rs low swap space
     Description: Raise alert if the free swap space is too low.
     Clause: If swap/swap-free.value < 104857600 for 5 minutes Then escalate critical
