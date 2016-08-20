@@ -82,7 +82,7 @@ else
   bin_dir="/usr/local/bin"
 fi
 
-if ! $rsc rl10 actions | grep --ignore-case --quiet /rll/login/control >/dev/null 2>&1; then
+if ! $rsc rl10 actions | grep --ignore-case /rll/login/control >/dev/null 2>&1; then
   echo "This script must be run on a RightLink 10.5 or newer instance"
   exit 1
 fi
