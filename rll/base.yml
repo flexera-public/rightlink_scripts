@@ -61,6 +61,7 @@ RightScripts:
     - wait-for-eip.sh
     - setup-hostname.sh
     - enable-monitoring.sh
+    - setup-alerts.sh
     - setup-automatic-upgrade.sh
   Operational:
     - setup-automatic-upgrade.sh
