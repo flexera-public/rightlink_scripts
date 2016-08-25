@@ -37,17 +37,27 @@
 
 set -e
 
+# Create an alert spec on the instance based on a template alert spec from the ServerTemplate with optional parameter
+# overrides.
+#
+# $1: the alert spec template name
+# $2: the instance name to append to the template name which is used to name the new alert spec
+# $@: the rest of the arguments are parameter name and override value pairs for the new alert spec
+#
 function create_alert_spec() {
   local template_name="$1"
   local name="$template_name $2"
-  shift 2
-
+  shift 2 # remove the first two arguments from $@
   echo -n "creating alert spec '$name' from '${template_name}': overriding $@ ... "
+
+  # check in the alert specs to see if the one we want to create is already created
   if rsc json --x1 "object:has(.name:val(\"$name\"))" <<<"$alert_specs" 1>/dev/null 2>&1; then
     echo 'already exists'
     return
   fi
 
+  # create an associative array of the parameters with our new name and all of the other parameters from the template
+  # alert spec
   local -A parameters=([name]="$name")
   for parameter in condition description duration escalation_name file threshold variable vote_tag vote_type; do
     value=`rsc json --x1 "object:has(.name:val(\"$template_name\")).$parameter" <<<"$alert_specs" 2>/dev/null || true`
@@ -56,31 +66,42 @@ function create_alert_spec() {
     fi
   done
 
+  # iterate through the rest of the arguments to override any parameters
   while [[ $# -gt 0 ]]; do
     local parameter="$1"
     local value="$2"
     parameters[$parameter]="$value"
-    shift 2
+    shift 2 # remove these two arguments from $@
   done
 
+  # transform the associative array of parameters into an array of arguments for rsc
   local -a arguments
   for parameter in "${!parameters[@]}"; do
     arguments[${#arguments[@]}]="alert_spec[$parameter]=${parameters[$parameter]}"
   done
 
+  # use rsc to create the new alert spec with the parameters as arguments
   rsc --rl10 cm15 create "$RS_SELF_HREF/alert_specs" "${arguments[@]}"
   echo 'created'
 }
 
+# Destroy an alert if the matching alert spec is defined on the ServerTemplate or destroy an alert spec if it is defined
+# on the instance. No action will be taken if the alert or alert spec has already been destroyed or does not otherwise
+# exist.
+#
+# $1: the name of the alert spec to destroy the alert for or to just destroy
+#
 function destroy_alert_or_alert_spec() {
   local name="$1"
-
   echo -n "destroying alert or alert spec '$name' from instance: ... "
+
+  # check if the alert or alert spec has already been destroyed
   if ! alert_for_alert_spec_exists "$name"; then
-    echo 'already destroy'
+    echo 'already destroyed'
     return
   fi
 
+  # destroy the alert if the alert spec is inherited from the ServerTemplate or delete the alert spec otherwise
   if [[ $subject_href =~ ^/api/server_templates/[^/]+$ ]]; then
     alert_href=`rsc json --xj "object:has(.href:val(\"$alert_spec_href\")) ~ object" <<<"$alerts" | rsc json --x1 'object:has(.rel:val("self")).href'`
     rsc --rl10 cm15 destroy "$alert_href"
@@ -91,22 +112,40 @@ function destroy_alert_or_alert_spec() {
   echo 'destroyed'
 }
 
+# Check if an alert for an alert spec exists on the instance.
+#
+# $1: the name of the alert spec to check for
+#
+# Output variables:
+#
+# alert_spec_href: the HREF of the named alert spec
+# subject_href:    the HREF of the subject of the named alert spec
+#
 function alert_for_alert_spec_exists() {
   local name="$1"
+
+  # get the alert spec and subject HREFs for the named alert spec
   alert_spec_href=`rsc json --x1 "object:has(.name:val(\"$name\")) object:has(.rel:val(\"self\")).href" <<<"$alert_specs" 2>/dev/null`
   subject_href=`rsc json --x1 "object:has(.name:val(\"$name\")) object:has(.rel:val(\"subject\")).href" <<<"$alert_specs" 2>/dev/null`
 
+  # check if the alert spec HREF was found
   if [[ -n $alert_spec_href ]]; then
     if [[ $subject_href =~ ^/api/server_templates/[^/]+$ ]]; then
+      # the subject of the alert spec is a ServerTemplate so the alert spec is inherited
+      # check if there is an alert for the alert spec
       if rsc json --x1 "object:has(.href:val(\"$alert_spec_href\"))" <<<"$alerts" 1>/dev/null 2>&1; then
+        # an alert for the alert spec exists
         return 0
       else
+        # there is no alert for the alert spec
         return 1
       fi
     else
+      # the alert spec is not inherited from the ServerTemplate and it exists so it definitely exists
       return 0
     fi
   else
+    # there was no alert spec HREF found so the named alert spec does not exist
     return 1
   fi
 }
@@ -136,40 +175,49 @@ else
   swap=0
 fi
 
+# get all of the alert specs and alerts defined on the instance; these variables are used with rsc json by the above
+# functions instead of making individual API calls to query this data
 alert_specs=`rsc --rl10 cm15 index "$RS_SELF_HREF/alert_specs" with_inherited=true`
 alerts=`rsc --rl10 cm15 index "$RS_SELF_HREF/alerts"`
 
 if [[ $swap -eq 0 ]]; then
+  # if swap is not enabled, remove the swap alert
   destroy_alert_or_alert_spec 'rs low swap space'
   destroy_alert_or_alert_spec 'rs low swap space recreated'
 else
+  # if swap was previously disabled, recreate the alert now that it is enabled
   if ! alert_for_alert_spec_exists 'rs low swap space' && ! alert_for_alert_spec_exists 'rs low swap space recreated'; then
     create_alert_spec 'rs low swap space' recreated
   fi
 fi
 
-disable_eth0=1
-reenable_eth0=0
-interface_file='interface-eth0/if_octets'
+disable_eth0=1 # by default remove the original network alert specs
+reenable_eth0=0 # by default do not create new network alert specs for eth0
+interface_file='interface-eth0/if_octets' # this is the format for the network metric for collectd 5 and built-in
 
 if [[ $monitoring == collectd && "$(collectd -h)" =~ "collectd 4" ]]; then
+  # change the root partition alert to use the collectd4 metric
   destroy_alert_or_alert_spec 'rs low space in root partition'
   create_alert_spec 'rs low space in root partition' 'collectd4' file df/df-root variable free
 
-  reenable_eth0=1
+  reenable_eth0=1 # since the metric for interfaces is different on collectd 4, the alert specs needs to be redefined
   interface_file='interface/if_octets-eth0'
 fi
 
 for interface in "${interfaces[@]}"; do
+  # if the interface is eth0 and the network does not need to be redefined, do not create a new alert spec
   if [[ "$interface" == eth0 && $reenable_eth0 -eq 0 ]]; then
-    disable_eth0=0
+    disable_eth0=0 # since the eth0 interface exists do not remove the original network alerts
     continue
   fi
 
+  # add network alert specs for this network interface by replacing eth0 in the network metric format with the actual
+  # interface name
   create_alert_spec 'rs high network tx activity' "$interface" file "${interface_file/eth0/$interface}"
   create_alert_spec 'rs high network rx activity' "$interface" file "${interface_file/eth0/$interface}"
 done
 
+# if there is no eth0 interface or the network alerts needed to be redefined for collectd 4, remove the original alerts
 if [[ disable_eth0 -eq 1 ]]; then
   destroy_alert_or_alert_spec 'rs high network tx activity'
   destroy_alert_or_alert_spec 'rs high network rx activity'
