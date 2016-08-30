@@ -48,7 +48,19 @@ function create_alert_spec() {
   local template_name="$1"
   local name="$template_name $2"
   shift 2 # remove the first two arguments from $@
-  echo -n "creating alert spec '$name' from '${template_name}': overriding $@ ... "
+  echo -n "creating alert spec '$name' from '${template_name}': "
+  if [[ $# -ne 0 ]]; then
+    echo -n 'overriding '
+    local -i index=0
+    for override in "$@"; do
+      if [[ $(((index += 1) % 2)) -eq 1 ]]; then
+        echo -n "$override="
+      else
+        echo -n "'$override' "
+      fi
+    done
+    echo -n '... '
+  fi
 
   # check in the alert specs to see if the one we want to create is already created
   if rsc json --x1 "object:has(.name:val(\"$name\"))" <<<"$alert_specs" 1>/dev/null 2>&1; then
@@ -207,6 +219,7 @@ fi
 for interface in "${interfaces[@]}"; do
   # if the interface is eth0 and the network does not need to be redefined, do not create a new alert spec
   if [[ "$interface" == eth0 && $reenable_eth0 -eq 0 ]]; then
+    echo -e "keeping 'rs high network tx activity'\nkeeping 'rs high network rx activity'"
     disable_eth0=0 # since the eth0 interface exists do not remove the original network alerts
     continue
   fi

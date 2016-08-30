@@ -57,6 +57,7 @@ RightScripts:
     - wait-for-eip.ps1
     - setup-automatic-upgrade.ps1
     - enable-monitoring.ps1
+    - setup-alerts.ps1
   Operational:
     - upgrade.ps1
     - setup-automatic-upgrade.ps1
@@ -98,7 +99,17 @@ Alerts:
     Clause: If cpu-0/cpu-idle.value < 3 for 5 minutes Then escalate critical
   - Name: 'rs low space on C: drive'
     Description: 'Raises an alert if the available space on the C: drive is too low'
-    Clause: If df/df-drive_C.free < 1000000000 for 5 minutes Then escalate critical
+    Clause: If df-C/df_complex-free.value < 1073741824 for 5 minutes Then escalate critical
+  - Name: rs high network tx activity
+    Description: Raise an alert if the amount of network data transmitted is too high. This alert may be modified or
+      cloned on an instance to match the actual network interfaces that are present. See the RL10 Windows Setup Alerts
+      RightScript (rlw/setup-alerts.ps1) for more details.
+    Clause: If interface-AWS_PV_Network_Device_0/if_octets.tx > 10000000 for 10 minutes Then escalate critical
+  - Name: rs high network rx activity
+    Description: Raise an alert if the amount of network data received is too high. This alert may be modified or cloned
+      on an instance to match the actual network interfaces that are present. See the RL10 Windows Setup Alerts
+      RightScript (rlw/setup-alerts.ps1) for more details.
+    Clause: If interface-AWS_PV_Network_Device_0/if_octets.rx > 50000000 for 30 minutes Then escalate critical
   - Name: rs memory low
     Description: Free memory is low.
     Clause: If memory/memory-free.value < 1000000 for 1 minutes Then escalate critical
