@@ -56,9 +56,9 @@ Description: |
 Inputs: {}
 RightScripts:
   Boot:
+    - setup-hostname.sh
     - enable-managed-login.sh
     - wait-for-eip.sh
-    - setup-hostname.sh
     - enable-monitoring.sh
     - setup-alerts.sh
     - setup-automatic-upgrade.sh
