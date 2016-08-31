@@ -8,9 +8,9 @@
 #
 #   The alerts that need to be set up by this script are:
 #
-#   * *rs high network tx activity* and *rs high network rx activity*: On Windows the network interface name comes from
-#     the name of the emulated or virtualized network interface driver which differs between hypervisors and clouds and
-#     there may be more network interfaces on the system, so this script will update and add the alerts to match the
+#   * **rs high network tx activity** and **rs high network rx activity**: On Windows the network interface name comes
+#     from the name of the emulated or virtualized network interface driver which differs between hypervisors and clouds
+#     and there may be more network interfaces on the system, so this script will update and add the alerts to match the
 #     network interfaces on the system.
 # Inputs: {}
 # Attachments: []

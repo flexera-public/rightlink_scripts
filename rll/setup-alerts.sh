@@ -10,13 +10,13 @@
 #
 #   The alerts that need to be set up by this script are:
 #
-#   * *rs low space in root partition*: If a Linux system is running collectd 4, the metric used for this alert will be
-#     set to `df/df-root.free` rather than `df-root/df_complex-free.value`.
-#   * *rs high network tx activity* and *rs high network rx activity*: On newer Linux distribution versions (such as
+#   * **rs low space in root partition**: If a Linux system is running collectd 4, the metric used for this alert will
+#     be set to `df/df-root.free` rather than `df-root/df_complex-free.value`.
+#   * **rs high network tx activity** and **rs high network rx activity**: On newer Linux distribution versions (such as
 #     CoreOS and Ubuntu 16.04) the network interface name is not necessarily `eth0` and there may be more network
 #     interfaces on the system, so this script will update and add the alerts to match the network interfaces on the
 #     system.
-#   * *rs low swap space*: If no swap is set up on a Linux system, no swap metrics will be sent. If you enable swap on
+#   * **rs low swap space**: If no swap is set up on a Linux system, no swap metrics will be sent. If you enable swap on
 #     the system at a later point, this script can be rerun to re-enable the alert.
 # Inputs:
 #   MONITORING_METHOD:
