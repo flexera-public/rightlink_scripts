@@ -177,7 +177,7 @@ else
   monitoring_method=$MONITORING_METHOD
 fi
 
-# Determine which network interfaces exist excluding lo so we can update alert specs and configure collectd
+# Determine which network interfaces exist excluding lo so we can update alert specs
 interfaces=(`ip -o link | awk '{ sub(/:$/, "", $2); if ($2 != "lo") { print $2; } }'`)
 
 # Determine if swap is enabled
@@ -213,7 +213,7 @@ if [[ $monitoring == collectd && "$(collectd -h)" =~ "collectd 4" ]]; then
   create_alert_spec 'rs low space in root partition' 'collectd4' file df/df-root variable free
 
   reenable_eth0=1 # since the metric for interfaces is different on collectd 4, the alert specs needs to be redefined
-  interface_file='interface/if_octets-eth0'
+  interface_file='interface/if_octets-eth0' # this is the format for the network metric for collectd 4
 fi
 
 for interface in "${interfaces[@]}"; do

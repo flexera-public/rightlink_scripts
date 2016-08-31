@@ -157,7 +157,7 @@ else
   monitoring_method=$MONITORING_METHOD
 fi
 
-# Determine which network interfaces exist excluding lo so we can update alert specs and configure collectd
+# Determine which network interfaces exist excluding lo so we can configure collectd
 interfaces=(`ip -o link | awk '{ sub(/:$/, "", $2); if ($2 != "lo") { print $2; } }'`)
 
 # Determine if swap is enabled
