@@ -68,7 +68,7 @@ MultiCloudImages:
     Revision: 16
     Publisher: RightScale
   - Name: Windows_Server_Datacenter_2012R2_x64
-    Revision: 18
+    Revision: 19
     Publisher: RightScale
   - Name: Windows_Server_Standard_2012_x64
     Revision: 17
@@ -77,7 +77,7 @@ MultiCloudImages:
     Revision: 11
     Publisher: RightScale
   - Name: Windows_Server_Datacenter_2008R2_x64
-    Revision: 30
+    Revision: 31
     Publisher: RightScale
 Alerts:
   - Name: rs instance terminated
