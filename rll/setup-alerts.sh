@@ -207,7 +207,7 @@ disable_eth0=1 # by default remove the original network alert specs
 reenable_eth0=0 # by default do not create new network alert specs for eth0
 interface_file='interface-eth0/if_octets' # this is the format for the network metric for collectd 5 and built-in
 
-if [[ $monitoring == collectd && "$(collectd -h)" =~ "collectd 4" ]]; then
+if [[ $monitoring_method == collectd && "$(collectd -h)" =~ "collectd 4" ]]; then
   # change the root partition alert to use the collectd4 metric
   destroy_alert_or_alert_spec 'rs low space in root partition'
   create_alert_spec 'rs low space in root partition' 'collectd4' file df/df-root variable free
