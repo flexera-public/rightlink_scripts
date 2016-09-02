@@ -4,6 +4,12 @@ Changelog for the RightLink10 Base ServerTemplate
 10.5.2
 ------
 - Update attachment libnss_rightscale.tgz for rll/enable-managed-login.sh to work for users with very low rightscale ids (< 500)
+- Added rll/base.yml and rlw/base.yml ServerTemplate YAML files for use with right_st; these also include a set of best
+  practice alerts.
+- Added rll/setup-alerts.sh and rlw/setup-alerts.ps1 RightScripts which dynamically change alerts defined on running
+  instances so they match the actual metrics sent. The alerts with metrics that need this are network interfaces (both
+  Linux and Windows), swap space (can be enabled or disable on Linux), and disk usage (there is a different metric name
+  with collectd 4).
 
 10.5.1
 ------
