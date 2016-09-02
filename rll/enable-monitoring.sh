@@ -18,7 +18,7 @@
 #     Category: RightScale
 #     Description: |
 #       Determine the method of monitoring to use, either RightLink monitoring or collectd. Setting to
-#       'auto' will use code to select method. 
+#       'auto' will use code to select method.
 #     Required: true
 #     Advanced: true
 #     Default: text:auto
@@ -142,8 +142,8 @@ function retry_command() {
   fi
 }
 
-# Determine location of rsc
-[[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
+# Ensure rsc is in the path
+export PATH="/usr/local/bin:/opt/bin:$PATH"
 
 # Determine what mode to use if MONITORING_METHOD is set to 'auto'
 if [[ "$MONITORING_METHOD" == "auto" ]]; then
@@ -157,11 +157,21 @@ else
   monitoring_method=$MONITORING_METHOD
 fi
 
+# Determine which network interfaces exist excluding lo so we can configure collectd
+interfaces=(`ip -o link | awk '{ sub(/:$/, "", $2); if ($2 != "lo") { print $2; } }'`)
+
+# Determine if swap is enabled
+if [[ $(sudo swapon -s | wc -l) -gt 1 ]]; then
+  swap=1
+else
+  swap=0
+fi
+
 # Determine if using RightLink monitoring or collectd
 if [[ "$monitoring_method" == "rightlink" ]]; then
   # Enable built-in monitoring
   echo "Using RightLink monitoring"
-  $rsc rl10 update /rll/tss/control enable_monitoring=all
+  rsc rl10 update /rll/tss/control enable_monitoring=all
 else
   # Initialize variables
   if [[ ! "$COLLECTD_SERVER" =~ tss ]]; then
@@ -169,7 +179,7 @@ else
     exit 1
   fi
   echo "Using collectd for monitoring"
-  
+
   # TSS is compatible with both collectd 4 and 5 while the previous monitoring backend
   # only supported collectd 4. We forward ported collectd 4 to newer OSes b/c of this.
   # If we installed a custom forward port of collectd4 previously, remove it now to
@@ -193,7 +203,7 @@ else
     echo "Removing collectd 4 package"
     retry_command sudo yum remove -y "collectd*"
   fi
-  
+
   # Collectd package is located in the EPEL repository. Install if its not already
   # installed.
   if [[ -e /etc/redhat-release ]]; then
@@ -204,7 +214,7 @@ else
       echo "Could not parse distro and version from /etc/redhat-release"
       exit 1
     fi
-  
+
     case "$ver" in
     6)
       if ! yum list installed "epel-release-6*"; then
@@ -224,13 +234,13 @@ else
       ;;
     esac
   fi
-  
-  
+
+
   # Declare a list for temporary files to clean up on exit and set the command to delete them if they still exist when the
   # script exits
   declare -a mktemp_files
   trap 'sudo rm --force "${mktemp_files[@]}"' EXIT
-  
+
   collectd_base_dir=/var/lib/collectd
   collectd_types_db=/usr/share/collectd/types.db
   collectd_interval=20
@@ -238,7 +248,7 @@ else
   collectd_server_port=3011
   collectd_service=collectd
   collectd_service_notify=0
-  
+
   if [[ -d /etc/apt ]]; then
     collectd_conf_dir=/etc/collectd
     collectd_conf_plugins_dir="$collectd_conf_dir/plugins"
@@ -251,11 +261,11 @@ else
     echo "unsupported distribution!"
     exit 1
   fi
-  
+
   collectd_conf="$collectd_conf_dir/collectd.conf"
   collectd_collection_conf="$collectd_conf_dir/collection.conf"
   collectd_thresholds_conf="$collectd_conf_dir/thresholds.conf"
-  
+
   # Install platform specific collectd packages
   if [[ -d /etc/apt ]]; then
     # Resync the package index with sources
@@ -266,7 +276,7 @@ else
     retry_command sudo yum install -y curl
     retry_command sudo yum install -y collectd
   fi
-  
+
   # For TSS, collectd connects to the rightlink process, which runs with a random
   # high port for localhost (127.0.0.1). Without this permission relaxed, we'll get
   # permission denied connecting to that local ip
@@ -277,13 +287,13 @@ else
       sudo setsebool -P collectd_tcp_network_connect 1
     fi
   fi
-  
+
   sudo mkdir --mode=0755 --parents $collectd_conf_plugins_dir $collectd_base_dir $collectd_plugin_dir
-  
+
   # Create a temporary file for the collectd configuration
   collectd_conf_tmp=`sudo mktemp "${collectd_conf}.XXXXXXXXXX"`
   add_mktemp_file $collectd_conf_tmp
-  
+
   sudo dd of="$collectd_conf_tmp" 2>/dev/null <<EOF
 # Config file for collectd(1).
 #
@@ -316,12 +326,12 @@ EOF
   # Create a temporary file for the collectd collection configuration
   collectd_collection_conf_tmp=`sudo mktemp "${collectd_collection_conf}.XXXXXXXXXX"`
   add_mktemp_file $collectd_collection_conf_tmp
-  
+
   sudo dd of="$collectd_collection_conf_tmp" 2>/dev/null <<EOF
 datadir: "$collectd_base_dir/rrd/"
 libdir: "$collectd_plugin_dir/"
 EOF
-  
+
   # Overwrite and backup the collectd collection configuration if it has changed
   if run_check_write_needed $collectd_collection_conf $collectd_collection_conf_tmp; then
     sudo chmod 0644 $collectd_collection_conf_tmp
@@ -329,11 +339,11 @@ EOF
     sudo mv --force $collectd_collection_conf_tmp $collectd_collection_conf
     collectd_service_notify=1
   fi
-  
+
   # Create a temporary file for the collectd thresholds configuration
   collectd_thresholds_conf_tmp=`sudo mktemp "${collectd_thresholds_conf}.XXXXXXXXXX"`
   add_mktemp_file $collectd_thresholds_conf_tmp
-  
+
   sudo dd of="$collectd_thresholds_conf_tmp" 2>/dev/null <<EOF
 # Threshold configuration for collectd(1).
 #
@@ -373,7 +383,7 @@ EOF
 #	</Host>
 #</Threshold>
 EOF
-  
+
   # Overwrite and backup the collectd thresholds configuration if it has changed
   if run_check_write_needed $collectd_thresholds_conf $collectd_thresholds_conf_tmp; then
     sudo chmod 0644 $collectd_thresholds_conf_tmp
@@ -381,10 +391,18 @@ EOF
     sudo mv --force $collectd_thresholds_conf_tmp $collectd_thresholds_conf
     collectd_service_notify=1
   fi
-  
+
   configure_collectd_plugin syslog
+
+  # Configure interface monitoring for all qualifying interfaces
+  declare -a interface_configs
+  for interface in "${interfaces[@]}"; do
+    interface_configs[${#interface_configs[@]}]="Interface \"$interface\""
+  done
+
   configure_collectd_plugin interface \
-    'Interface "eth0"'
+    "${interface_configs[@]}"
+
   configure_collectd_plugin cpu
   configure_collectd_plugin df \
     'ReportReserved false' \
@@ -399,16 +417,16 @@ EOF
     'IgnoreSelected true'
   configure_collectd_plugin disk
   configure_collectd_plugin memory
-  
-  if [[ $(sudo swapon -s | wc -l) -gt 1 ]];then
+
+  if [[ $swap -eq 1 ]]; then
     configure_collectd_plugin swap
   else
     echo "swapfile not setup, skipping collectd swap plugin"
   fi
-  
+
   # Populate RS_RLL_PORT
   source /var/run/rightlink/secret
-  $rsc rl10 update /rll/tss/control enable_monitoring=util
+  rsc rl10 update /rll/tss/control enable_monitoring=util
   collectd_ver=5
   if [[ "$(collectd -h)" =~ "collectd 4" ]]; then
     collectd_ver=4
@@ -418,19 +436,19 @@ EOF
   configure_collectd_plugin load
   configure_collectd_plugin processes
   configure_collectd_plugin users
-  
-  
+
+
   # Make sure the collectd service is enabled
   if [[ -d /etc/yum.repos.d ]]; then
     sudo chkconfig $collectd_service on
   fi
-  
+
   if collectd -T 2>&1 | grep 'Parse error' >/dev/null 2>&1; then
     echo "ERROR: collectd config contains syntax errors:"
     collectd -T
     exit 1
   fi
-  
+
   # Start the collectd service if it is not running or restart it if it needs to be restarted
   if ! sudo service $collectd_service status; then
     sudo service $collectd_service start
