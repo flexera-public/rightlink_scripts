@@ -94,7 +94,7 @@ MultiCloudImages:
     Revision: 24
     Publisher: RightScale
   - Name: CoreOS_stable_x64
-    Revision: 30
+    Revision: 31
     Publisher: RightScale
   - Name: CoreOS_stable_x64_KVM
     Revision: 15
