@@ -15,7 +15,7 @@ Description: |
   It has an operational script to force a RightLink10 upgrade. And we also
   provide a decommission script that provides the reason for shutdown. The
   source of the scripts on this ServerTemplate is available at
-  [https://github.com/rightscale/rightlink_scripts/tree/10.5.1](https://github.com/rightscale/rightlink_scripts/tree/10.5.1).
+  [https://github.com/rightscale/rightlink_scripts/tree/10.5.2](https://github.com/rightscale/rightlink_scripts/tree/10.5.2).
 
   __Tested Windows distros:__
 
