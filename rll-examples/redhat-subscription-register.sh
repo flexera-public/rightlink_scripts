@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ---
-# RightScript Name: RL10 Linux RedHat Subscription Management
-# Description: Used to register and unregister a RedHat instance with the RedHat subscription service
+# RightScript Name: RL10 Linux RedHat Subscription Register
+# Description: Register a RedHat instance with the RedHat subscription service and enable additional repos
 # Inputs:
 #   REDHAT_ACCOUNT_USERNAME:
 #     Input Type: single
@@ -18,16 +18,13 @@
 #     Default: blank
 #     Required: false
 #     Advanced: true
-#   REDHAT_SUBSCRIPTION_ACTION:
+#   REDHAT_ADDITIONAL_REPOS:
 #     Input Type: single
 #     Category: RightScale
-#     Description: Determine if this server should register or unregister from the RedHat Subscription
+#     Description: Space separated list of additional RHEL repos to enable.
+#     Default: blank
 #     Required: false
 #     Advanced: true
-#     Default: text:register
-#     Possible Values:
-#       - text:register
-#       - text:unregister
 # Attachments: []
 # ...
 
@@ -43,8 +40,7 @@ else
     ID=$(cut -d" " -f1 /etc/redhat-release)
     VERSION_ID=$(cut -d" " -f3 /etc/redhat-release)
   else
-    echo "ERROR: /etc/os-release or /etc/redhat-release is required but does not exist"
-    exit 1
+    echo "Unable to determine OS as /etc/os-release or /etc/redhat-release does not exist"
   fi
 fi
 
@@ -54,9 +50,15 @@ if [[ "$ID" != "redhat" ]]; then
 fi
 
 # Check if server is already registered
-if subscription-manager identity; then
-  registered=true
+if sudo subscription-manager identity; then
+  echo "System is already registered"
 else
-  registered=false
+  echo "Registering system"
+  sudo subscription-manager register --username $REDHAT_ACCOUNT_USERNAME --password $REDHAT_ACCOUNT_PASSWORD --auto-attach
 fi
 
+# Enable additional repos if provided
+for repo in $REDHAT_ADDITIONAL_REPOS; do
+  echo "enabling additional repo - $repo"
+  sudo subscription-manager repos --enable=$repo
+done
