@@ -50,7 +50,7 @@ if [[ "$ID" != "rhel" ]]; then
 fi
 
 # Install subscription-manager
-sudo yum install subscription-manager
+sudo yum --assumeyes install subscription-manager
 
 # Check if server is already registered
 if sudo subscription-manager identity; then
