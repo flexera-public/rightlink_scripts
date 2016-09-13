@@ -49,6 +49,9 @@ if [[ "$ID" != "rhel" ]]; then
   exit 0
 fi
 
+# Install subscription-manager
+sudo yum install subscription-manager
+
 # Check if server is already registered
 if sudo subscription-manager identity; then
   echo "System is already registered"
