@@ -28,6 +28,12 @@ if [[ "$ID" != "rhel" ]]; then
   exit 0
 fi
 
+# Continue if we are terminating the server or if DECOM_REASON is not given
+if ([ ! -z "$DECOM_REASON" ] && [ "$DECOM_REASON" != 'terminate' ]); then
+  echo "Decommission reason of '$DECOM_REASON' does not require unregistering from RedHat Subscription"
+  exit 0
+fi
+
 # Check if server is already registered
 if sudo subscription-manager identity; then
   echo "Unregistering system"
