@@ -44,7 +44,7 @@ else
   fi
 fi
 
-if [[ "$ID" != "redhat" ]]; then
+if [[ "$ID" != "rhel" ]]; then
   echo "RedHat Subscription Management is only used by RedHat Linux"
   exit 0
 fi
