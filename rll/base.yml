@@ -59,6 +59,7 @@ RightScripts:
     - setup-hostname.sh
     - enable-managed-login.sh
     - wait-for-eip.sh
+    - redhat-subscription-register.sh
     - enable-monitoring.sh
     - setup-alerts.sh
     - setup-automatic-upgrade.sh
@@ -68,6 +69,7 @@ RightScripts:
     - enable-docker.sh
   Decommission:
     - shutdown-reason.sh
+    - redhat-subscription-unregister.sh
 MultiCloudImages:
   - Name: Ubuntu_14.04_x64
     Revision: 51
