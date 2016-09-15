@@ -28,8 +28,12 @@ if [[ "$ID" != "rhel" ]]; then
   exit 0
 fi
 
-# Continue if we are terminating the server or if DECOM_REASON is not given
-if ([ ! -z "$DECOM_REASON" ] && [ "$DECOM_REASON" != 'terminate' ]); then
+# Continue unregistartion if DECOM_REASON is not given (manual run of script) or if we are terminating the server
+if [[ -z "$DECOM_REASON" ]]; then
+  echo "Not a decommission script - continuing with unregistration"
+elif [[ "$DECOM_REASON" == "terminate" ]]; then
+  echo "Terminating server - continuing with unregistration"
+else
   echo "Decommission reason of '$DECOM_REASON' does not require unregistering from RedHat Subscription"
   exit 0
 fi

@@ -43,9 +43,14 @@ else
     echo "Unable to determine OS as /etc/os-release or /etc/redhat-release does not exist"
   fi
 fi
-
 if [[ "$ID" != "rhel" ]]; then
   echo "RedHat Subscription Management is only used by RedHat Linux"
+  exit 0
+fi
+
+# If REDHAT_ACCOUNT_USERNAME or REDHAT_ACCOUNT_PASSWORD is not set, exit
+if ([[ -z "$REDHAT_ACCOUNT_USERNAME" ]] || [[ -z "$REDHAT_ACCOUNT_PASSWORD" ]]); then
+  echo "Username and/or password is not set - continuing without registration"
   exit 0
 fi
 
