@@ -33,15 +33,13 @@ set -e
 # Read/source os-release to obtain variable values determining OS
 if [[ -e /etc/os-release ]]; then
   source /etc/os-release
+# CentOS/RHEL 6 does not use os-release, so use redhat-release
+elif [[ -e /etc/redhat-release ]]; then
+  # Assumed format example: CentOS release 6.7 (Final)
+  ID=$(cut -d" " -f1 /etc/redhat-release)
+  VERSION_ID=$(cut -d" " -f3 /etc/redhat-release)
 else
-  # CentOS/RHEL 6 does not use os-release, so use redhat-release
-  if [[ -e /etc/redhat-release ]]; then
-    # Assumed format example: CentOS release 6.7 (Final)
-    ID=$(cut -d" " -f1 /etc/redhat-release)
-    VERSION_ID=$(cut -d" " -f3 /etc/redhat-release)
-  else
-    echo "Unable to determine OS as /etc/os-release or /etc/redhat-release does not exist"
-  fi
+  echo "Unable to determine OS as /etc/os-release or /etc/redhat-release does not exist"
 fi
 if [[ "$ID" != "rhel" ]]; then
   echo "RedHat Subscription Management is only used by RedHat Linux"
