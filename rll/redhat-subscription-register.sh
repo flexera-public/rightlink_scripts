@@ -33,11 +33,12 @@ set -e
 # Read/source os-release to obtain variable values determining OS
 if [[ -e /etc/os-release ]]; then
   source /etc/os-release
-# CentOS/RHEL 6 does not use os-release, so use redhat-release
+# RHEL 6 does not use os-release, so use redhat-release
 elif [[ -e /etc/redhat-release ]]; then
-  # Assumed format example: CentOS release 6.7 (Final)
-  ID=$(cut -d" " -f1 /etc/redhat-release)
-  VERSION_ID=$(cut -d" " -f3 /etc/redhat-release)
+  # Assumed format example: Red Hat Enterprise Linux Server release 6.8 (Santiago)
+  if [[ $(cut -d" " -f1-5 /etc/redhat-release) == "Red Hat Enterprise Linux Server" ]]; then
+    ID="rhel"
+  fi
 else
   echo "Unable to determine OS as /etc/os-release or /etc/redhat-release does not exist"
 fi
