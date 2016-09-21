@@ -36,10 +36,34 @@ else
   exit 0
 fi
 
-# Check if server is already registered
-if sudo subscription-manager identity; then
-  echo "Unregistering system"
-  sudo subscription-manager unregister
-else
-  echo "System not registered"
-fi
+# Unregister server if currently registered
+unregister_retries=5
+while true; do
+  unset subscription_status_fail_code
+  unset unregister_status_fail_code
+  subscription_status=$(sudo subscription-manager identity 2>&1 ) || { subscription_status_fail_code=$?; }
+  if [[ -z $subscription_status_fail_code ]]; then
+    # System is registered
+    unregister_status=$(sudo subscription-manager unregister 2>&1 ) || { unregister_status_fail_code=$?; }
+    if [[ -z $unregister_status_fail_code ]]; then
+      echo "System now unregistered"
+      break
+    else
+      echo "Unexpected error on unregistration ($unregister_status $unregister_status_fail_code) - retring"
+    fi
+  else
+    if [[ $subscription_status == *"This system is not yet registered."* ]]; then
+      echo "System already unregistered"
+      break
+    else
+      echo "Unexpected error occurred ($subscription_status $subscription_status_fail_code) - retrying"
+    fi
+  fi
+  (( unregister_retries-- ))
+  if [[ $unregister_retries -gt 0 ]]; then
+    sleep 2
+  else
+    echo "Exceeded maximum retries"
+    exit 1
+  fi
+done
