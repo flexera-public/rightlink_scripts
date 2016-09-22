@@ -26,7 +26,7 @@ Description: |
   __Tested compute clouds:__
 
   * AWS
-  * Azure
+  * Azure RM
   * Google Compute Engine
   * Softlayer
   * OpenStack
@@ -54,65 +54,69 @@ Description: |
 Inputs: {}
 RightScripts:
   Boot:
-    - wait-for-eip.ps1
-    - setup-automatic-upgrade.ps1
-    - enable-monitoring.ps1
-    - setup-alerts.ps1
+  - wait-for-eip.ps1
+  - setup-automatic-upgrade.ps1
+  - enable-monitoring.ps1
+  - setup-alerts.ps1
   Operational:
-    - upgrade.ps1
-    - setup-automatic-upgrade.ps1
+  - upgrade.ps1
+  - setup-automatic-upgrade.ps1
   Decommission:
-    - shutdown-reason.ps1
+  - shutdown-reason.ps1
 MultiCloudImages:
-  - Name: Windows_Server_Standard_2012R2_x64
-    Revision: 16
-    Publisher: RightScale
-  - Name: Windows_Server_Datacenter_2012R2_x64
-    Revision: 19
-    Publisher: RightScale
-  - Name: Windows_Server_Standard_2012_x64
-    Revision: 17
-    Publisher: RightScale
-  - Name: Windows_Server_Datacenter_2012_x64
-    Revision: 11
-    Publisher: RightScale
-  - Name: Windows_Server_Datacenter_2008R2_x64
-    Revision: 31
-    Publisher: RightScale
+- Name: Windows_Server_Standard_2012R2_x64
+  Revision: 16
+  Publisher: RightScale
+- Name: Windows_Server_Datacenter_2012R2_x64
+  Revision: 19
+  Publisher: RightScale
+- Name: Windows_Server_Standard_2012_x64
+  Revision: 17
+  Publisher: RightScale
+- Name: Windows_Server_Datacenter_2012_x64
+  Revision: 11
+  Publisher: RightScale
+- Name: Windows_Server_Datacenter_2008R2_x64
+  Revision: 31
+  Publisher: RightScale
 Alerts:
-  - Name: rs instance terminated
-    Description: The instance has been terminated anormally, i.e., not through the RightScale
-      interface or by an elasticity deamon (only for server arrays).
-    Clause: If RS/server.state == terminated for 1 minutes Then escalate critical
-  - Name: rs instance stranded
-    Description: Raises an alert if the instance enters the stranded state.
-    Clause: If RS/server-failure.state == stranded for 1 minutes Then escalate warning
-  - Name: rs instance not responding
-    Description: It raises an alert if the instance fials to send monitoring information
-      for 5 minutes.
-    Clause: If cpu-0/cpu-idle.value == NaN for 5 minutes Then escalate critical
-  - Name: rs cpu busy
-    Description: Raise an alert if the idle time is too low
-    Clause: If cpu-0/cpu-idle.value < 15 for 3 minutes Then escalate warning
-  - Name: rs cpu overloaded
-    Description: Raises an alert when the cpu idle time is too low.
-    Clause: If cpu-0/cpu-idle.value < 3 for 5 minutes Then escalate critical
-  - Name: 'rs low space on C: drive'
-    Description: 'Raises an alert if the available space on the C: drive is too low'
-    Clause: If df-C/df_complex-free.value < 1073741824 for 5 minutes Then escalate critical
-  - Name: rs high network tx activity
-    Description: Raise an alert if the amount of network data transmitted is too high. This alert may be modified or
-      cloned on an instance to match the actual network interfaces that are present. See the RL10 Windows Setup Alerts
-      RightScript (rlw/setup-alerts.ps1) for more details.
-    Clause: If interface-AWS_PV_Network_Device_0/if_octets.tx > 10000000 for 10 minutes Then escalate critical
-  - Name: rs high network rx activity
-    Description: Raise an alert if the amount of network data received is too high. This alert may be modified or cloned
-      on an instance to match the actual network interfaces that are present. See the RL10 Windows Setup Alerts
-      RightScript (rlw/setup-alerts.ps1) for more details.
-    Clause: If interface-AWS_PV_Network_Device_0/if_octets.rx > 50000000 for 30 minutes Then escalate critical
-  - Name: rs memory low
-    Description: Free memory is low.
-    Clause: If memory/memory-free.value < 1000000 for 1 minutes Then escalate critical
-  - Name: rs out of memory
-    Description: Raises an alert when the server is out of free memory.
-    Clause: If memory/memory-free.value == 0 for 1 minutes Then escalate critical
+- Name: rs instance terminated
+  Description: The instance has been terminated anormally, i.e., not through the RightScale
+    interface or by an elasticity deamon (only for server arrays).
+  Clause: If RS/server.state == terminated for 1 minutes Then escalate critical
+- Name: rs instance stranded
+  Description: Raises an alert if the instance enters the stranded state.
+  Clause: If RS/server-failure.state == stranded for 1 minutes Then escalate warning
+- Name: rs instance not responding
+  Description: It raises an alert if the instance fials to send monitoring information
+    for 5 minutes.
+  Clause: If cpu-0/cpu-idle.value == NaN for 5 minutes Then escalate critical
+- Name: rs cpu busy
+  Description: Raise an alert if the idle time is too low
+  Clause: If cpu-0/cpu-idle.value < 15 for 3 minutes Then escalate warning
+- Name: rs cpu overloaded
+  Description: Raises an alert when the cpu idle time is too low.
+  Clause: If cpu-0/cpu-idle.value < 3 for 5 minutes Then escalate critical
+- Name: 'rs low space on C: drive'
+  Description: 'Raises an alert if the available space on the C: drive is too low'
+  Clause: If df-C/df_complex-free.value < 1073741824 for 5 minutes Then escalate critical
+- Name: rs high network tx activity
+  Description: Raise an alert if the amount of network data transmitted is too high.
+    This alert may be modified or cloned on an instance to match the actual network
+    interfaces that are present. See the RL10 Windows Setup Alerts RightScript (rlw/setup-alerts.ps1)
+    for more details.
+  Clause: If interface-AWS_PV_Network_Device_0/if_octets.tx > 10000000 for 10 minutes
+    Then escalate critical
+- Name: rs high network rx activity
+  Description: Raise an alert if the amount of network data received is too high.
+    This alert may be modified or cloned on an instance to match the actual network
+    interfaces that are present. See the RL10 Windows Setup Alerts RightScript (rlw/setup-alerts.ps1)
+    for more details.
+  Clause: If interface-AWS_PV_Network_Device_0/if_octets.rx > 50000000 for 30 minutes
+    Then escalate critical
+- Name: rs memory low
+  Description: Free memory is low.
+  Clause: If memory/memory-free.value < 1000000 for 1 minutes Then escalate critical
+- Name: rs out of memory
+  Description: Raises an alert when the server is out of free memory.
+  Clause: If memory/memory-free.value == 0 for 1 minutes Then escalate critical
