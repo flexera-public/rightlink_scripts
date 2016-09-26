@@ -77,7 +77,7 @@ MultiCloudImages:
   Revision: 28
   Publisher: RightScale
 - Name: Ubuntu_12.04_x64
-  Revision: 52
+  Revision: 53
   Publisher: RightScale
 - Name: Ubuntu_12.04_x64_KVM
   Revision: 28
