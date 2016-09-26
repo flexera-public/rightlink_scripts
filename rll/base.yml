@@ -1,4 +1,4 @@
-Name: RightLink 10.5.2 Linux Base
+Name: RightLink 10.5.3 Linux Base
 Description: |
   Base ServerTemplate for RightLink10. RightLink10 is a new agent to connect
   servers to the RightScale platform that is very lightweight and simple to
@@ -17,7 +17,7 @@ Description: |
   It has an operational script to force a RightLink10 upgrade. And we also
   provide a decommission script that provides the reason for shutdown. The
   source of the scripts on this ServerTemplate is available at
-  [https://github.com/rightscale/rightlink_scripts/tree/10.5.2](https://github.com/rightscale/rightlink_scripts/tree/10.5.2).
+  [https://github.com/rightscale/rightlink_scripts/tree/10.5.3](https://github.com/rightscale/rightlink_scripts/tree/10.5.3).
 
   __Tested Linux distros:__
 
@@ -26,6 +26,8 @@ Description: |
   * CentOS 7 x86_64
   * CentOS 6 x86_64
   * CoreOS Stable x86_64
+  * Red Hat Enterprise Linux 7 x86_64
+  * Red Hat Enterprise Linux 6 x86_64
 
   __Tested compute clouds:__
 
@@ -71,7 +73,7 @@ RightScripts:
   - redhat-subscription-unregister.sh
 MultiCloudImages:
 - Name: Ubuntu_14.04_x64
-  Revision: 53
+  Revision: 54
   Publisher: RightScale
 - Name: Ubuntu_14.04_x64_KVM
   Revision: 28
