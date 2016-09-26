@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.5.3
+------
+- Added rll/redhat-subscription-register.sh (RL10 Linux RedHat Subscription Register) and rll/redhat-subscription-unregister.sh (RL10 Linux RedHat Subscription Unregister) which registers and unregisters a RedHat instance from the RedHat subscription service
+
 10.5.2
 ------
 - Update attachment libnss_rightscale.tgz for rll/enable-managed-login.sh to work for users with very low rightscale ids (< 500)
