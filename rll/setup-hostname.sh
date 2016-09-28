@@ -2,7 +2,11 @@
 
 # ---
 # RightScript Name: RL10 Linux Setup Hostname
-# Description: Changes the hostname of the server.
+# Description: |
+#   Changes the hostname of the server.
+#
+#   ## Known Limitations:
+#   On AzureRM, the Azure Linux Agent (waagent) may change the hostname if it has not finished provisioning the server after boot.
 # Inputs:
 #   SERVER_HOSTNAME:
 #     Input Type: single
@@ -20,6 +24,17 @@
 # this SERVER_HOSTNAME variable eg 'my.example.com V2', 'NEW my.example.com', and
 # 'database.io my.example.com' all set the hostname to 'my.example.com'.
 # If SERVER_HOSTNAME is empty, will maintain current hostname.
+
+# Ensure rsc is in the path
+export PATH="/usr/local/bin:/opt/bin:$PATH"
+
+# Give warning about the possibility of waagent on AzureRM changing the hostname again after this script
+current_cloud_href=$(rsc --rl10 cm15 index_instance_session /api/sessions/instance --x1 ':has(.rel:val("cloud")).href' 2>/dev/null || true)
+cloud_type=$(rsc --rl10 cm15 --x1='.cloud_type' show $current_cloud_href 2>/dev/null || true)
+if [[ $cloud_type == "azure_v2" ]]; then
+  echo "WARNING: waagent on AzureRM may change the hostname after this script is completed!"
+  echo "See http://docs.rightscale.com/clouds/azure_resource_manager/reference/limitations.html#azure-linux-agent for more details"
+fi
 
 if [[ -n "$SERVER_HOSTNAME" ]]; then
   prefix=
