@@ -2,7 +2,11 @@
 
 # ---
 # RightScript Name: RL10 Linux Setup Hostname
-# Description: Changes the hostname of the server.
+# Description: |
+#   Changes the hostname of the server.
+#
+#   ## Known Limitations:
+#   On AzureRM, the Azure Linux Agent (waagent) may change the hostname if it continues provisioning the serve after boot.
 # Inputs:
 #   SERVER_HOSTNAME:
 #     Input Type: single
