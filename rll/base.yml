@@ -102,6 +102,18 @@ MultiCloudImages:
 - Name: CoreOS_stable_x64_KVM
   Revision: 17
   Publisher: RightScale
+- Name: RHEL_6.x_x64_KVM
+  Revision: 4
+  Publisher: RightScale
+- Name: RHEL_7.x_x64_KVM
+  Revision: 5
+  Publisher: RightScale
+- Name: RHEL_6.8_x64
+  Revision: 8
+  Publisher: RightScale
+- Name: RHEL_7.2_x64
+  Revision: 6
+  Publisher: RightScale
 Alerts:
 - Name: rs instance terminated
   Description: Raise an alert if the instance has been terminated abnormally, i.e.
