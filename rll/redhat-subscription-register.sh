@@ -84,7 +84,9 @@ if ([[ -z $REDHAT_ACCOUNT_USERNAME ]] || [[ -z $REDHAT_ACCOUNT_PASSWORD ]]); the
 fi
 
 # Install subscription-manager
-retry_command sudo yum --assumeyes install subscription-manager
+if ! type -P subscription-manager > /dev/null; then
+  retry_command sudo yum --assumeyes install subscription-manager
+fi
 
 # Register server if not already
 subscription_status_retries=5
