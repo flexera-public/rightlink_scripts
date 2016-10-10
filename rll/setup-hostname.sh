@@ -25,6 +25,36 @@
 # 'database.io my.example.com' all set the hostname to 'my.example.com'.
 # If SERVER_HOSTNAME is empty, will maintain current hostname.
 
+# Run passed-in command with retries if errors occur.
+#
+# $@: full line command
+#
+function retry_command() {
+  # Setting config variables for this function
+  retries=5
+  wait_time=10
+
+  while [ $retries -gt 0 ]; do
+    # Reset this variable before every iteration to be checked if changed
+    issue_running_command=false
+    $@ || { issue_running_command=true; }
+    if [ "$issue_running_command" = true ]; then
+      (( retries-- ))
+      echo "Error occurred - will retry shortly"
+      sleep $wait_time
+    else
+      # Break out of loop since command was successful.
+      break
+    fi
+  done
+
+  # Check if issue running command still existed after all retries
+  if [ "$issue_running_command" = true ]; then
+    echo "ERROR: Unable to run: '$@'"
+    return 1
+  fi
+}
+
 # Ensure rsc is in the path
 export PATH="/usr/local/bin:/opt/bin:$PATH"
 
@@ -79,6 +109,36 @@ if [[ -n "$SERVER_HOSTNAME" ]]; then
   # If we are on a system with hostnamectl, it will take care of all that, but if not there are several ways that the
   # hostname may be stored.
   if type -P hostnamectl >/dev/null; then
+    # even if hostnamectl is available, dbus might not be available so we install it
+    if ! type -P dbus-daemon >/dev/null; then
+      # Read/source os-release to obtain variable values determining OS
+      if [[ -e /etc/os-release ]]; then
+        source /etc/os-release
+      else
+        # CentOS/RHEL 6 does not use os-release, so use redhat-release
+        if [[ -e /etc/redhat-release ]]; then
+          # Assumed format example: CentOS release 6.7 (Final)
+          ID=$(cut -d" " -f1 /etc/redhat-release)
+          VERSION_ID=$(cut -d" " -f3 /etc/redhat-release)
+        else
+          echo "ERROR: /etc/os-release or /etc/redhat-release is required but does not exist"
+          exit 1
+        fi
+      fi
+
+      case "${ID,,}" in
+      ubuntu|debian)
+        retry_command sudo apt-get update
+        retry_command sudo apt-get install -y dbus
+        ;;
+      centos|fedora|rhel)
+        retry_command sudo yum install -y dbus
+        sudo chkconfig dbus on
+        sudo service dbus start
+        ;;
+      esac
+    fi
+
     # CentOS 7, CoreOS, and Ubuntu 14+ all use hostnamectl!
     sudo hostnamectl set-hostname "$hostname"
   else
