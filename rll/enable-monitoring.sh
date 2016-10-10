@@ -171,7 +171,7 @@ fi
 if [[ "$monitoring_method" == "rightlink" ]]; then
   # Enable built-in monitoring
   echo "Using RightLink monitoring"
-  rsc rl10 update /rll/tss/control enable_monitoring=all
+  rsc --retry=5 --timeout=10 rl10 update /rll/tss/control enable_monitoring=all
 else
   # Initialize variables
   if [[ ! "$COLLECTD_SERVER" =~ tss ]]; then
@@ -426,7 +426,7 @@ EOF
 
   # Populate RS_RLL_PORT
   source /var/run/rightlink/secret
-  rsc rl10 update /rll/tss/control enable_monitoring=util
+  rsc --retry=5 --timeout=10 rl10 update /rll/tss/control enable_monitoring=util
   collectd_ver=5
   if [[ "$(collectd -h)" =~ "collectd 4" ]]; then
     collectd_ver=4

@@ -29,8 +29,8 @@
 export PATH="/usr/local/bin:/opt/bin:$PATH"
 
 # Give warning about the possibility of waagent on AzureRM changing the hostname again after this script
-current_cloud_href=$(rsc --rl10 cm15 index_instance_session /api/sessions/instance --x1 ':has(.rel:val("cloud")).href' 2>/dev/null || true)
-cloud_type=$(rsc --rl10 cm15 --x1='.cloud_type' show $current_cloud_href 2>/dev/null || true)
+current_cloud_href=$(rsc --retry=5 --timeout=60 --rl10 cm15 index_instance_session /api/sessions/instance --x1 ':has(.rel:val("cloud")).href' 2>/dev/null || true)
+cloud_type=$(rsc --retry=5 --timeout=60 --rl10 cm15 --x1='.cloud_type' show $current_cloud_href 2>/dev/null || true)
 if [[ $cloud_type == "azure_v2" ]]; then
   echo "WARNING: waagent on AzureRM may change the hostname after this script is completed!"
   echo "See http://docs.rightscale.com/clouds/azure_resource_manager/reference/limitations.html#azure-linux-agent for more details"
