@@ -1,6 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
+10.5.4
+------
+- Moved UPGRADES_LOCATION parameter from rll/upgrade.sh to rll/setup-automatic-upgrade.sh and from rlw/upgrade.sh to rlw/setup-automatic-upgrade.sh. Added a new parameter UPGRADE_VERSION to rll/upgrade.sh and rlw/upgrade.sh to accept a simple text version to upgrade to, i.e. '10.5.4'
+
 10.5.3
 ------
 - Added rll/redhat-subscription-register.sh (RL10 Linux RedHat Subscription Register) and rll/redhat-subscription-unregister.sh (RL10 Linux RedHat Subscription Unregister) which registers and unregisters a RedHat instance from the RedHat subscription service

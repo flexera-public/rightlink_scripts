@@ -85,7 +85,7 @@ Log `"RightlinkUpgrader: Upgrade found from `$currentVersion to `$desiredVersion
     Write-Output 'Updating scheduled job rightlink_check_upgrade'
     SCHTASKS.exe /CHANGE /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /TR "Powershell.exe -ExecutionPolicy unrestricted -File $execScript"
   } else {
-    SCHTASKS.exe /CREATE /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /ST $jobStartTime /SC DAILY /TR "Powershell.exe -ExecutionPolicy unrestricted -File $execScript"
+    SCHTASKS.exe /CREATE /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /ST $jobStartTime /SC DAILY /TR "Powershell.exe -ExecutionPolicy unrestricted -File '$execScript'"
   }
 
     
