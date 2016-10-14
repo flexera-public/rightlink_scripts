@@ -250,10 +250,10 @@ enable)
   fi
 
   # Send enable action to RightLink
-  $rsc rl10 update /rll/login/control "enable_login=${rll_login_control}"
+  $rsc --retry=5 --timeout=10 rl10 update /rll/login/control "enable_login=${rll_login_control}"
 
   # Adding rs_login:state=user tag
-  $rsc --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
+  $rsc --retry=5 --timeout=60 --rl10 cm15 multi_add /api/tags/multi_add resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
   ;;
 disable)
   if [[ "$ID" == "coreos" ]]; then
@@ -263,10 +263,10 @@ disable)
   echo "Disabling managed login"
 
   # Remove rs_login:state=user tag
-  $rsc --rl10 cm15 multi_delete /api/tags/multi_delete resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
+  $rsc --retry=5 --timeout=60 --rl10 cm15 multi_delete /api/tags/multi_delete resource_hrefs[]=$RS_SELF_HREF tags[]=rs_login:state=user
 
   # Send disable action to RightLink
-  $rsc rl10 update /rll/login/control "enable_login=off"
+  $rsc --retry=5 --timeout=10 rl10 update /rll/login/control "enable_login=off"
 
   # Remove NSS plugin library files
   sudo rm -frv $lib_dir/libnss_rightscale.*

@@ -44,4 +44,4 @@ fi
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
 
 # Enable docker support
-$rsc rl10 update /rll/docker/control "enable_docker=$RIGHTLINK_DOCKER"
+$rsc --retry=5 --timeout=10 rl10 update /rll/docker/control "enable_docker=$RIGHTLINK_DOCKER"

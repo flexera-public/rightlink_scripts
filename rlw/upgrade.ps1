@@ -2,27 +2,25 @@
 # RightScript Name: RL10 Windows Upgrade
 # Description: Check whether a RightLink upgrade is available and perform the upgrade.
 # Inputs:
-#   UPGRADES_FILE_LOCATION:
+#   UPGRADE_VERSION:
 #     Input Type: single
 #     Category: RightScale
-#     Description: External location of 'upgrades' file
-#     Default: text:https://rightlink.rightscale.com/rightlink/upgrades
+#     Description: Check whether a RightLink upgrade is available and perform the upgrade.
+#     Default: blank
 #     Required: false
 #     Advanced: true
 # ...
 #
-
-# Will compare current version of rightlink 'running' with latest version provided from 'upgrades'
-# file. If they differ, will update to latest version.  Note that latest version can be an older version
-# if a downgrade is best.
 
 $upgradeFunction = {
   function upgradeRightLink($currentVersion, $desiredVersion) {
     # Give the rightscript process this was called from time to finish
     Sleep 5
 
-    $RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
-    $TMP_DIR = 'C:\Windows\Temp\Upgrade'
+    $RIGHTLINK_DIR = """${env:ProgramFiles}\RightScale\RightLink"""
+    $TMP_DIR = """${env:TEMP}\Upgrade"""
+    # Determine if the version of rsc supports retry
+    $retryCommand = ('',('--retry=5 --timeout=60' -split ' '))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
 
     # The self-upgrade API call doesn't actually upgrade the executable on Windows, but it does flush out audit entries
     # and test connectivity.
@@ -45,7 +43,7 @@ $upgradeFunction = {
     # Check updated version in production by connecting to local proxy
     # The update takes a few seconds so retries are done.
     for ($i = 1; $i -le 5; $i += 1) {
-      $newInstalledVersion = & ${RIGHTLINK_DIR}\rsc.exe --x1 .version rl10 index proc 2> $null
+      $newInstalledVersion = & ${RIGHTLINK_DIR}\rsc.exe $retryCommand rl10 show /rll/proc/version 2> $null
       if ($newInstalledVersion -eq $desiredVersion) {
         Write-Output """New version active - ${newInstalledVersion}"""
         break
@@ -65,10 +63,10 @@ $upgradeFunction = {
     }
 
     # Report to audit entry that RightLink upgraded.
-    $instanceHref = & ${RIGHTLINK_DIR}\rsc.exe --rl10 --x1 ':has(.rel:val(\"\"\"self\"\"\")).href' `
+    $instanceHref = & ${RIGHTLINK_DIR}\rsc.exe $retryCommand --rl10 --x1 ':has(.rel:val(\"\"\"self\"\"\")).href' `
                     cm15 index_instance_session /api/sessions/instance 2> $null
     if ($instanceHref) {
-      $auditEntryHref = & ${RIGHTLINK_DIR}\rsc.exe --rl10 --xh 'location' cm15 create /api/audit_entries `
+      $auditEntryHref = & ${RIGHTLINK_DIR}\rsc.exe $retryCommand --rl10 --xh 'location' cm15 create /api/audit_entries `
                         """audit_entry[auditee_href]=${instanceHref}""" `
                         """audit_entry[detail]=RightLink updated to '${newInstalledVersion}'""" `
                         """audit_entry[summary]=RightLink updated""" 2> $null
@@ -96,35 +94,26 @@ $upgradeFunction = {
   }
 }
 
-$RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
-$RS_DIR = 'C:\ProgramData\RightScale\RightLink'
-$RS_ID_FILE = "${RS_DIR}\rightscale-identity"
+$RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
+$RS_ID_FILE = "$env:ProgramData\RightScale\RightLink\rightscale-identity"
 
-if (!$env:UPGRADES_FILE_LOCATION) {
-  $env:UPGRADES_FILE_LOCATION = 'https://rightlink.rightscale.com/rightlink/upgrades'
-}
-
-# Query RightLink info
-$json = & "${RIGHTLINK_DIR}\rsc.exe" rl10 index /rll/proc
+# Determine if the version of rsc supports retry. The upgrades script can be called
+# as an any script and RL may have an older rsc bundled with it.
+$retryCommand = ('',('--retry=5 --timeout=60' -split ' '))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
 
 # Determine current version of rightlink
-$currentVersion = Write-Output $json | & "${RIGHTLINK_DIR}\rsc.exe" --x1 .version json 2> $null
+$currentVersion = & "${RIGHTLINK_DIR}\rsc.exe" $retryCommand rl10 show /rll/proc/version 2> $null
 
-if (!$currentVersion) {
+if ([string]::IsNullOrEmpty($currentVersion)) {
   Write-Output 'Cannot determine current version of RightLink'
   Exit 1
 }
 
-# Fetch information about what we should become. The "upgrades" file consists of lines formatted
-# as "currentVersion:desiredVersion". If the "upgrades" file does not exist,
-# or if the current version is not in the file, no upgrade is done.
-$desiredVersion = (New-Object System.Net.WebClient).DownloadString($env:UPGRADES_FILE_LOCATION) -Split "`n" |
-                  Select-String "^\s*${currentVersion}\s*:\s*(\S+)\s*$" | % { $_.Matches[0].Groups[1].Value }
+$desiredVersion = $env:UPGRADE_VERSION
 
-if (!$desiredVersion) {
-  Write-Output 'Cannot determine latest version from upgrade file'
-  Write-Output "Tried to match /^${currentVersion}:/ in ${env:UPGRADES_FILE_LOCATION}"
-  Exit 0
+if ([string]::IsNullOrEmpty($desiredVersion)) {
+  Write-Output 'No upgrade version supplied'
+  Exit 1
 }
 
 if ($desiredVersion -eq $currentVersion) {
@@ -139,7 +128,7 @@ Write-Output "  to   desired = ${desiredVersion}"
 Write-Output "Downloading RightLink version '${desiredVersion}'"
 
 # Download new version
-$TMP_DIR = 'C:\Windows\Temp\Upgrade'
+$TMP_DIR = "$env:TEMP\Upgrade"
 $RIGHTLINK_URL = "https://rightlink.rightscale.com/rll/${desiredVersion}/rightlink.zip"
 $7ZIP = "${TMP_DIR}\7za.exe"
 $7ZIP_URL = 'https://rightlink.rightscale.com/rll/7zip/7za.exe'

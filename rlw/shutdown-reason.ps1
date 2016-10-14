@@ -24,13 +24,13 @@
 
 Write-Output 'Decommissioning. Calculating reason for decommission: '
 
-$RIGHTLINK_DIR = 'C:\Program Files\RightScale\RightLink'
+$RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
 
-$rs_decom_reason = & "${RIGHTLINK_DIR}\rsc.exe" rl10 show /rll/proc/shutdown_kind
+$rs_decom_reason = & "${RIGHTLINK_DIR}\rsc.exe" --retry=5 --timeout=10 rl10 show /rll/proc/shutdown_kind
 $decom_reason = $rs_decom_reason
 
 Write-Output "  RightScale decommission reason is: ${rs_decom_reason}"
 Write-Output "  Combined DECOM_REASON is: ${decom_reason}"
 Write-Output ""
 Write-Output "exporting DECOM_REASON=$decom_reason into the environment for subsequent scripts"
-& "${RIGHTLINK_DIR}\rsc.exe" rl10 update /rll/env/DECOM_REASON payload=${decom_reason}
+& "${RIGHTLINK_DIR}\rsc.exe" rl10 --retry=5 --timeout=10 update /rll/env/DECOM_REASON payload=${decom_reason}
