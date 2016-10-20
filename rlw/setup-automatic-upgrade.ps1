@@ -79,11 +79,11 @@ if ([string]::IsNullOrEmpty(`$desiredVersion)) {
 Log "RightlinkUpgrader: Upgrade found from `$currentVersion to `$desiredVersion"
 
 & `$rsc --rl10 cm15 schedule_right_script /api/right_net/scheduler/schedule_right_script right_script="`$rs" arguments=UPGRADE_VERSION=`$desiredVersion
-@"
+"@
 
   if ($scheduledJob) {
     Write-Output 'Updating scheduled job rightlink_check_upgrade'
-    SCHTASKS.exe /CHANGE /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /TR "Powershell.exe -ExecutionPolicy unrestricted -File $execScript"
+    SCHTASKS.exe /CHANGE /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /TR "Powershell.exe -ExecutionPolicy unrestricted -File '$execScript'"
   } else {
     SCHTASKS.exe /CREATE /RU 'SYSTEM' /TN 'rightlink_check_upgrade' /ST $jobStartTime /SC DAILY /TR "Powershell.exe -ExecutionPolicy unrestricted -File '$execScript'"
   }
