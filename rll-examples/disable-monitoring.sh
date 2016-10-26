@@ -4,7 +4,7 @@
 # RightScript Name: RightScale Linux Disable Monitoring
 # Description: |
 #   This downgrades an instance by disabling monitoring. It can be run against
-#   any RightLink 5, 6 or 10 Server. It must be run after every reboot as the
+#   any RightLink 5, 6, or 10 Server. It must be run after every reboot as the
 #   scripts in the "Boot Scripts" will re-enable monitoring every boot and and
 #   can't be disabled.
 # Inputs: {}
@@ -52,7 +52,7 @@ if [[ -d /etc/collectd/plugins ]]; then
   plugins_dir=/etc/collectd/plugins
 fi
 collectd_conf=/etc/collectd.conf
-if [[ -e /etc/collectd/collectd.conf ]]; then 
+if [[ -e /etc/collectd/collectd.conf ]]; then
   collectd_conf=/etc/collectd/collectd.conf
 fi
 if [[ -e $collectd_conf ]]; then
@@ -68,6 +68,15 @@ if [[ -e $collectd_conf ]]; then
       fi
     fi
   done
+
+  # Older (v13) style -- all-in-one config
+  if $sudo grep -E 'Server.*rightscale.com' "$collectd_conf" 2>/dev/null; then
+    echo "RightScale collectd-based monitoring is enabled. Disabling collectd configuration in $collectd_conf."
+    backup_time=$(date -u +%Y%m%d%H%M%S)
+    $sudo cp "${collectd_conf}" "${collectd_conf}.${backup_time}"
+    perl -0777 -pi -e 's/LoadPlugin network.*?rightscale.*?Plugin>//is' "${collectd_conf}"
+    restart_collectd=1
+  fi
 
   # From https://collectd.org/wiki/index.php/Table_of_Plugins, all known "write"
   # plugins. If there are no write plugins enabled, collectd will spew errors

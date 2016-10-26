@@ -2,7 +2,7 @@
 # RightScript Name: RightScale Windows Disable Monitoring
 # Description: |
 #   This downgrades an instance by disabling monitoring. It can be run against
-#   any RightLink 5, 6 or 10 Server. It must be run after every reboot as the
+#   any RightLink 5, 6, or 10 Server. It must be run after every reboot as the
 #   scripts in the "Boot Scripts" will re-enable monitoring every boot and and
 #   can't be disabled.
 # Inputs: {}
