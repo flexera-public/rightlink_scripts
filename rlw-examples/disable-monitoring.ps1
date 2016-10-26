@@ -1,22 +1,21 @@
 # ---
 # RightScript Name: RightScale Windows Disable Monitoring
 # Description: |
-#   This downgrades an instance from Level 3 support (full capabilities) to
-#   Level 2 support by disabling monitoring. It can be run against any RightLink 5, 6
-#   or 10 Server. It must be run after every reboot as the scripts in the "Boot
-#   Scripts" will re-enable monitoring every boot and and can't be disabled.
+#   This downgrades an instance by disabling monitoring. It can be run against
+#   any RightLink 5, 6 or 10 Server. It must be run after every reboot as the
+#   scripts in the "Boot Scripts" will re-enable monitoring every boot and and
+#   can't be disabled.
 # Inputs: {}
 # ...
 #
 
-# RightLink 10 has built-in monitoring, which we simply disable. RightLink 5/6
-# has a side-car ruby service which gathered monitoring data which we proceed
-# to disable.
+# How this downgrade is accomplished differs by RightLink version. See below.
 
 $rl6ServiceDir = "${env:ProgramFiles(x86)}\RightScale\RightLinkService"
 $scriptsDir = "$rl6ServiceDir\scripts"
 
-if (Test-Path "C:\Program Files\RightScale\RightLink\rsc.exe") {
+if (Test-Path "C:\Program Files\RightScale\RightLink\rightlink.exe") {
+  # RightLink 10 style monitoring. We simply make a disablement call.
   $rsc="C:\Program Files\RightScale\RightLink\rsc.exe"
   $output=& $rsc rl10 show /rll/tss/control/enable_monitoring
   if ($output -Match "enable_monitoring" -and $output -Match "false") {
@@ -27,6 +26,8 @@ if (Test-Path "C:\Program Files\RightScale\RightLink\rsc.exe") {
   }
   & $rsc --rl10 cm15 multi_delete /api/tags/multi_delete "resource_hrefs[]=$env:RS_SELF_HREF" "tags[]=rs_monitoring:state=auth" "tags[]=rs_monitoring:state=active" "tags[]=rs_monitoring:util=v2"
 } elseif (Test-Path $rl6ServiceDir) {
+  # RightLink 5/6 style monitoring. There's a side-car ruby service which gathers
+  # monitoring data which we proceed to disable.
   Write-Output "Checking for RightLink 5/6 based monitoring"
   if (!(Test-Path "$scriptsDir")) {
     Write-Output "Cannot find $scriptsDir, monitoring is disabled."
@@ -54,7 +55,7 @@ if (Test-Path "C:\Program Files\RightScale\RightLink\rsc.exe") {
     rs_tag --remove "rs_monitoring:state=active"
   }
 } else {
-  Write-Output "Neither RightLink 10 or RightLink 5/6 style monitoring detected!"
+  Write-Output "Neither a RightLink 5, 6, or 10 installation was detected, don't know what to do!"
   exit 1
 }
 

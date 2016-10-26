@@ -3,10 +3,10 @@
 # ---
 # RightScript Name: RightScale Linux Disable Monitoring
 # Description: |
-#   This downgrades an instance from Level 3 support (full capabilities) to
-#   Level 2 support by disabling monitoring. It can be run against any RightLink 5, 6
-#   or 10 Server. It must be run after every reboot as the scripts in the "Boot
-#   Scripts" will re-enable monitoring every boot and and can't be disabled.
+#   This downgrades an instance by disabling monitoring. It can be run against
+#   any RightLink 5, 6 or 10 Server. It must be run after every reboot as the
+#   scripts in the "Boot Scripts" will re-enable monitoring every boot and and
+#   can't be disabled.
 # Inputs: {}
 # ...
 #
@@ -19,24 +19,24 @@
 
 sudo=
 retry_flags=
+is_rightlink10=0
 # Ensure rsc is in the path
 export PATH="/usr/local/bin:/opt/bin:$PATH"
 which rsc >/dev/null && (rsc --help | grep retry >/dev/null) && retry_flags="--retry=5 --timeout=10"
 # Ensure we sudo for RL10, which runs as the rightlink user. Don't sudo for RL6, which
 # already runs as root and may fail due to sudoers configuration issues in some cases
-which rightlink >/dev/null && sudo="sudo"
+which rightlink >/dev/null && is_rightlink10=1
+[[ "$is_rightlink10" == "1" ]] && sudo="sudo"
 
 # RL 10 supports built-in monitoring. Disable it if we detect it as on
-if which rightlink >/dev/null 2>&1; then
+if [[ "$is_rightlink10" == "1" ]]; then
   # Built-in monitoring didn't ship until 10.2.1, which also shipped with rsc.
-  if which rsc >/dev/null 2>&1; then
-    output=$(rsc rl10 show /rll/tss/control/enable_monitoring 2>/dev/null)
-    if [[ "$output" =~ enable_monitoring ]] && [[ ! "$output" =~ "none" ]] && [[ ! "$output" =~ "false" ]]; then
-      echo "RightLink 10 built-in monitoring is enabled. Disabling it."
-      rsc rl10 $retry_flags update /rll/tss/control enable_monitoring=false
-    else
-      echo "RightLink 10 built-in monitoring is disabled."
-    fi
+  output=$(rsc rl10 show /rll/tss/control 2>/dev/null || true)
+  if [[ "$output" =~ enable_monitoring ]] && [[ ! "$output" =~ "none" ]] && [[ ! "$output" =~ "false" ]]; then
+    echo "RightLink 10 built-in monitoring is enabled. Disabling it."
+    rsc rl10 $retry_flags update /rll/tss/control enable_monitoring=false
+  else
+    echo "RightLink 10 built-in monitoring is disabled."
   fi
 fi
 
@@ -101,7 +101,7 @@ if [[ -e $collectd_conf ]]; then
   fi
 fi
 
-if which rightlink >/dev/null 2>&1; then
+if [[ "$is_rightlink10" == "1" ]]; then
   rsc $retry_flags --rl10 cm15 multi_delete /api/tags/multi_delete \
     "resource_hrefs[]=$RS_SELF_HREF" \
     "tags[]=rs_monitoring:state=auth" \
