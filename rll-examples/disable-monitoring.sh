@@ -74,7 +74,7 @@ if [[ -e $collectd_conf ]]; then
     echo "RightScale collectd-based monitoring is enabled. Disabling collectd configuration in $collectd_conf."
     backup_time=$(date -u +%Y%m%d%H%M%S)
     $sudo cp "${collectd_conf}" "${collectd_conf}.${backup_time}"
-    perl -0777 -pi -e 's/LoadPlugin network.*?rightscale.*?Plugin>//is' "${collectd_conf}"
+    $sudo perl -0777 -pi -e 's/LoadPlugin network.*?rightscale.*?Plugin>//is' "${collectd_conf}"
     restart_collectd=1
   fi
 
