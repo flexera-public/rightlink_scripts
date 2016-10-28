@@ -2,7 +2,7 @@
 # RightScript Name: RightScale Windows Disable Monitoring
 # Description: |
 #   This downgrades an instance by disabling monitoring. It can be run against
-#   any RightLink 5, 6 or 10 Server. It must be run after every reboot as the
+#   any RightLink 5, 6, or 10 Server. It must be run after every reboot as the
 #   scripts in the "Boot Scripts" will re-enable monitoring every boot and and
 #   can't be disabled.
 # Inputs: {}
@@ -17,8 +17,8 @@ $scriptsDir = "$rl6ServiceDir\scripts"
 if (Test-Path "C:\Program Files\RightScale\RightLink\rightlink.exe") {
   # RightLink 10 style monitoring. We simply make a disablement call.
   $rsc="C:\Program Files\RightScale\RightLink\rsc.exe"
-  $output=& $rsc rl10 show /rll/tss/control/enable_monitoring
-  if ($output -Match "enable_monitoring" -and $output -Match "false") {
+  $output=& $rsc rl10 show /rll/tss/control
+  if (($output -Match "enable_monitoring") -and ($output -NotMatch "false|none")) {
     & $rsc rl10 $retry_flags update /rll/tss/control enable_monitoring=false
     Write-Output "RightLink 10 built-in monitoring is enabled. Disabling it."
   } else {
