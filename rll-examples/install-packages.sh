@@ -41,33 +41,31 @@ else
 fi
 
 # Determine which packages are suitable for install on this system.
-declare -a list
-sz=0
+list=""
 for pkg in $packages; do
   echo $pkg | grep --extended-regexp --quiet '^[a-z0-9_]+:'
   selective=$?
   echo $pkg | grep --extended-regexp --quiet "^$pkgman:"
   matching=$?
   pkg=`echo $pkg | sed -e s/^$pkgman://`
+
   if [ $selective == 0 -a $matching == 0 ]
   then
     # Package is selective (begins with pkgman:) AND the pkgman matches ours;
     # it is a candidate for install.
-    list[$sz]=$pkg
-    let sz=$sz+1
+    list="$list $pkg"
   elif [ $selective != 0 ]
   then
     # Package is not selective (it has the same name for every pkgman). It is
     # a candidate for install.
-    list[$sz]=$pkg
-    let sz=$sz+1
+    list="$list $pkg"
   fi
 done
 
 if [ -n "$list" ]; then
   echo "Packages required on this system: $list"
 else
-  echo "No required packages on this system. Already installed: $packages"
+  echo "No packages required on this system."
   exit 0
 fi
 
