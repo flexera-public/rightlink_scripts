@@ -1,9 +1,10 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
-10.5.4
+unreleased changes
 ------
 - Moved UPGRADES_LOCATION parameter from rll/upgrade.sh to rll/setup-automatic-upgrade.sh and from rlw/upgrade.sh to rlw/setup-automatic-upgrade.sh. Added a new parameter UPGRADE_VERSION to rll/upgrade.sh and rlw/upgrade.sh to accept a simple text version to upgrade to, i.e. '10.5.4'
+- Add setup-ntp.sh and setup-ntp.ps1 to Boot scripts. These scripts setup the NTP daemon to synchonize system time, by default to time.rightscale.com. Accurate time is important for monitoring and proper functioning of the client.
 
 10.5.3
 ------
