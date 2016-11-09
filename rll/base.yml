@@ -59,9 +59,9 @@ RightScripts:
   Boot:
   - setup-hostname.sh
   - enable-managed-login.sh
-  - setup-ntp.sh
   - wait-for-eip.sh
   - redhat-subscription-register.sh
+  - setup-ntp.sh
   - enable-monitoring.sh
   - setup-alerts.sh
   - setup-automatic-upgrade.sh

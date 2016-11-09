@@ -54,8 +54,8 @@ Description: |
 Inputs: {}
 RightScripts:
   Boot:
-  - setup-ntp.ps1
   - wait-for-eip.ps1
+  - setup-ntp.ps1
   - setup-automatic-upgrade.ps1
   - enable-monitoring.ps1
   - setup-alerts.ps1
