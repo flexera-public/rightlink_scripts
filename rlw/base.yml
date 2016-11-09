@@ -65,20 +65,10 @@ RightScripts:
   - shutdown-reason.ps1
 MultiCloudImages:
 - Name: Windows_Server_Standard_2012R2_x64
-  Revision: 16
-  Publisher: RightScale
 - Name: Windows_Server_Datacenter_2012R2_x64
-  Revision: 19
-  Publisher: RightScale
 - Name: Windows_Server_Standard_2012_x64
-  Revision: 17
-  Publisher: RightScale
 - Name: Windows_Server_Datacenter_2012_x64
-  Revision: 11
-  Publisher: RightScale
 - Name: Windows_Server_Datacenter_2008R2_x64
-  Revision: 31
-  Publisher: RightScale
 Alerts:
 - Name: rs instance terminated
   Description: The instance has been terminated anormally, i.e., not through the RightScale
