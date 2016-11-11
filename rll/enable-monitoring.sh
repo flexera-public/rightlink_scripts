@@ -272,6 +272,18 @@ else
     retry_command sudo apt-get update -y
     retry_command sudo apt-get install -y curl collectd-core
   elif [[ -d /etc/yum.repos.d ]]; then
+    # Workaround for broken collectd
+    if yum info collectd | grep -E '5.6.1|5.6.0'; then
+      if rpm -qi collectd | grep -E '5.6.1|5.6.0'; then
+        retry_command sudo yum remove -y collectd
+      fi
+      echo "Collectd v5.6.0 or v5.6.1 detected. Collectd write_http plugin is temporarily broken for CentOS/RHEL operating systems."
+      echo "See: https://github.com/collectd/collectd/issues/1996"
+      echo "Falling back to using RightLink monitoring"
+      rsc --retry=5 --timeout=10 rl10 update /rll/tss/control enable_monitoring=all
+      exit 0
+    fi
+
     # keep these lines separate, yum doesn't fail for missing packages when grouped together
     retry_command sudo yum install -y curl
     retry_command sudo yum install -y collectd
