@@ -10,10 +10,22 @@
 #   2. If the server is a member of a domain it will configure the server for Automatic Domain Time Synchronization
 #   3. If the server is standalone update the NTP server and polling interval settings.
 # Inputs:
+#   SETUP_NTP:
+#     Category: RightScale
+#     Description: |
+#       Whether or not to configure NTP. "if_missing" only configures NTP if its not already setup by a service such as
+#       DHCP while "always" will overwrite any existing configuration.
+#     Input Type: single
+#     Required: true
+#     Advanced: true
+#     Default: text:if_missing
+#     Possible Values:
+#       - text:always
+#       - text:if_missing
+#       - text:none
 #   NTP_SERVER:
 #     Category: System
-#     Description: 'FQDN or IP address of NTP server to be used for time sync. Example:
-#       text:north-america.pool.ntp.org.'
+#     Description: 'FQDN or IP address of NTP server to be used for time sync. Example:text:time.rightscale.com.'
 #     Input Type: single
 #     Required: true
 #     Advanced: true
@@ -23,6 +35,16 @@
 
 # Stop and fail script when a command fails.
 $errorActionPreference = "Stop"
+
+if ($env:SETUP_NTP -eq "none") {
+    Write-Host "Not configuring NTP: SETUP_NTP is none"
+    exit 0
+}
+
+if ($env:NTP_SERVER -eq "") {
+    Write-Host "Not configuring NTP: No NTP server specified"
+    exit 0
+}
 
 if ((Get-Service w32time).Status -ne "Running")
 {
@@ -50,6 +72,14 @@ if ((Get-WmiObject Win32_ComputerSystem).PartOfDomain -eq $True)
 }
 else
 {
+    if ($env:SETUP_NTP -eq "if_missing") {
+        $existing = gp 'HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters'
+        if (($existing.NtpServer -NotMatch "time.windows.com") -and ($existing.NtpServer -Match "0x")) {
+            Write-Host "Skipping configuration, found existing NTP server: $($existing.NtpServer)"
+            exit 0            
+        }
+    }
+
     $ntpServer = $env:NTP_SERVER
     $pollInterval = "900"
     Write-Host "Setting NTP server to '$ntpServer', poll interval to ${pollInterval} seconds."

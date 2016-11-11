@@ -2,8 +2,21 @@
 #
 # ---
 # RightScript Name: RL10 Linux Setup NTP
-# Description: Installs and configures ntp client.
+# Description: Installs and configures NTP client.
 # Inputs:
+#   SETUP_NTP:
+#     Category: RightScale
+#     Description: |
+#       Whether or not to configure NTP. "if_missing" only configures NTP if its not already setup by a service such as
+#       DHCP while "always" will overwrite any existing configuration.
+#     Input Type: single
+#     Required: true
+#     Advanced: true
+#     Default: text:if_missing
+#     Possible Values:
+#       - text:always
+#       - text:if_missing
+#       - text:none
 #   NTP_SERVERS:
 #     Category: RightScale
 #     Description: |
@@ -15,11 +28,6 @@
 #     Default: text:time.rightscale.com
 # Attachments: []
 # ...
-
-if [[ -z "$NTP_SERVERS" ]]; then
-  echo "No NTP servers specified, not configuring NTP."
-  exit 0
-fi
 
 # Check if a file needs to be written. First checks if the target file exists and if so checks if the checksums of the
 # target file and the temporary file match.
@@ -78,13 +86,32 @@ function retry_command() {
   fi
 }
 
+
+SETUP_NTP=${SETUP_NTP:-"if_missing"}
+if [[ "$SETUP_NTP" == "none" ]]; then
+  echo "Not configuring NTP: SETUP_NTP is none"
+  exit 0
+fi
+
+if [[ -z "$NTP_SERVERS" ]]; then
+  echo "Not configuring NTP: No NTP servers specified"
+  exit 0
+fi
+
+#######################################
+# Setup NTP
+#######################################
 if [[ -d /etc/apt ]]; then
   ntp_service=ntp
-  retry_command sudo apt-get update -y
-  retry_command sudo apt-get install -y ntp ntpdate
+  if ! which ntpd >/dev/null 2>&1; then
+    retry_command sudo apt-get update -y >/dev/null
+    retry_command sudo apt-get install -y ntp
+  fi
 elif [[ -d /etc/yum.repos.d ]]; then
   ntp_service=ntpd
-  retry_command sudo yum install -y ntp ntpdate
+  if ! which ntpd >/dev/null 2>&1; then
+    retry_command sudo yum install -y ntp
+  fi
   if sudo chkconfig 2>/dev/null | grep ntpd >/dev/null 2>&1; then
     sudo chkconfig ntpd on
   elif sudo systemctl list-unit-files 2>/dev/null | grep ntpd >/dev/null 2>&1; then
@@ -98,6 +125,20 @@ else
   echo "Not configuring NTP, unsupported or unknown distro."
   exit 1
 fi
+
+if [[ "$SETUP_NTP" == "if_missing" ]]; then
+  if grep -i -E '^server ' /etc/ntp.conf 2>/dev/null; then
+    echo "NTP already configured, skipping setup."
+    if ! sudo service $ntp_service status; then
+      sudo service $ntp_service start
+    fi
+    exit 0
+  fi
+fi
+
+#######################################
+# Configure NTP
+#######################################
 
 # Declare a list for temporary files to clean up on exit and set the command to delete them if they still exist when the
 # script exits
