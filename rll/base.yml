@@ -61,6 +61,7 @@ RightScripts:
   - enable-managed-login.sh
   - wait-for-eip.sh
   - redhat-subscription-register.sh
+  - setup-ntp.sh
   - enable-monitoring.sh
   - setup-alerts.sh
   - setup-automatic-upgrade.sh

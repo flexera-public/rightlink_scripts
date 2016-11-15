@@ -115,6 +115,13 @@ while true; do
   fi
 done
 
+# Remove source and debug repos by default. Not needed for cloud servers in general.
+echo "Disabling any source/debug repos"
+source_debug_repos=$(sudo subscription-manager repos --list-enabled | grep 'Repo ID' | grep -E 'debug-rpms|source-rpms' | awk '{print $3}' 2>&1)
+for repo in $source_debug_repos; do
+  sudo subscription-manager repos --disable=$repo
+done
+
 # Enable additional repos if provided
 for repo in $REDHAT_ADDITIONAL_REPOS; do
   echo "enabling additional repo - $repo"
