@@ -73,10 +73,12 @@ RightScripts:
   - shutdown-reason.sh
   - redhat-subscription-unregister.sh
 MultiCloudImages:
-- Name: Ubuntu_14.04_x64
-- Name: Ubuntu_14.04_x64_KVM
 - Name: Ubuntu_12.04_x64
 - Name: Ubuntu_12.04_x64_KVM
+- Name: Ubuntu_14.04_x64
+- Name: Ubuntu_14.04_x64_KVM
+- Name: Ubuntu_16.04_x64
+- Name: Ubuntu_16.04_x64_KVM
 - Name: CentOS_6.x_x64
 - Name: CentOS_6.x_x64_KVM
 - Name: CentOS_7.x_x64
