@@ -69,6 +69,7 @@ else
     exit 1
   fi
 fi
+ID="${ID,,}" # convert to lowercase
 
 # Determine location of rsc
 [[ -e /usr/local/bin/rsc ]] && rsc=/usr/local/bin/rsc || rsc=/opt/bin/rsc
@@ -175,11 +176,14 @@ enable)
   if [[ "$ssh_previously_configured" != "true" ]]; then
     sudo mv $sshd_staging_config /etc/ssh/sshd_config
     # Determine if service name is ssh or sshd
-    if [[ "$ID" == "ubuntu" ]]; then
+    case "$ID" in
+    ubuntu|debian)
       ssh_service_name='ssh'
-    else
+      ;;
+    *)
       ssh_service_name='sshd'
-    fi
+      ;;
+    esac
     sudo service ${ssh_service_name} restart
   fi
 
@@ -220,7 +224,7 @@ enable)
     if sudo sestatus | grep enabled >/dev/null 2>&1; then
       # install checkmodule if it is not installed
       if ! which checkmodule >/dev/null 2>&1; then
-        case "${ID,,}" in
+        case "$ID" in
         ubuntu|debian)
           retry_command sudo apt-get install -y checkpolicy
           ;;
@@ -232,7 +236,7 @@ enable)
 
       # install semodule_package if it is not installed
       if ! which semodule_package >/dev/null 2>&1; then
-        case "${ID,,}" in
+        case "$ID" in
         ubuntu|debian)
           retry_command sudo apt-get install -y policycoreutils
           ;;
@@ -242,12 +246,19 @@ enable)
         esac
       fi
 
-      echo "Installing selinux policy to support reading of login policy file and creation of homedir"
-      checkmodule -M -m -o rightscale_login_policy.mod ${attachments}/rightscale_login_policy.te
-      semodule_package -m rightscale_login_policy.mod -o rightscale_login_policy.pp
-      sudo semodule -i rightscale_login_policy.pp
+      policy_file="${attachments}/rightscale_login_policy.te"
+      installed_version=$(sudo semodule -l | grep rightscale_login_policy | awk '{print $2}' | sed 's/\.//')
+      desired_version=$(grep module $policy_file | awk '{print $3}' | sed 's/[\.;]//g')
+      if [[ "$desired_version" == "$installed_version" ]]; then
+        echo "rightscale_login_policy selinux policy already installed, skipping re-installation."
+      else
+        echo "Installing selinux policy to support reading of login policy file and creation of homedir"
+        checkmodule -M -m -o rightscale_login_policy.mod $policy_file
+        semodule_package -m rightscale_login_policy.mod -o rightscale_login_policy.pp
+        sudo semodule -i rightscale_login_policy.pp
+      fi
     fi
-  fi
+fi
 
   # Send enable action to RightLink
   $rsc --retry=5 --timeout=10 rl10 update /rll/login/control "enable_login=${rll_login_control}"
