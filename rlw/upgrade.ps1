@@ -7,7 +7,7 @@
 #     Category: RightScale
 #     Description: Check whether a RightLink upgrade is available and perform the upgrade.
 #     Default: blank
-#     Required: false
+#     Required: true
 #     Advanced: true
 # ...
 #
