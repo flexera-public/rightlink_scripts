@@ -9,7 +9,7 @@
 #     Category: RightScale
 #     Description: The new version of RightLink to upgrade to.
 #     Default: blank
-#     Required: false
+#     Required: true
 #     Advanced: true
 # ...
 #
