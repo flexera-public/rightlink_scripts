@@ -7,6 +7,7 @@ unreleased changes
 - Add setup-ntp.sh and setup-ntp.ps1 to Boot scripts. These scripts setup the NTP daemon to synchronize system time, by default to time.rightscale.com. Accurate time is important for monitoring and proper functioning of the client.
 - Use RightLink built-in monitoring for CentOS 7/RHEL 7 due to a broken write_http plugin: https://github.com/collectd/collectd/issues/1996
 - Avoid re-install of selinux policy for enable-managed-login.sh if possible.
+- Handle the case when an instance does not have any alerts defined in the Setup Alerts RightScripts.
 
 10.5.3
 ------
