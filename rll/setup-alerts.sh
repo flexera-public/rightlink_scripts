@@ -190,7 +190,9 @@ fi
 # get all of the alert specs and alerts defined on the instance; these variables are used with rsc json by the above
 # functions instead of making individual API calls to query this data
 alert_specs=`rsc --rl10 cm15 index "$RS_SELF_HREF/alert_specs" with_inherited=true`
+[[ -z "$alert_specs" ]] && alert_specs='{}'
 alerts=`rsc --rl10 cm15 index "$RS_SELF_HREF/alerts"`
+[[ -z "$alerts" ]] && alerts='{}'
 
 if [[ $swap -eq 0 ]]; then
   # if swap is not enabled, remove the swap alert

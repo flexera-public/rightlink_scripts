@@ -149,8 +149,10 @@ $interfaces = (Get-WmiObject Win32_PerfRawData_Tcpip_NetworkInterface -Filter 'B
 # functions instead of making individual API calls to query this data
 $alertSpecs = rsc --rl10 cm15 index "$env:RS_SELF_HREF/alert_specs" with_inherited=true
 if ($LASTEXITCODE) { Exit $LASTEXITCODE }
+if (!$alertSpecs) { $alertSpecs = '{}' }
 $alerts = rsc --rl10 cm15 index "$env:RS_SELF_HREF/alerts"
 if ($LASTEXITCODE) { Exit $LASTEXITCODE }
+if (!$alerts) { $alerts = '{}' }
 
 $disableAwsPvNetworkDevice0 = $true # by default remove the original network alert specs
 $interfaceFile = 'interface-AWS_PV_Network_Device_0/if_octets' # this is the format for the network metric
