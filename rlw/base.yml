@@ -1,4 +1,4 @@
-Name: RightLink 10.5.3 Windows Base
+Name: RightLink 10.6.0 Windows Base
 Description: |
   Base ServerTemplate for RightLink10. RightLink10 is a new agent to connect
   servers to the RightScale platform that is very lightweight and simple to
@@ -15,7 +15,7 @@ Description: |
   It has an operational script to force a RightLink10 upgrade. And we also
   provide a decommission script that provides the reason for shutdown. The
   source of the scripts on this ServerTemplate is available at
-  [https://github.com/rightscale/rightlink_scripts/tree/10.5.3](https://github.com/rightscale/rightlink_scripts/tree/10.5.3).
+  [https://github.com/rightscale/rightlink_scripts/tree/10.6.0](https://github.com/rightscale/rightlink_scripts/tree/10.6.0).
 
   __Tested Windows distros:__
 
