@@ -1,4 +1,4 @@
-Name: RightLink 10.5.3 Linux Base
+Name: RightLink 10.6.0 Linux Base
 Description: |
   Base ServerTemplate for RightLink10. RightLink10 is a new agent to connect
   servers to the RightScale platform that is very lightweight and simple to
@@ -10,6 +10,7 @@ Description: |
 
   * Wait for an EIP to settle (AWS only)
   * Sets up a valid hostname
+  * Configures NTP if not configured
   * Enables RightScale OS monitoring
   * Sets up RightLink10 automatic upgrades
   * Enables Docker support
@@ -17,10 +18,11 @@ Description: |
   It has an operational script to force a RightLink10 upgrade. And we also
   provide a decommission script that provides the reason for shutdown. The
   source of the scripts on this ServerTemplate is available at
-  [https://github.com/rightscale/rightlink_scripts/tree/10.5.3](https://github.com/rightscale/rightlink_scripts/tree/10.5.3).
+  [https://github.com/rightscale/rightlink_scripts/tree/10.6.0](https://github.com/rightscale/rightlink_scripts/tree/10.6.0).
 
   __Tested Linux distros:__
 
+  * Ubuntu 16.04 x86_64
   * Ubuntu 14.04 x86_64
   * Ubuntu 12.04 x86_64
   * CentOS 7 x86_64
