@@ -1,13 +1,15 @@
 Changelog for the RightLink10 Base ServerTemplate
 =================================================
 
-unreleased changes
+10.6.0
 ------
-- Moved UPGRADES_LOCATION parameter from rll/upgrade.sh to rll/setup-automatic-upgrade.sh and from rlw/upgrade.sh to rlw/setup-automatic-upgrade.sh. Added a new parameter UPGRADE_VERSION to rll/upgrade.sh and rlw/upgrade.sh to accept a simple text version to upgrade to, i.e. '10.5.4'
+- Moved UPGRADES_LOCATION parameter from rll/upgrade.sh to rll/setup-automatic-upgrade.sh and from rlw/upgrade.sh to rlw/setup-automatic-upgrade.sh. Added a new parameter UPGRADE_VERSION to rll/upgrade.sh and rlw/upgrade.sh to accept a simple text version to upgrade to, i.e. '10.6.0'
 - Add setup-ntp.sh and setup-ntp.ps1 to Boot scripts. These scripts setup the NTP daemon to synchronize system time, by default to time.rightscale.com. Accurate time is important for monitoring and proper functioning of the client.
 - Use RightLink built-in monitoring for CentOS 7/RHEL 7 due to a broken write_http plugin: https://github.com/collectd/collectd/issues/1996
 - Avoid re-install of selinux policy for enable-managed-login.sh if possible.
 - Handle the case when an instance does not have any alerts defined in the Setup Alerts RightScripts.
+- Fix rll/setup-hostname.sh on for Debian.
+- Strip out RHEL "debug" and "source" repos by default in rll/redhat-subscription-register.sh due to broken repos.
 
 10.5.3
 ------
