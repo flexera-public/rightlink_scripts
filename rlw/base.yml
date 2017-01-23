@@ -22,6 +22,7 @@ Description: |
   * Windows Server 2008R2
   * Windows Server 2012
   * Windows Server 2012R2
+  * Windows Server 2016
 
   __Tested compute clouds:__
 
@@ -34,6 +35,7 @@ Description: |
 
   __Tested use cases:__
 
+  * Install-At-Boot
   * Enable-Running
   * Custom-Image
 
@@ -68,8 +70,10 @@ MultiCloudImages:
 - Name: Windows_Server_Standard_2012R2_x64
 - Name: Windows_Server_Datacenter_2012R2_x64
 - Name: Windows_Server_Standard_2012_x64
+- Name: Windows_Server_Standard_2016_x64
 - Name: Windows_Server_Datacenter_2012_x64
 - Name: Windows_Server_Datacenter_2008R2_x64
+- Name: Windows_Server_Datacenter_2016
 Alerts:
 - Name: rs instance terminated
   Description: The instance has been terminated anormally, i.e., not through the RightScale
