@@ -73,7 +73,7 @@ if ((Get-WmiObject Win32_ComputerSystem).PartOfDomain -eq $True)
 else
 {
     if ($env:SETUP_NTP -eq "if_missing") {
-        $existing = gp 'HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters'
+        $existing = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters'
         if (($existing.NtpServer -NotMatch "time.windows.com") -and ($existing.NtpServer -Match "0x")) {
             Write-Host "Skipping configuration, found existing NTP server: $($existing.NtpServer)"
             exit 0            
@@ -84,12 +84,12 @@ else
     $pollInterval = "900"
     Write-Host "Setting NTP server to '$ntpServer', poll interval to ${pollInterval} seconds."
 
-    sp 'HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters' 'NtpServer' "${ntpServer},0x01"
-    sp 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpClient' 'SpecialPollInterval' $pollInterval
-    sp 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config' 'AnnounceFlags' 5 
-    sp 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters' 'Type' 'NTP'
-    sp 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers' '6' $ntpServer
-    sp 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers' '(Default)' 6
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\services\W32Time\Parameters' -Name 'NtpServer' -Value "${ntpServer},0x01"
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpClient' -Name 'SpecialPollInterval' -Value $pollInterval
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config' -Name 'AnnounceFlags' -Value 5 
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters' -Name 'Type' -Value 'NTP'
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers' -Name '6' -Value $ntpServer
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers' -Name '(Default)' -Value 6
     
     Write-Host "Updating time service config."
     w32tm /config /update
