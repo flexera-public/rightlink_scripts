@@ -26,6 +26,7 @@ $ErrorActionPreference = 'Stop'
 # [hashtable]$overrides: the parameter names and values to override for the new alert spec
 #
 function Create-AlertSpec([string]$templateName, [string]$instanceName, [hashtable]$overrides = @{}) {
+  $RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
   $name = "$templateName $instanceName"
   [System.Console]::Write("creating alert spec '$name' from '$templateName': ")
   if ($overrides.Count) {
@@ -36,7 +37,7 @@ function Create-AlertSpec([string]$templateName, [string]$instanceName, [hashtab
 
   # check in the alert specs to see if the one we want to create is already created
   try {
-    $alertSpecs | rsc json --x1 "object:has(.name:val(\`"$name`\`")) " 2>&1>$null
+    $alertSpecs | & "${RIGHTLINK_DIR}\rsc.exe" json --x1 "object:has(.name:val(\`"$name`\`")) " 2>&1>$null
   } catch {}
   if ($LASTEXITCODE -eq 0) {
     Write-Output 'already exists'
@@ -51,7 +52,7 @@ function Create-AlertSpec([string]$templateName, [string]$instanceName, [hashtab
     $parameter = $_
     if (!$parameters.Contains($parameter)) {
       try {
-        $value = $alertSpecs | rsc json --x1 "object:has(.name:val(\`"$templateName\`")).$parameter " 2>$null
+        $value = $alertSpecs | & "${RIGHTLINK_DIR}\rsc.exe" json --x1 "object:has(.name:val(\`"$templateName\`")).$parameter " 2>$null
         if ($value) {
           $parameters.Add($parameter, $value)
         }
@@ -67,7 +68,7 @@ function Create-AlertSpec([string]$templateName, [string]$instanceName, [hashtab
   }
 
   # use rsc to create the new alert spec with the parameters as arguments
-  rsc --rl10 cm15 create "$env:RS_SELF_HREF/alert_specs" $arguments
+  & "${RIGHTLINK_DIR}\rsc.exe" --rl10 cm15 create "$env:RS_SELF_HREF/alert_specs" $arguments
   if ($LASTEXITCODE) { Exit $LASTEXITCODE }
   Write-Output 'created'
 }
@@ -79,6 +80,7 @@ function Create-AlertSpec([string]$templateName, [string]$instanceName, [hashtab
 # [string]$name: the name of the alert spec to destroy the alert for or to just destroy
 #
 function Destroy-AlertOrAlertSpec([string]$name) {
+  $RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
   [System.Console]::Write("destroying alert or alert spec '$name' from instance: ... ")
 
   # check if the alert or alert spec has already been destroyed
@@ -89,10 +91,10 @@ function Destroy-AlertOrAlertSpec([string]$name) {
 
   # destroy the alert if the alert spec is inherited from the ServerTemplate or delete the alert spec otherwise
   if ($subjectHref -match '/api/server_templates/[^/]+$') {
-    $alertHref = $alerts | rsc json --xj "object:has(.href:val(\`"$alertSpecHref\`")) ~ object" | rsc json --x1 'object:has(.rel:val(\"self\")).href'
-    rsc --rl10 cm15 destroy $alertHref
+    $alertHref = $alerts | & "${RIGHTLINK_DIR}\rsc.exe" json --xj "object:has(.href:val(\`"$alertSpecHref\`")) ~ object" | rsc json --x1 'object:has(.rel:val(\"self\")).href'
+    & "${RIGHTLINK_DIR}\rsc.exe" --rl10 cm15 destroy $alertHref
   } else {
-    rsc --rl10 cm15 destroy $alertSpecHref
+    & "${RIGHTLINK_DIR}\rsc.exe" --rl10 cm15 destroy $alertSpecHref
   }
   if ($LASTEXITCODE) { Exit $LASTEXITCODE }
 
@@ -109,12 +111,14 @@ function Destroy-AlertOrAlertSpec([string]$name) {
 # $subjectHref:   the HREF of the subject of the named alert spec
 #
 function Exists-AlertForAlertSpec([string]$name) {
+  $RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
+
   # get the alert spec and subject HREFs for the named alert spec
   try {
-    $Global:alertSpecHref = $alertSpecs | rsc json --x1 "object:has(.name:val(\`"$name\`")) object:has(.rel:val(\`"self\`")).href" 2>$null
+    $Global:alertSpecHref = $alertSpecs | & "${RIGHTLINK_DIR}\rsc.exe" json --x1 "object:has(.name:val(\`"$name\`")) object:has(.rel:val(\`"self\`")).href" 2>$null
   } catch {}
   try {
-    $Global:subjectHref = $alertSpecs | rsc json --x1 "object:has(.name:val(\`"$name\`")) object:has(.rel:val(\`"subject\`")).href" 2>$null
+    $Global:subjectHref = $alertSpecs | & "${RIGHTLINK_DIR}\rsc.exe" json --x1 "object:has(.name:val(\`"$name\`")) object:has(.rel:val(\`"subject\`")).href" 2>$null
   } catch {}
 
   # check if the alert spec HREF was found
@@ -123,7 +127,7 @@ function Exists-AlertForAlertSpec([string]$name) {
       # the subject of the alert spec is a ServerTemplate so the alert spec is inherited
       # check if there is an alert for the alert spec
       try {
-        $alerts | rsc json --x1 "object:has(.href:val(\`"$alertSpecHref\`")) " 2>&1>$null
+        $alerts | & "${RIGHTLINK_DIR}\rsc.exe" json --x1 "object:has(.href:val(\`"$alertSpecHref\`")) " 2>&1>$null
       } catch {}
       if ($LASTEXITCODE -eq 0) {
         # an alert for the alert spec exists
@@ -142,15 +146,17 @@ function Exists-AlertForAlertSpec([string]$name) {
   }
 }
 
+$RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
+
 # determine which network interfaces exist so we can update alert specs
 $interfaces = (Get-WmiObject Win32_PerfRawData_Tcpip_NetworkInterface -Filter 'BytesReceivedPerSec > 10000 AND BytesSentPerSec > 10000').Name -replace '[^0-9A-Za-z]+', '_'
 
 # get all of the alert specs and alerts defined on the instance; these variables are used with rsc json by the above
 # functions instead of making individual API calls to query this data
-$alertSpecs = rsc --rl10 cm15 index "$env:RS_SELF_HREF/alert_specs" with_inherited=true
+$alertSpecs = & "${RIGHTLINK_DIR}\rsc.exe" --rl10 cm15 index "$env:RS_SELF_HREF/alert_specs" with_inherited=true
 if ($LASTEXITCODE) { Exit $LASTEXITCODE }
 if (!$alertSpecs) { $alertSpecs = '{}' }
-$alerts = rsc --rl10 cm15 index "$env:RS_SELF_HREF/alerts"
+$alerts = & "${RIGHTLINK_DIR}\rsc.exe" --rl10 cm15 index "$env:RS_SELF_HREF/alerts"
 if ($LASTEXITCODE) { Exit $LASTEXITCODE }
 if (!$alerts) { $alerts = '{}' }
 
