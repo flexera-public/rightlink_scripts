@@ -3,7 +3,7 @@
 # Description: Installs Microsoft SQL Server specific monitoring.
 # Inputs: {}
 # Attachments:
-#   - iis-monitor.ps1
+#   - mssql-monitor.ps1
 # ...
 #
 
