@@ -20,9 +20,9 @@
 #   UMASK:
 #     Input Type: single
 #     Category: RightScale
-#     Description: Permission for creating users homedir. Default umask value is '0026' which means 7751 or rwxrwxr-xr--.
+#     Description: Permission for creating users homedir. Default umask value is '0022' which means 7755 or rwxrwxr-xr-x.
 #     Required: true
-#     Default: text:0026
+#     Default: text:0022
 # Attachments:
 #   - rs-ssh-keys.sh
 #   - libnss_rightscale.tgz
@@ -201,8 +201,8 @@ enable)
     sudo bash -c "umask 0337 && printf '# Members of the rightscale_sudo group may gain root privileges\n%%rightscale_sudo ALL=(ALL) SETENV:NOPASSWD:ALL\n' > /etc/sudoers.d/90-rightscale-sudo-users"
   fi
 
-  # Ask user input what should be the homedir permission. If no input is given, set default value (0026) which is eq to 7751
-  : "${UMASK:=0026}"
+  # Ask user input what should be the homedir permission. If no input is given, set default value (0066) which is eq to 7755
+  : "${UMASK:=0066}"
 
   # Update pam config to create homedir on login
   if cut --delimiter=# --fields=1 /etc/pam.d/sshd | grep --quiet pam_mkhomedir; then
