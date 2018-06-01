@@ -202,7 +202,7 @@ enable)
   fi
 
   # Ask user input what should be the homedir permission. If no input is given, set default value (0066) which is eq to 7755
-  : "${UMASK:=0066}"
+  : "${UMASK:=0022}"
 
   # Update pam config to create homedir on login
   if cut --delimiter=# --fields=1 /etc/pam.d/sshd | grep --quiet pam_mkhomedir; then
