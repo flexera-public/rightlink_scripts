@@ -228,8 +228,12 @@ enable)
         ubuntu|debian)
           retry_command sudo apt-get install -y checkpolicy
           ;;
-        centos|fedora|rhel)
+        centos|fedora|rhel|amzn)
           retry_command sudo yum install -y checkpolicy
+          ;;
+        *)
+          echo "Unable to install 'checkmodule' tool for '$ID' Linux distribution"
+          exit 1
           ;;
         esac
       fi
@@ -240,8 +244,12 @@ enable)
         ubuntu|debian)
           retry_command sudo apt-get install -y policycoreutils
           ;;
-        centos|fedora|rhel)
+        centos|fedora|rhel|amzn)
           retry_command sudo yum install -y policycoreutils-python
+          ;;
+        *)
+          echo "Unable to install 'semodule_package' tool for '$ID' Linux distribution"
+          exit 1
           ;;
         esac
       fi
