@@ -232,6 +232,13 @@ else
         retry_command sudo rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
       fi
       ;;
+    8)
+      if ! yum list installed "epel-release-8*"; then
+        echo "Installing EPEL repository"
+        retry_command sudo rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        retry_command sudo yum install -y collectd-write_http collectd-disk
+      fi
+      ;;
     esac
   fi
 
@@ -417,7 +424,6 @@ EOF
 
   configure_collectd_plugin cpu
   configure_collectd_plugin df \
-    'ReportReserved false' \
     'FSType "proc"' \
     'FSType "sysfs"' \
     'FSType "fusectl"' \

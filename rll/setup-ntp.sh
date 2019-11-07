@@ -107,6 +107,9 @@ if [[ -d /etc/apt ]]; then
     retry_command sudo apt-get update -y >/dev/null
     retry_command sudo apt-get install -y ntp
   fi
+elif [[ -d /etc/yum.repos.d ]] && grep -q 'release 8' /etc/redhat-release; then
+  echo "This appears to be Redhat or Centos 8.  NTP has been replaced by Chrony in those versions.  Skipping..."
+  exit 0
 elif [[ -d /etc/yum.repos.d ]]; then
   ntp_service=ntpd
   if ! which ntpd >/dev/null 2>&1; then
