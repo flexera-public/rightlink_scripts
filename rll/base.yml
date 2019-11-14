@@ -64,6 +64,7 @@ RightScripts:
   - wait-for-eip.sh
   - redhat-subscription-register.sh
   - setup-ntp.sh
+  - setup-chrony.sh
   - enable-monitoring.sh
   - setup-alerts.sh
   - setup-automatic-upgrade.sh
@@ -87,6 +88,7 @@ MultiCloudImages:
 - Name: CentOS_6.x_x64_KVM
 - Name: CoreOS_stable_x64
 - Name: CoreOS_stable_x64_KVM
+- Name: RHEL_8.x_x64_KVM
 - Name: RHEL_7.x_x64_KVM
 - Name: RHEL_7.x_x64
 - Name: RHEL_6.x_x64_KVM
