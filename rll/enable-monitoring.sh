@@ -277,7 +277,7 @@ else
   if [[ -d /etc/apt ]]; then
     # Resync the package index with sources
     retry_command sudo apt-get update -y
-    retry_command sudo apt-get install -y curl collectd-core
+    retry_command sudo apt-get install -y curl libyajl2 collectd-core
   elif [[ -d /etc/yum.repos.d ]]; then
     # Workaround for broken collectd
     if yum info collectd | grep -E '5.6.1|5.6.0'; then
