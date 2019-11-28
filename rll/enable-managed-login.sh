@@ -201,7 +201,7 @@ enable)
     sudo bash -c "umask 0337 && printf '# Members of the rightscale_sudo group may gain root privileges\n%%rightscale_sudo ALL=(ALL) SETENV:NOPASSWD:ALL\n' > /etc/sudoers.d/90-rightscale-sudo-users"
   fi
 
-  # Ask user input what should be the homedir permission. If no input is given, set default value (0066) which is eq to 7755
+  # Ask user input what should be the homedir permission. If no input is given, set default value (0022) which is eq to 7755
   : "${UMASK:=0022}"
 
   # Update pam config to create homedir on login
