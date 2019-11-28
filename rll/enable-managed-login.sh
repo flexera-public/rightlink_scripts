@@ -20,7 +20,7 @@
 #   UMASK:
 #     Input Type: single
 #     Category: RightScale
-#     Description: Permission for creating users homedir. Default umask value is '0022' which means 7755 or rwxrwxr-xr-x.
+#     Description: Permission for creating users homedir. Default umask value is '0022' which means 0755 or rwxr-xr-x.
 #     Required: true
 #     Default: text:0022
 # Attachments:
