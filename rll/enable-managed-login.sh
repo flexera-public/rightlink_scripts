@@ -237,7 +237,7 @@ enable)
         ubuntu|debian)
           retry_command sudo apt-get install -y checkpolicy
           ;;
-        centos|fedora|rhel|amzn)
+        centos|fedora|rhel|amzn|rocky_linux|rhl8)
           retry_command sudo yum install -y checkpolicy
           ;;
         *)
@@ -253,7 +253,7 @@ enable)
         ubuntu|debian)
           retry_command sudo apt-get install -y policycoreutils
           ;;
-        centos|fedora|rhel|amzn)
+        centos|fedora|rhel|amzn|rocky_linux|rhl8)
           retry_command sudo yum install -y policycoreutils-python
           ;;
         *)
